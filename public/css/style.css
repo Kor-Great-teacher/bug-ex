@@ -137,7 +137,8 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
   animation: spin 8s linear infinite; opacity: 0.85;
 }
 .reveal .stage::after { content: ''; position: absolute; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.95), rgba(255,255,255,0) 70%); }
-.reveal .stage.rare { --glow: #7dd3fc; } .reveal .stage.legend { --glow: #fbbf24; }
+.reveal .stage.rare { --glow: #7dd3fc; } .reveal .stage.hero { --glow: #c084fc; } .reveal .stage.legend { --glow: #fbbf24; }
+.reveal .stage.hero::before { animation-duration: 6s; }
 .reveal .stage.legend::before { animation-duration: 4s; opacity: 1; }
 .sparkle { position: absolute; z-index: 2; font-size: 20px; animation: twinkle 1.4s ease-in-out infinite; pointer-events: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -145,7 +146,7 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 @keyframes twinkle { 0%, 100% { transform: scale(0.4) rotate(0); opacity: 0; } 50% { transform: scale(1.1) rotate(30deg); opacity: 1; } }
 @keyframes pop { from { transform: scale(0.3) rotate(-20deg); opacity: 0; } to { transform: none; opacity: 1; } }
 .rar { display: inline-block; border-radius: 999px; padding: 1px 10px; font-size: 13px; color: #fff; font-family: var(--font-display); }
-.rar.common { background: #9ca3af; } .rar.rare { background: #0ea5e9; } .rar.legend { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+.rar.common { background: #9ca3af; } .rar.rare { background: #0ea5e9; } .rar.hero { background: linear-gradient(90deg, #8b5cf6, #d946ef); } .rar.legend { background: linear-gradient(90deg, #f59e0b, #ef4444); box-shadow: 0 0 8px rgba(251, 191, 36, 0.7); }
 .fact { font-size: 14px; color: var(--ink-dim); max-width: 460px; }
 .coin-burst { font-family: var(--font-display); font-size: 40px; color: #b7791f; animation: pop 0.4s ease-out; }
 .mini-bugs { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -163,7 +164,8 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .bug-card:hover img { transform: translateY(-3px) rotate(-3deg); }
 .bug-card.on img { animation: hop 1.6s ease-in-out infinite; }
 .bug-card.r-rare { background: linear-gradient(180deg, #f0f9ff, var(--panel)); }
-.bug-card.r-legend { background: linear-gradient(180deg, #fff7d6, var(--panel)); border-color: #f5c84c; }
+.bug-card.r-hero { background: linear-gradient(180deg, #f5edff, var(--panel)); border-color: #c4b5fd; }
+.bug-card.r-legend { background: linear-gradient(180deg, #fff7d6, var(--panel)); border-color: #f5c84c; box-shadow: 0 0 12px rgba(251, 191, 36, 0.45); }
 .bug-card.r-legend::after { content: '✨'; position: absolute; top: 4px; right: 6px; font-size: 13px; animation: twinkle 1.8s ease-in-out infinite; }
 .bug-card span { font-family: var(--font-display); font-size: 15px; }
 .bug-card small { font-size: 11px; color: var(--ink-dim); }
@@ -171,7 +173,7 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .bug-card .rar { position: absolute; top: 4px; left: 4px; font-size: 10px; padding: 0 6px; }
 .detail-top { display: flex; gap: 14px; align-items: center; }
 .detail-top img { width: 150px; height: 150px; flex: none; border-radius: 50%; background: radial-gradient(circle at 50% 55%, #fff 0, var(--rar-bg, #eef6e4) 55%, transparent 71%); animation: hop 2s ease-in-out infinite; }
-.detail-top.rare { --rar-bg: #d8f0ff; } .detail-top.legend { --rar-bg: #ffe9a8; }
+.detail-top.rare { --rar-bg: #d8f0ff; } .detail-top.hero { --rar-bg: #eadcff; } .detail-top.legend { --rar-bg: #ffe9a8; }
 .detail-top h2 { font-size: 28px; margin-bottom: 4px; }
 .stat-rows { display: grid; gap: 8px; margin: 14px 0; }
 .stat-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) 34px 116px; gap: 8px; align-items: center; }

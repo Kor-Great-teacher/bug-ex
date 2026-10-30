@@ -212,10 +212,10 @@
         if (k) { had.lv[k]++; extra = `이미 있는 친구라 <b>${D.STATS.find(s => s.k === k).name} +1</b> 올랐어요!`; } else { P.coins += 30; extra = '능력치가 모두 최고라 코인 30개를 받았어요!'; }
       } else { P.bugs.push({ type, lv: D.zeroLv() }); P.score += D.RARITY[ins.rarity].score; extra = '새로운 곤충 친구를 만났어요!'; }
       if (!P.sel) P.sel = type;
-      SND(ins.rarity === 'legend' ? 'legend' : 'catch');
+      SND(ins.rarity === 'legend' || ins.rarity === 'hero' ? 'legend' : 'catch');
       html = `<div class="feedback good reveal">
         <h3>정답! ${esc(ins.name)}${had ? '' : ' 채집!'}</h3>
-        <div class="stage ${ins.rarity}"><img src="${pic(type, 170, 'happy')}" alt="">${ins.rarity === 'common' ? '' : [[12, 20], [78, 14], [86, 70], [8, 74], [50, 4]].map(([l, t], i) => `<span class="sparkle" style="left:${l}%;top:${t}%;animation-delay:${i * 0.28}s">${ins.rarity === 'legend' ? '✨' : '✦'}</span>`).join('')}</div>
+        <div class="stage ${ins.rarity}"><img src="${pic(type, 170, 'happy')}" alt="">${ins.rarity === 'common' ? '' : [[12, 20], [78, 14], [86, 70], [8, 74], [50, 4]].map(([l, t], i) => `<span class="sparkle" style="left:${l}%;top:${t}%;animation-delay:${i * 0.28}s">${ins.rarity === 'legend' ? '✨' : ins.rarity === 'hero' ? '💜' : '✦'}</span>`).join('')}</div>
         <p><span class="rar ${ins.rarity}">${D.RARITY[ins.rarity].name}</span> ${extra}</p>
         <p class="fact">${esc(ins.fact)}</p>${expl}
         <button type="button" class="btn primary big" id="nextQ">${nextLabel}</button></div>`;
@@ -560,6 +560,7 @@
     showScreen('final');
     updateHud();
     const legends = P.bugs.filter(b => D.INSECTS[b.type].rarity === 'legend').length;
+    const heroes = P.bugs.filter(b => D.INSECTS[b.type].rarity === 'hero').length;
     GameKit.submitResult({ score: P.score, wave: P.places[0], correct: P.correct, total: P.total, cleared: true });
     $('#scFinal').innerHTML = `
       <section class="panel final">
@@ -568,7 +569,7 @@
         <p class="big-num">${P.score.toLocaleString()}</p>
         <dl class="final-stats">
           <div><dt>퀴즈 정답</dt><dd>${P.correct} / ${P.total}</dd></div>
-          <div><dt>모은 곤충</dt><dd>${P.bugs.length}마리${legends ? ` (전설 ${legends})` : ''}</dd></div>
+          <div><dt>모은 곤충</dt><dd>${P.bugs.length}마리${legends || heroes ? ` (${[legends ? `전설 ${legends}` : '', heroes ? `영웅 ${heroes}` : ''].filter(Boolean).join(' · ')})` : ''}</dd></div>
           <div><dt>대결 성적</dt><dd>🥇${P.places[0]} 🥈${P.places[1]} 🥉${P.places[2]}</dd></div>
           <div><dt>남은 코인</dt><dd><i class="coin"></i>${P.coins}</dd></div>
         </dl>
@@ -610,7 +611,7 @@
       <div class="help">
         <h2>게임 방법</h2>
         <ol>
-          <li><b>곤충 채집</b> — 퀴즈 ${collectCount()}문제. 맞히면 곤충을 잡아요 (일반 60% · 희귀 30% · 전설 10%). 같은 곤충을 또 잡으면 능력치 +1.</li>
+          <li><b>곤충 채집</b> — 퀴즈 ${collectCount()}문제. 맞히면 곤충을 잡아요 (일반 55% · 희귀 28% · 영웅 12% · 전설 5%). 같은 곤충을 또 잡으면 능력치 +1.</li>
           <li><b>코인 퀴즈</b> — 퀴즈 ${settings.coinCount}문제. 정답마다 코인 ${settings.coinPerCorrect}개.</li>
           <li><b>곤충 연구소</b> — 코인으로 속도·힘·균형·점프·체력을 올려요.</li>
           <li><b>곤충 대결</b> — 곤충 3마리가 무작위 종목으로 겨뤄요 (${settings.battleCount}번). 1등 코인 60 · 2등 40 · 3등 25.</li>
@@ -620,7 +621,7 @@
         <h3>친구와 대결</h3>
         <p class="hint">시작 화면에서 <b>친구와 대결</b>을 고르고 같은 교실 코드를 넣으면 실시간으로 함께 겨뤄요. 3명이 안 모이면 ${settings.matchWait}초 뒤 AI 곤충이 빈자리를 채워요.</p>
         <h3>점수</h3>
-        <p class="hint">정답 100점 · 새 곤충 일반 50 / 희귀 100 / 전설 200 · 업그레이드 10 · 대결 1등 300 / 2등 150 / 3등 50</p>
+        <p class="hint">정답 100점 · 새 곤충 일반 50 / 희귀 100 / 영웅 150 / 전설 250 · 업그레이드 10 · 대결 1등 300 / 2등 150 / 3등 50</p>
         <div class="row"><button type="button" class="btn primary" id="helpClose">알겠어요!</button></div>
       </div>`, 'help');
     $('#helpClose').addEventListener('click', () => { hideModal(); if (fromStart) showStart(); });

@@ -16,10 +16,12 @@
   const STAT_KEYS = STATS.map(s => s.k);
   const MAX_LV = 10; // 능력치마다 최대 10단계까지 업그레이드
 
+  // 등급이 높을수록 드물고, 캐릭터에 장식 · 반짝이 · 후광이 더 많이 붙어요
   const RARITY = {
-    common: { name: '일반', weight: 60, color: '#9ca3af', score: 50 },
-    rare: { name: '희귀', weight: 30, color: '#38bdf8', score: 100 },
-    legend: { name: '전설', weight: 10, color: '#fbbf24', score: 200 },
+    common: { name: '일반', weight: 55, color: '#9ca3af', score: 50 },
+    rare: { name: '희귀', weight: 28, color: '#38bdf8', score: 100 },
+    hero: { name: '영웅', weight: 12, color: '#a855f7', score: 150 },
+    legend: { name: '전설', weight: 5, color: '#fbbf24', score: 250 },
   };
 
   // base: [속도, 힘, 균형, 점프, 체력]  fact: 카드에 보여 주는 곤충 이야기 (파브르 곤충기 느낌)
@@ -31,13 +33,13 @@
     { id: 'cricket', name: '귀뚜라미', rarity: 'common', base: [5, 3, 4, 7, 5], fact: '날개를 비벼서 귀뚤귀뚤 소리를 내요. 귀는 앞다리에 있어요.' },
     { id: 'butterfly', name: '배추흰나비', rarity: 'common', base: [6, 2, 7, 5, 4], fact: '알 → 애벌레 → 번데기 → 나비로 자라는 완전 탈바꿈을 해요.' },
     { id: 'firefly', name: '반딧불이', rarity: 'rare', base: [5, 3, 6, 5, 6], fact: '배 끝에서 열이 거의 없는 차가운 빛을 내요. 깨끗한 물가에서만 살아요.' },
-    { id: 'dragonfly', name: '잠자리', rarity: 'rare', base: [9, 3, 6, 5, 4], fact: '네 장의 날개를 따로따로 움직여 제자리 비행도 해요. 겹눈이 아주 커요.' },
+    { id: 'dragonfly', name: '잠자리', rarity: 'hero', base: [9, 3, 6, 6, 5], fact: '네 장의 날개를 따로따로 움직여 제자리 비행도 해요. 겹눈이 아주 커요.' },
     { id: 'dungbeetle', name: '소똥구리', rarity: 'rare', base: [3, 8, 5, 3, 7], fact: '파브르가 오래 관찰한 곤충이에요. 소똥을 공처럼 굴려 집으로 가져가요.' },
-    { id: 'mantis', name: '사마귀', rarity: 'rare', base: [6, 6, 7, 5, 4], fact: '낫처럼 생긴 앞다리로 먹이를 잡아요. 머리를 180도 가까이 돌릴 수 있어요.' },
+    { id: 'mantis', name: '사마귀', rarity: 'hero', base: [6, 7, 7, 5, 5], fact: '낫처럼 생긴 앞다리로 먹이를 잡아요. 머리를 180도 가까이 돌릴 수 있어요.' },
     { id: 'cicada', name: '매미', rarity: 'rare', base: [5, 4, 5, 5, 7], fact: '땅속에서 여러 해를 애벌레로 지내다가 여름에 나와 맴맴 울어요.' },
-    { id: 'rhino', name: '장수풍뎅이', rarity: 'legend', base: [3, 9, 6, 3, 8], fact: '수컷의 커다란 뿔로 다른 곤충을 들어 올려 밀어내요. 힘이 정말 세요!' },
-    { id: 'stag', name: '사슴벌레', rarity: 'legend', base: [4, 8, 7, 4, 7], fact: '사슴뿔처럼 생긴 큰 턱으로 상대를 집어요. 참나무 수액을 좋아해요.' },
-    { id: 'swallowtail', name: '호랑나비', rarity: 'legend', base: [7, 3, 8, 6, 6], fact: '노랑과 검정 줄무늬 날개가 멋진 나비예요. 산초나무·탱자나무에 알을 낳아요.' },
+    { id: 'rhino', name: '장수풍뎅이', rarity: 'legend', base: [4, 10, 6, 3, 9], fact: '수컷의 커다란 뿔로 다른 곤충을 들어 올려 밀어내요. 힘이 정말 세요!' },
+    { id: 'stag', name: '사슴벌레', rarity: 'hero', base: [4, 8, 7, 4, 7], fact: '사슴뿔처럼 생긴 큰 턱으로 상대를 집어요. 참나무 수액을 좋아해요.' },
+    { id: 'swallowtail', name: '호랑나비', rarity: 'legend', base: [8, 4, 8, 7, 6], fact: '노랑과 검정 줄무늬 날개가 멋진 나비예요. 산초나무·탱자나무에 알을 낳아요.' },
   ];
   const INSECTS = {};
   for (const i of LIST) INSECTS[i.id] = i;
