@@ -2,12 +2,12 @@
 window.BugArena = (() => {
   'use strict';
   const W = 960, H = 540;
-  const COLORS = ['#ef4444', '#3b82f6', '#22c55e'];
+  const COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b'];
   const E = () => window.BugEvents.EVENTS;
   // 경기장 캐릭터는 숨쉬기·눈 깜빡임을 해요
   // 두 발로 선 캐릭터는 키가 커서 경기장에서는 1.3배로 그려요
   // en: 참가자 { type, tier } — 지금 등급에 맞는 장식으로 그려요
-  const draw = (c, en, x, y, size, o = {}) => window.BugArt.draw(c, en, x, y, size * 1.3, { time: performance.now() / 1000, rarity: window.BugData.TIERS[en.tier != null ? en.tier : window.BugData.nativeTier(en.type)], ...o });
+  const draw = (c, en, x, y, size, o = {}) => window.BugArt.draw(c, en.type, x, y, size * 1.3 * SZ, { time: performance.now() / 1000, rarity: window.BugData.TIERS[en.tier != null ? en.tier : window.BugData.nativeTier(en.type)], ...o });
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
   // ---------- 공통 그리기 도구 ----------
@@ -49,7 +49,11 @@ window.BugArena = (() => {
   const mood = (e, extra) => extra || (e.fin != null ? 'happy' : undefined);
 
   // 가로 3줄 경주 공통 배경 (달리기 · 소똥 · 장애물 · 외나무다리)
-  const LANE_Y = [190, 325, 460], X0 = 90, X1 = 870;
+  // 참가 수(2~4)에 따라 줄 위치 · 기둥 위치 · 캐릭터 크기가 바뀌어요 (render 에서 정해요)
+  const LANES = { 2: [250, 420], 3: [190, 325, 460], 4: [168, 273, 378, 483] };
+  let LANE_Y = LANES[3], SZ = 1;
+  const X0 = 90, X1 = 870;
+  const colX = (i, n) => Math.round(W / (n + 1) * (i + 1));
   const laneX = (v, len) => X0 + (X1 - X0) * clamp(v / len, 0, 1);
   function lanes(c, finish = true, ground = '#d6b77a') {
     sky(c);
@@ -137,7 +141,7 @@ window.BugArena = (() => {
     c.strokeStyle = 'rgba(0,0,0,0.15)'; c.lineWidth = 1; c.font = '13px Jua'; c.fillStyle = 'rgba(0,0,0,0.45)'; c.textAlign = 'right';
     for (let h = 10; h <= 50; h += 10) { const y = G - h * k; c.beginPath(); c.moveTo(40, y); c.lineTo(W - 20, y); c.stroke(); c.fillText(`${h}cm`, 36, y + 4); }
     s.e.forEach((e, i) => {
-      const x = 220 + i * 260, en = m.ents[i];
+      const x = colX(i, s.e.length), en = m.ents[i];
       // 최고 기록 표시
       if (e.best > 0) { const y = G - e.best * k; c.strokeStyle = COLORS[i]; c.lineWidth = 4; c.beginPath(); c.moveTo(x - 50, y); c.lineTo(x + 50, y); c.stroke(); text(c, `${e.best.toFixed(1)}`, x + 58, y, 15, COLORS[i], 'left', '#fff'); }
       draw(c, en, x, G - 18 - e.h * k, 66, { phase: e.mode === 'jump' ? 0 : s.t * 4, pose: e.mode === 'jump' ? 'cheer' : 'stand', mood: e.mode === 'jump' ? 'happy' : undefined });
@@ -215,7 +219,7 @@ window.BugArena = (() => {
     c.fillStyle = '#8fd16a'; c.fillRect(0, 500, W, 40);
     const top = 90, bot = 500;
     s.e.forEach((e, i) => {
-      const x = 220 + i * 260, en = m.ents[i];
+      const x = colX(i, s.e.length), en = m.ents[i];
       c.fillStyle = '#8b5a2b'; c.fillRect(x - 26, top - 10, 52, bot - top + 10);
       c.strokeStyle = 'rgba(60,30,10,0.35)'; c.lineWidth = 2;
       for (let y = top + 20; y < bot; y += 34) { c.beginPath(); c.moveTo(x - 20, y); c.quadraticCurveTo(x, y + 8, x + 18, y - 4); c.stroke(); }
@@ -255,7 +259,7 @@ window.BugArena = (() => {
       for (let k = 0; k < 14; k++) { const y = 60 + (k * 37) % 400, x = ((s.t * 900 * g.gd + k * 211) % (W + 200) + W + 200) % (W + 200) - 100; c.beginPath(); c.moveTo(x, y); c.lineTo(x - 70 * g.gd, y); c.stroke(); }
     }
     s.e.forEach((e, i) => {
-      const bx = 220 + i * 260, en = m.ents[i];
+      const bx = colX(i, s.e.length), en = m.ents[i];
       const bend = wind * 70 + Math.sin(s.t * 3 + i) * 4;
       const tipX = bx + bend, tipY = 170;
       c.strokeStyle = '#3f9b2b'; c.lineWidth = 12; c.lineCap = 'round';
@@ -279,6 +283,8 @@ window.BugArena = (() => {
   // ---------- 전체 그리기 ----------
   function render(c, s, m) {
     if (!s) return;
+    const n = Math.max(2, Math.min(4, s.e.length));
+    LANE_Y = LANES[n]; SZ = n === 4 ? 0.82 : 1;
     c.save();
     R[m.ev](c, s, m);
     const ev = E()[m.ev];

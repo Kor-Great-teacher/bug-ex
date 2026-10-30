@@ -1,5 +1,5 @@
 // 곤충 대결 10종목 시뮬레이션 (브라우저와 서버가 똑같은 코드를 써요)
-// 대결 하나 = 곤충 3마리. 서버는 1초에 20번 step() 하고 snap() 을 모두에게 보내요.
+// 대결 하나 = 곤충 2~4마리. 서버는 1초에 20번 step() 하고 snap() 을 모두에게 보내요.
 // 입력은 세 가지뿐: tap(누르기) · hold(누르고 있기) · dir(왼쪽 -1 / 가운데 0 / 오른쪽 1)
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory(require('./insects-data.js'));
@@ -93,7 +93,7 @@
       init(b) {
         b.g.R = 100;
         b.ents.forEach((e, i) => {
-          const a = -Math.PI / 2 + i * Math.PI * 2 / 3;
+          const a = -Math.PI / 2 + i * Math.PI * 2 / b.ents.length;
           Object.assign(e, { x: Math.cos(a) * 48, y: Math.sin(a) * 48, vx: 0, vy: 0, cd: 0, dash: 0, face: Math.cos(a) > 0 ? -1 : 1 });
         });
       },
@@ -237,7 +237,7 @@
       desc: '곤충이 가까운 꽃으로 날아가 꿀을 모아요. 버튼을 누르면 잠깐 빨라져요. 황금 꽃은 꿀 3개!',
       init(b) {
         b.g.fl = [];
-        b.ents.forEach((e, i) => Object.assign(e, { x: -this.W / 2 + 20, y: -40 + i * 40, n: 0, cd: 0, dash: 0, _lt: 0, face: 1 }));
+        b.ents.forEach((e, i) => Object.assign(e, { x: -this.W / 2 + 20, y: (i - (b.ents.length - 1) / 2) * 34, n: 0, cd: 0, dash: 0, _lt: 0, face: 1 }));
         for (let k = 0; k < 7; k++) b.g.fl.push(this.flower(b));
       },
       flower(b) {
@@ -278,7 +278,7 @@
       init(b) {
         Object.assign(b.g, { kx: 0, ky: 0, vx: 0, vy: 0 });
         b.ents.forEach((e, i) => {
-          const a = -Math.PI / 2 + i * Math.PI * 2 / 3;
+          const a = -Math.PI / 2 + i * Math.PI * 2 / b.ents.length;
           Object.assign(e, { ux: Math.cos(a), uy: Math.sin(a), grip: 0, en: 1, proj: 0 });
         });
       },
@@ -409,7 +409,7 @@
   // ============================================================
   //  대결 만들기 · 진행 · 입력 · 화면용 요약
   // ============================================================
-  // entrants: [{ name, type, lv, bot, skill }]  (정확히 3마리)
+  // entrants: [{ name, type, lv, tier, bot, skill }]  (2~4마리)
   function createBattle(eventId, entrants, opt = {}) {
     const ev = EVENTS[eventId] || EVENTS.sprint;
     const b = {

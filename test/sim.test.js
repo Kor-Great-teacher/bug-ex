@@ -53,26 +53,70 @@ function skillMatters() {
   console.log('✓ 버튼을 누르면 빨라져요');
 }
 
-async function serverMatch() {
-  const { io } = require('socket.io-client');
+// 서버 '함께 하기' 한 판: 대기실 → 채집 퀴즈 → 코인 퀴즈 → 연구소 → 대결 → 최종 순위
+function startServer(extraEnv) {
   const PORT = 3900 + Math.floor(Math.random() * 90);
-  const srv = spawn(process.execPath, [path.join(__dirname, '..', 'server.js')], { env: { ...process.env, PORT: String(PORT) }, stdio: 'ignore' });
+  const srv = spawn(process.execPath, [path.join(__dirname, '..', 'server.js')], {
+    env: { ...process.env, PORT: String(PORT), BUGEX_FAST: '1', BUGEX_EVENTS: 'sprint', ...extraEnv }, stdio: 'ignore',
+  });
+  return { srv, url: `http://localhost:${PORT}` };
+}
+const sampleQ = n => Array.from({ length: n }, (_, i) => ({ type: 'multiple', q: `${i} + 1 = ?`, subject: '수학', options: [String(i + 1), 'x', 'y', 'z'], answer: 0 }));
+function player(url, name, code, plan) {
+  const { io } = require('socket.io-client');
+  return new Promise((resolve, reject) => {
+    const s = io(url, { transports: ['websocket'] });
+    const log = { waits: 0, coinResults: [], collectOk: 0, battles: 0, end: null };
+    const timer = setTimeout(() => reject(new Error(`${name}: 경기가 끝나지 않았어요`)), 60000);
+    let id = '';
+    s.on('connect', () => s.emit('lobby:join', { code, nickname: name, opts: { collectCount: 7, coinCount: 13, battleCount: plan.battles || 1, labTime: 20, relabTime: 15 } }));
+    s.on('lobby', info => { log.lobby = info; if (plan.onLobby) plan.onLobby(s, info); });
+    s.on('match:start', d => { log.start = d; if (d.host) s.emit('match:questions', { collect: sampleQ(d.opts.collectCount), coin: sampleQ(d.opts.coinCount) }); });
+    s.on('quiz:q', d => setTimeout(() => s.emit('quiz:a', { i: d.i, value: plan.answer(d) }), plan.delay));
+    s.on('quiz:wait', () => log.waits++);
+    s.on('quiz:r', r => {
+      const me = r.results.find(x => x.pid === log.start.you);
+      if (r.stage === 'coin') log.coinResults.push(me); else if (me.ok) log.collectOk++;
+    });
+    s.on('lab', () => { s.emit('lab:pick', { type: 'bee', lv: { spd: 2 }, tier: 0 }); s.emit('lab:ready'); });
+    s.on('battle:start', m => { id = m.id; log.battles++; log.n = m.ents.length; });
+    s.on('battle:state', () => { if (Math.random() < 0.4) s.emit('input', { id, k: 'tap' }); });
+    s.on('match:end', d => { clearTimeout(timer); log.end = d; s.close(); resolve(log); });
+    s.on('match:abort', d => { clearTimeout(timer); reject(new Error(d.msg)); });
+  });
+}
+async function serverMatch() {
+  const { srv, url } = startServer();
   try {
     await new Promise(r => setTimeout(r, 800));
-    const results = await Promise.all([0, 1, 2].map(n => new Promise((resolve, reject) => {
-      const s = io(`http://localhost:${PORT}`, { transports: ['websocket'] });
-      const timer = setTimeout(() => reject(new Error('대결이 끝나지 않았어요')), 45000);
-      let me = -1, id = '';
-      s.on('connect', () => s.emit('join', { room: 'test', nickname: `학생${n}` }));
-      s.on('joined', () => s.emit('queue', { type: 'bee', lv: { spd: 99, pow: -3 } }));
-      s.on('battle:start', m => { me = m.me; id = m.id; assert.strictEqual(m.ents.length, 3); assert(m.ents.every(e => !e.bot)); });
-      s.on('battle:state', st => {
-        if (Math.random() < 0.3) s.emit('input', { id, k: 'tap' });
-        if (st.done) { clearTimeout(timer); s.close(); resolve({ me, results: st.results }); }
-      });
-    })));
-    assert.deepStrictEqual(results.map(r => r.me).sort(), [0, 1, 2]);
-    console.log('✓ 서버에서 3명 실시간 대결 완료');
+    // 입장 코드 방: 2명이 모두 [지금 시작하기] → AI 없이 2명 경기
+    const ready = (s, info) => { if (info.players.length === 2 && !info.players.every(p => p.ready)) s.emit('lobby:ready', { on: true }); };
+    const [a, b] = await Promise.all([
+      player(url, '빠른학생', 'T1', { onLobby: ready, delay: 10, answer: () => 0, battles: 2 }),
+      player(url, '느린학생', 'T1', { onLobby: ready, delay: 120, answer: d => (d.i % 2 ? 1 : 0), battles: 2 }),
+    ]);
+    assert.strictEqual(a.n, 2, '2명 경기');
+    assert.strictEqual(a.collectOk, 7);
+    assert(a.waits >= 15, '먼저 푼 학생은 기다리기 안내를 받아요');
+    assert.strictEqual(a.coinResults.length, 13);
+    assert(a.coinResults.every(r => r.coins === 10), '2명 경기 1등은 10코인');
+    assert(b.coinResults.filter(r => r.ok).every(r => r.coins === 5), '2등은 5코인');
+    assert(b.coinResults.filter(r => !r.ok).every(r => r.coins === 0), '틀리면 0코인');
+    assert.strictEqual(a.battles, 2);
+    assert.strictEqual(a.end.standings.length, 2);
+    console.log('✓ 입장 코드 2명: 동시 퀴즈 · 순위 코인 · 연구소 · 대결 2번 · 최종 순위');
+  } finally { srv.kill(); }
+}
+async function serverAuto() {
+  const { srv, url } = startServer({ BUGEX_WAIT: '1' });
+  try {
+    await new Promise(r => setTimeout(r, 800));
+    // 자동 매칭: 혼자 들어가면 1초 뒤 AI 3마리와 4명 경기
+    const a = await player(url, '혼자학생', '', { delay: 10, answer: () => 0, battles: 1 });
+    assert.strictEqual(a.n, 4, 'AI가 빈자리를 채워 4명');
+    assert.strictEqual(a.start.players.filter(p => p.bot).length, 3);
+    assert(a.coinResults.every(r => [20, 15, 10, 5].includes(r.coins)), '4명 경기 코인은 20 · 15 · 10 · 5');
+    console.log('✓ 자동 매칭: AI와 4명 경기');
   } finally { srv.kill(); }
 }
 
@@ -81,4 +125,5 @@ async function serverMatch() {
   tierRules();
   skillMatters();
   await serverMatch();
+  await serverAuto();
 })().catch(e => { console.error('✗', e.message); process.exit(1); });

@@ -336,3 +336,70 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
   .podium img { width: 44px; height: 44px; }
 }
 @media (prefers-reduced-motion: reduce) { .promo-dot, .reveal img, .reveal .stage::before, .sparkle, .bug-card img, .bug-card::after, .detail-top img, .coin-burst, .pulse { animation: none !important; } }
+
+/* ---------- 함께 하기 ---------- */
+.opt.picked { border-color: var(--sky); background: #e0f2fe; }
+.waiting { display: grid; justify-items: center; text-align: center; gap: 4px; }
+.waiting .hourglass { font-size: 44px; animation: tip 1.6s ease-in-out infinite; }
+@keyframes tip { 0%, 40% { transform: rotate(0); } 60%, 100% { transform: rotate(180deg); } }
+.waiting p { margin: 0; }
+.wait-left { font-family: var(--font-display); font-size: 20px; }
+.wait-left b { font-size: 40px; font-weight: 400; color: var(--leaf-dark); font-variant-numeric: tabular-nums; }
+.coin-rank { list-style: none; margin: 10px 0; padding: 0; display: grid; gap: 6px; }
+.coin-rank li { display: grid; grid-template-columns: 36px minmax(0, 1fr) 52px 70px; gap: 8px; align-items: center; padding: 6px 12px; border-radius: 12px; background: var(--panel); border: 2px solid var(--line); }
+.coin-rank li.me { border-color: var(--sun); background: #fffbeb; }
+.coin-rank li.miss { opacity: 0.7; }
+.coin-rank .cr-rank { font-size: 22px; text-align: center; }
+.coin-rank .cr-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.coin-rank .cr-name small { display: block; font-size: 12px; color: var(--ink-dim); }
+.coin-rank .cr-gain { font-family: var(--font-display); font-size: 18px; color: #b45309; text-align: right; }
+.coin-rank .cr-total { font-family: var(--font-display); font-size: 18px; text-align: right; font-variant-numeric: tabular-nums; }
+.coin-rank em, .coin-board em, .standings em { font-style: normal; font-size: 11px; color: var(--ink-dim); }
+.coin-board { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 4px; }
+.coin-board li { display: flex; justify-content: space-between; gap: 8px; padding: 4px 10px; border-radius: 10px; background: var(--panel); }
+.coin-board li.me { background: #fffbeb; outline: 2px solid var(--sun); }
+.coin-board b { font-family: var(--font-display); font-weight: 400; font-variant-numeric: tabular-nums; }
+.join-label { display: block; font-size: 13px; color: var(--ink-dim); margin-bottom: 4px; }
+.code-chip { display: inline-block; padding: 0 10px; border-radius: 10px; background: var(--sun); color: #3b2a00; letter-spacing: 0.08em; }
+.lobby-slots { list-style: none; margin: 12px 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.lobby-slots li { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 6px 10px; border-radius: 12px; background: var(--panel); border: 2px solid var(--line); min-width: 0; }
+.lobby-slots li b { font-weight: 400; font-family: var(--font-display); font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lobby-slots li.me { border-color: var(--leaf); background: #ecfccb; }
+.lobby-slots li.empty { border-style: dashed; background: none; color: var(--ink-dim); }
+.lobby-slots .slot-no { width: 22px; height: 22px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--line); font-size: 12px; }
+.lobby-slots .slot-ok { margin-left: auto; font-size: 11px; color: #fff; background: var(--leaf); border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+.lobby-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.lobby-choice .btn { min-height: 52px; }
+.lobby-start { width: 100%; margin-top: 10px; }
+.lobby-note { text-align: center; }
+.lab-clock { text-align: center; font-family: var(--font-display); font-size: 20px; padding: 6px; border-radius: 12px; background: var(--panel); }
+.lab-clock b { font-weight: 400; font-size: 26px; color: var(--leaf-dark); font-variant-numeric: tabular-nums; }
+.lab-clock.hurry { background: #fee2e2; } .lab-clock.hurry b { color: #b91c1c; }
+.garden-tag { position: absolute; top: 3px; left: 50%; transform: translateX(-50%); font-size: 13px; }
+.match-intro { text-align: center; display: grid; gap: 10px; justify-items: center; }
+.match-intro .chip { display: inline-block; margin: 2px; padding: 3px 12px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); }
+.standings { list-style: none; margin: 0; padding: 0; width: 100%; display: grid; gap: 6px; }
+.standings li { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 6px 12px; border-radius: 12px; background: var(--panel); border: 2px solid var(--line); text-align: left; }
+.standings li.me { border-color: var(--sun); background: #fffbeb; }
+.standings .medal { font-size: 24px; text-align: center; }
+.standings .st-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.standings .st-places { font-size: 13px; color: var(--ink-dim); white-space: nowrap; }
+.standings b { font-family: var(--font-display); font-weight: 400; font-size: 20px; }
+.final h3 { font-family: var(--font-display); font-weight: 400; color: var(--leaf-dark); }
+.final-next { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+/* 곤충 키우기 */
+.grow-box { display: grid; gap: 8px; border-top: 1px dashed var(--line); padding-top: 12px; }
+.grow-box h3 { font-family: var(--font-display); font-weight: 400; font-size: 20px; color: var(--leaf-dark); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.grow-box h3 small { font-size: 14px; color: var(--ink-dim); }
+.grow-q { font-family: var(--font-display); font-size: 20px; margin: 0; }
+.grow-box .q-subject { margin: 0; }
+.good-line { color: #15803d; font-family: var(--font-display); font-size: 18px; margin: 0; }
+.bad-line { color: #b91c1c; margin: 0; }
+.pick-cards { max-height: 52vh; overflow-y: auto; padding: 2px; }
+@media (max-width: 640px) {
+  .lobby-slots, .lobby-choice, .final-next { grid-template-columns: minmax(0, 1fr); }
+  .coin-rank li { grid-template-columns: 30px minmax(0, 1fr) 44px 60px; gap: 6px; padding: 6px 8px; }
+  .standings li { grid-template-columns: 30px minmax(0, 1fr) auto; }
+  .standings .st-places { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .waiting .hourglass { animation: none; } }
