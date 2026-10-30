@@ -79,7 +79,7 @@ function player(url, name, code, plan) {
       if (r.stage === 'coin') log.coinResults.push(me); else if (me.ok) log.collectOk++;
     });
     s.on('lab', () => { s.emit('lab:pick', { type: 'bee', lv: { spd: 2 }, tier: 0 }); s.emit('lab:ready'); });
-    s.on('battle:start', m => { id = m.id; log.battles++; log.n = m.ents.length; });
+    s.on('battle:start', m => { id = m.id; log.battles++; log.n = m.ents.length; (log.mine = log.mine || []).push(m.ents[m.me].type); });
     s.on('battle:state', () => { if (Math.random() < 0.4) s.emit('input', { id, k: 'tap' }); });
     s.on('match:end', d => { clearTimeout(timer); log.end = d; s.close(); resolve(log); });
     s.on('match:abort', d => { clearTimeout(timer); reject(new Error(d.msg)); });
@@ -92,8 +92,8 @@ async function serverMatch() {
     // 입장 코드 방: 2명이 모두 [지금 시작하기] → AI 없이 2명 경기
     const ready = (s, info) => { if (info.players.length === 2 && !info.players.every(p => p.ready)) s.emit('lobby:ready', { on: true }); };
     const [a, b] = await Promise.all([
-      player(url, '빠른학생', 'T1', { onLobby: ready, delay: 10, answer: () => 0, battles: 2 }),
-      player(url, '느린학생', 'T1', { onLobby: ready, delay: 120, answer: d => (d.i % 2 ? 1 : 0), battles: 2 }),
+      player(url, '빠른학생', 'T1', { onLobby: ready, delay: 10, answer: () => 0, battles: 3 }),
+      player(url, '느린학생', 'T1', { onLobby: ready, delay: 120, answer: d => (d.i % 2 ? 1 : 0), battles: 3 }),
     ]);
     assert.strictEqual(a.n, 2, '2명 경기');
     assert.strictEqual(a.collectOk, 7);
@@ -102,9 +102,12 @@ async function serverMatch() {
     assert(a.coinResults.every(r => r.coins === 10), '2명 경기 1등은 10코인');
     assert(b.coinResults.filter(r => r.ok).every(r => r.coins === 5), '2등은 5코인');
     assert(b.coinResults.filter(r => !r.ok).every(r => r.coins === 0), '틀리면 0코인');
-    assert.strictEqual(a.battles, 2);
+    assert.strictEqual(a.battles, 3);
+    // 매번 꿀벌을 골라도 3번째 대결에는 다른 곤충으로 나가요 (한 곤충은 2번까지)
+    assert.deepStrictEqual(a.mine.slice(0, 2), ['bee', 'bee']);
+    assert.notStrictEqual(a.mine[2], 'bee', '꿀벌은 2번까지만 출전');
     assert.strictEqual(a.end.standings.length, 2);
-    console.log('✓ 입장 코드 2명: 동시 퀴즈 · 순위 코인 · 연구소 · 대결 2번 · 최종 순위');
+    console.log('✓ 입장 코드 2명: 동시 퀴즈 · 순위 코인 · 연구소 · 대결 3번(곤충마다 2번까지) · 최종 순위');
   } finally { srv.kill(); }
 }
 async function serverAuto() {

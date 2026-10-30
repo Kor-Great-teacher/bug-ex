@@ -12,6 +12,8 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<!-- 1024×576(16:9) 판 하나를 화면에 맞춰 늘리거나 줄여요 -->
+<div id="stage">
 <div class="app">
   <header class="top">
     <div class="brand">
@@ -61,6 +63,7 @@
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <div id="modal" class="modal" hidden>
   <div id="dialog" class="dialog" role="dialog" aria-modal="true"></div>
+</div>
 </div>
 
 <!-- 실시간 대결 서버(Render)에서 열면 Socket.IO 가 읽혀요. 그냥 파일로 열면 '혼자 연습'만 돼요. -->

@@ -18,7 +18,7 @@
     subjects: { math: true, korean: true, science: true, social: true, english: true, custom: false },
     timeLimit: 20, mathLevel: 'auto',
     collectCount: 7, coinCount: 13, coinPerCorrect: 20,
-    battleCount: 3, matchWait: 30, labTime: 120, relabTime: 60,
+    battleCount: 6, matchWait: 30, labTime: 120, relabTime: 60,
     events: Object.fromEntries(EV.EVENT_IDS.map(id => [id, true])),
     custom: '',
   };
@@ -75,7 +75,7 @@
       // 곤충 키우기에서 키운 곤충은 기본 곤충으로 함께 출발해요
       bugs: garden.bugs.map(b => ({ ...clone(b), garden: true })),
       sel: garden.bugs.length ? garden.bugs[0].type : null, coins: 0, score: 0,
-      battleNo: 0, places: [0, 0, 0, 0], history: [], lastEvent: null, labReady: false, labDeadline: 0, coinBoard: null,
+      battleNo: 0, places: [0, 0, 0, 0], history: [], lastEvent: null, labReady: false, labDeadline: 0, coinBoard: null, uses: {},
     };
   }
   const bug = type => P.bugs.find(b => b.type === type);
@@ -83,11 +83,26 @@
   const battleCount = () => (P && P.match ? P.match.opts.battleCount : settings.battleCount);
   const together = () => !!(P && P.mode === 'together' && P.match);
   const BATTLE_COINS = [60, 40, 25, 15], BATTLE_SCORE = [300, 150, 50, 20];
-  // 퀴즈를 하나도 못 맞혀도 기본 곤충 1마리는 꼭 있어요
-  function ensureBug() {
-    if (P.bugs.length) return;
-    P.bugs.push({ type: 'ant', lv: D.zeroLv(), tier: 0 }); P.sel = 'ant';
-    toast('곤충을 못 잡았지만, 기본 곤충 개미가 친구가 되어 줬어요!', 'warn');
+  // 한 곤충은 대결에 2번까지 나갈 수 있어요
+  const USE_LIMIT = 2;
+  const usesOf = t => (P.uses && P.uses[t]) || 0;
+  const canEnter = t => P.mode === 'grow' || usesOf(t) < USE_LIMIT;
+  // 퀴즈를 하나도 못 맞혀도 기본 곤충은 꼭 있어요. 대결을 다 치를 만큼(6차전이면 3마리) 모자라면 기본 곤충을 채워 줘요.
+  function ensureBugs() {
+    const need = Math.max(1, Math.ceil(battleCount() / USE_LIMIT));
+    const basics = ['ant', 'ladybug', 'bee', 'grasshopper', 'cricket', 'butterfly'];
+    const given = [];
+    while (P.bugs.length < need) {
+      const t = basics.find(x => !bug(x)); if (!t) break;
+      P.bugs.push({ type: t, lv: D.zeroLv(), tier: 0 }); given.push(D.INSECTS[t].name);
+    }
+    if (!P.sel || !bug(P.sel)) P.sel = P.bugs[0].type;
+    if (given.length) toast(`대결에 나갈 곤충이 모자라 기본 곤충 ${given.join(' · ')}을(를) 받았어요!`, 'warn');
+  }
+  // 출전할 수 있는 곤충 중 가장 센 곤충
+  function bestEntrant() {
+    const ok = P.bugs.filter(b => canEnter(b.type)).sort((a, b) => D.powerOf(b.type, b.lv, b.tier) - D.powerOf(a.type, a.lv, a.tier));
+    return ok.length ? ok[0].type : P.bugs[0].type;
   }
 
   // ---------- 곤충 키우기 저장 (이 브라우저에 최대 3마리) ----------
@@ -142,7 +157,8 @@
   }
   const modalEl = $('#modal'), dialogEl = $('#dialog');
   let modalKind = null;
-  function showModal(html, kind = 'info') {
+  function showModal(html, kind = 'info', cls = '') {
+    dialogEl.className = `dialog ${cls}`;
     dialogEl.innerHTML = html; modalEl.hidden = false; modalKind = kind;
     const f = dialogEl.querySelector('[autofocus]') || dialogEl.querySelector('button');
     if (f) f.focus({ preventScroll: true });
@@ -214,9 +230,9 @@
           <p class="q-subject">${esc(subjectOf(q))}</p>
           <h2 class="q-text">${esc(q.q)}</h2>
           ${questionHTML(q)}
-          <div id="feedback"></div>
         </section>
         <aside class="panel">
+          <div id="feedback"></div>
           <h2>${collect ? '채집한 곤충' : together() ? '코인 순위' : '내 곤충'}</h2>
           <p class="hint">${collect ? '정답을 맞히면 곤충을 잡을 수 있어요! 같은 곤충을 또 잡으면 능력치가 1 올라가요.' : coinRule}</p>
           ${!collect && together() ? coinBoardHTML() : ''}
@@ -290,14 +306,13 @@
     $('#feedback').innerHTML = html;
     $('#nextQ').addEventListener('click', advance);
     $('#nextQ').focus({ preventScroll: true });
-    $('#feedback').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     updateHud();
   }
   function advance() {
     P.qIndex++;
     if (P.qIndex < P.qTotal) return nextQuestion();
     if (P.stage === 'collect') {
-      ensureBug();
+      ensureBugs();
       startQuizStage('coin');
       toast('이제 코인 퀴즈! 빨리 맞힐수록 코인이 많아요.', 'good');
     } else goLab();
@@ -346,7 +361,6 @@
       $('#feedback').innerHTML = me.ok ? catchHTML(expl, nextNote)
         : `<div class="feedback bad"><h3>${me.answered ? '아쉬워요!' : '시간이 다 됐어요'} 곤충이 도망갔어요 💨</h3><p>정답: <b>${esc(r.answerText)}</b></p>${expl}${nextNote}</div>`;
       if (!me.ok) SND('escape');
-      $('#feedback').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } else {
       P.coins += me.coins; P.coinBoard = r.results;
       SND(me.ok ? 'coin' : 'wrong');
@@ -369,7 +383,7 @@
   function onStage(d) {
     if (!together()) return;
     if (d.stage === 'coin') {
-      ensureBug();
+      ensureBugs();
       if (modalKind === 'wait') hideModal();
       toast('코인 퀴즈 시작! 빨리 맞힐수록 코인이 많아요.', 'good');
     }
@@ -381,7 +395,8 @@
   let labTimer = 0;
   function goLab() {
     P.stage = 'lab';
-    ensureBug();
+    ensureBugs();
+    if (!canEnter(P.sel)) P.sel = bestEntrant();
     showScreen('lab');
     renderLab();
     updateHud();
@@ -398,7 +413,7 @@
   // 함께 하기: 고른 곤충은 바뀔 때마다 서버에 알려요 (시간이 끝나면 이 곤충으로 자동 출전)
   function sendPick() {
     if (!together() || P.stage !== 'lab') return;
-    const b = bug(P.sel); if (!b) return;
+    const b = bug(P.sel); if (!b || !canEnter(b.type)) return;
     Net.socket.emit('lab:pick', { type: b.type, lv: b.lv, tier: b.tier });
   }
   function renderLab() {
@@ -424,33 +439,52 @@
         </div>`;
     const enabled = EV.EVENT_IDS.filter(id => settings.events[id] !== false);
     const evList = EV.EVENT_IDS.map(id => { const e = EV.EVENTS[id]; return `<li class="${enabled.includes(id) ? '' : 'off'}">${e.icon} ${esc(e.name)}<small>${e.stats.map(k => D.STATS.find(s => s.k === k).name).join('·')}</small></li>`; }).join('');
+    const listScroll = $('#scLab .bug-cards') ? $('#scLab .bug-cards').scrollLeft : 0;
+    const pageScroll = $('#scLab .hscroll') ? $('#scLab .hscroll').scrollLeft : 0;
+    const grow = P.mode === 'grow';
     $('#scLab').innerHTML = `
-      <div class="lab">
-        <section class="panel lab-list">
-          <h2>내 곤충 ${P.bugs.length}마리</h2>
-          <div class="bug-cards">${P.bugs.map(x => {
-            const i = D.INSECTS[x.type], tk = tierKey(x), can = D.promoInfo(x.type, x.lv, x.tier).ok;
-            return `<button type="button" class="bug-card r-${tk} ${x.type === P.sel ? 'on' : ''}" data-sel="${x.type}"><span class="rar ${tk}">${D.RARITY[tk].name}</span>${x.garden ? '<span class="garden-tag" title="곤충 키우기에서 키운 곤충">🌱</span>' : ''}${can ? '<span class="promo-dot" title="등급업 가능">⬆</span>' : ''}<img src="${pic(x.type, 80, x.type === P.sel ? 'happy' : undefined, x.tier)}" alt=""><span>${esc(i.name)}</span><small>능력 ${D.powerOf(x.type, x.lv, x.tier)} · 업 ${D.totalLv(x.lv)}</small></button>`;
-          }).join('')}</div>
-        </section>
-        <section class="panel lab-detail">
-          <div class="detail-top ${tierKey(b)}">
-            <img src="${pic(b.type, 150, 'happy', b.tier)}" alt="">
-            <div><h2>${esc(ins.name)} <span class="rar ${tierKey(b)}">${tierName(b)}</span></h2><p class="fact">${esc(ins.fact)}</p><p class="hint">능력치 합 <b>${D.powerOf(b.type, b.lv, b.tier)}</b> · 등급 보너스 +${tb} · 업그레이드 한계 ${cap}단계</p></div>
-          </div>
-          <div class="stat-rows">${rows}</div>
-          ${promo}
-          <p class="hint">업그레이드 값: 12 → 18 → 24 … (단계마다 +6). 막대의 진한 칸은 기본, 등급 색 칸은 등급 보너스, 빗금 칸은 업그레이드, 세로선은 이 등급의 한계예요.</p>
-          ${goBoxHTML(ins)}
-        </section>
-        <aside class="panel lab-side">
-          ${together() ? `<h2>함께 하는 친구</h2><ul class="members" id="members">${membersHTML()}</ul>` : ''}
-          <h2>등급표</h2>
-          <table class="tier-table"><thead><tr><th>등급</th><th>보너스</th><th>한계</th><th>등급업</th></tr></thead><tbody>${D.TIERS.map((t, i) => `<tr class="${i === b.tier ? 'on' : ''}"><td><span class="rar ${t}">${D.RARITY[t].name}</span></td><td>+${D.TIER_BONUS[i]}</td><td>${D.TIER_CAP[i]}</td><td>${i < 3 ? `업 ${D.PROMO_REQ[i]} · <i class="coin"></i>${D.PROMO_COST[i]}` : '-'}</td></tr>`).join('')}</tbody></table>
-          <h2>대결 종목 (무작위)</h2>
-          <ul class="ev-list">${evList}</ul>
-        </aside>
+      <div class="hscroll lab">
+        <div class="page lab-main">
+          <section class="panel lab-list">
+            <h2>내 곤충 ${P.bugs.length}마리 ${grow ? '' : '<small>곤충마다 2번까지 출전</small>'}</h2>
+            <div class="bug-cards">${P.bugs.map(x => {
+              const i = D.INSECTS[x.type], tk = tierKey(x), can = D.promoInfo(x.type, x.lv, x.tier).ok, u = usesOf(x.type);
+              return `<button type="button" class="bug-card r-${tk} ${x.type === P.sel ? 'on' : ''} ${canEnter(x.type) ? '' : 'spent'}" data-sel="${x.type}"><span class="rar ${tk}">${D.RARITY[tk].name}</span>${grow ? '' : `<span class="uses">${u >= USE_LIMIT ? '출전 끝' : `출전 ${u}/${USE_LIMIT}`}</span>`}${x.garden ? '<span class="garden-tag" title="곤충 키우기에서 키운 곤충">🌱</span>' : ''}${can ? '<span class="promo-dot" title="등급업 가능">⬆</span>' : ''}<img src="${pic(x.type, 80, x.type === P.sel ? 'happy' : undefined, x.tier)}" alt=""><span>${esc(i.name)}</span><small>능력 ${D.powerOf(x.type, x.lv, x.tier)} · 업 ${D.totalLv(x.lv)}</small></button>`;
+            }).join('')}</div>
+          </section>
+          <section class="panel lab-detail">
+            <div class="detail-top ${tierKey(b)}">
+              <img src="${pic(b.type, 150, 'happy', b.tier)}" alt="">
+              <div><h2>${esc(ins.name)} <span class="rar ${tierKey(b)}">${tierName(b)}</span></h2><p class="fact">${esc(ins.fact)}</p><p class="hint">능력치 합 <b>${D.powerOf(b.type, b.lv, b.tier)}</b> · 등급 보너스 +${tb} · 업그레이드 한계 ${cap}단계</p></div>
+            </div>
+            <div class="stat-rows">${rows}</div>
+            <p class="hint">업그레이드 값 12 → 18 → 24 … · 진한 칸 기본 · 등급 색 칸 등급 보너스 · 빗금 업그레이드 · 세로선 등급 한계</p>
+          </section>
+          <section class="panel lab-act">
+            ${promo}
+            ${goBoxHTML(ins)}
+            <button type="button" class="btn page-btn" data-goto-page="1">${together() ? '친구 · ' : ''}등급표 · 종목 보기 ▶</button>
+          </section>
+        </div>
+        <div class="page lab-info">
+          <section class="panel">
+            ${together() ? `<h2>함께 하는 친구</h2><ul class="members" id="members">${membersHTML()}</ul>` : ''}
+            <h2>등급표</h2>
+            <table class="tier-table"><thead><tr><th>등급</th><th>보너스</th><th>한계</th><th>등급업</th></tr></thead><tbody>${D.TIERS.map((t, i) => `<tr class="${i === b.tier ? 'on' : ''}"><td><span class="rar ${t}">${D.RARITY[t].name}</span></td><td>+${D.TIER_BONUS[i]}</td><td>${D.TIER_CAP[i]}</td><td>${i < 3 ? `업 ${D.PROMO_REQ[i]} · <i class="coin"></i>${D.PROMO_COST[i]}` : '-'}</td></tr>`).join('')}</tbody></table>
+          </section>
+          <section class="panel">
+            <h2>대결 종목 (무작위)</h2>
+            <ul class="ev-list">${evList}</ul>
+          </section>
+          <section class="panel">
+            <h2>출전 규칙</h2>
+            <p class="hint">대결은 ${battleCount()}차전까지 있어요. 한 곤충은 <b>2번까지</b> 출전할 수 있어서, 여러 곤충을 골고루 키워야 해요. 출전할 곤충이 모자라면 기본 곤충을 받아요.</p>
+            <p class="hint">대결 코인: 1등 60 · 2등 40 · 3등 25 · 4등 15</p>
+            <button type="button" class="btn page-btn" data-goto-page="0">◀ 연구소로 돌아가기</button>
+          </section>
+        </div>
       </div>`;
+    { const bc = $('#scLab .bug-cards'); if (bc) bc.scrollLeft = listScroll; const hs = $('#scLab .hscroll'); if (hs) { hs.style.scrollBehavior = 'auto'; hs.scrollLeft = pageScroll; hs.style.scrollBehavior = ''; } }
     document.querySelectorAll('[data-sel]').forEach(el => el.addEventListener('click', () => { P.sel = el.dataset.sel; SND('select'); renderLab(); }));
     document.querySelectorAll('[data-up]').forEach(el => el.addEventListener('click', () => upgrade(el.dataset.up)));
     const pb = $('#promote'); if (pb) pb.addEventListener('click', promote);
@@ -464,15 +498,17 @@
     if (P.mode === 'grow') return `<div class="grow-box" id="growBox"></div>`;
     if (together()) {
       const n = P.battleNo + 1;
+      const spent = !canEnter(P.sel);
       return `<div class="go-box">
-        <div class="lab-clock">⏱ 연구소 시간 <b id="labLeft">-:--</b> 남음</div>
-        <button type="button" class="btn primary big" id="labReady" ${P.labReady ? 'disabled' : ''}>${P.labReady ? `✅ ${esc(ins.name)} 출전 준비 완료! 친구들을 기다려요` : `✅ ${esc(ins.name)}(으)로 ${n}차전 준비 완료`}</button>
-        <p class="hint">시간이 끝나면 지금 고른 곤충으로 자동 출전해요. 모두 준비를 마치면 바로 시작해요. 종목은 무작위!</p>
+        <div class="lab-clock">⏱ 연구소 <b id="labLeft">-:--</b> 남음</div>
+        <button type="button" class="btn primary big" id="labReady" ${P.labReady || spent ? 'disabled' : ''}>${spent ? `${esc(ins.name)}은(는) 출전을 2번 마쳤어요` : P.labReady ? `✅ ${esc(ins.name)} 준비 완료! 친구들을 기다려요` : `✅ ${esc(ins.name)}(으)로 ${n}차전 준비 완료`}</button>
+        <p class="hint">시간이 끝나면 고른 곤충으로 자동 출전해요. 모두 준비하면 바로 시작!</p>
       </div>`;
     }
+    const spent = !canEnter(P.sel);
     return `<div class="go-box">
-      <button type="button" class="btn primary big" id="goBattle">⚔️ ${esc(ins.name)}(으)로 대결 나가기 (${P.battleNo + 1}/${settings.battleCount})</button>
-      <p class="hint">AI 곤충 2마리와 겨뤄요. 종목은 무작위!</p>
+      <button type="button" class="btn primary big" id="goBattle" ${spent ? 'disabled' : ''}>${spent ? `${esc(ins.name)}은(는) 출전을 2번 마쳤어요` : `⚔️ ${esc(ins.name)}(으)로 ${P.battleNo + 1}차전 나가기`}</button>
+      <p class="hint">AI 곤충 2마리와 겨뤄요 (${P.battleNo + 1}/${settings.battleCount}차전). 종목은 무작위!</p>
     </div>`;
   }
   function upgrade(k) {
@@ -664,6 +700,7 @@
   // ---------- 혼자 연습: 대결 ----------
   function requestBattle() {
     A.init();
+    if (!canEnter(P.sel)) { SND('deny'); return toast('이 곤충은 출전을 2번 마쳤어요. 다른 곤충을 골라요.', 'warn'); }
     startLocalBattle();
   }
   function startLocalBattle(forceEvent) {
@@ -684,6 +721,8 @@
   const BTN_LABEL = { sprint: '달려! 👟', sumo: '돌진! 💥', highjump: '점프! ⬆️', dung: '굴려! 🟤', nectar: '슝~ 빨리! 💨', tug: '영차! 💪', climb: '올라가! 🧗', hurdles: '점프! 🦘' };
   function beginBattle(mode, meta, localBattle) {
     P.stage = 'battle'; P.lastEvent = meta.ev;
+    const mt = meta.ents[meta.me] && meta.ents[meta.me].type;
+    if (mt) P.uses[mt] = usesOf(mt) + 1;
     BT = { mode, meta, me: meta.me, b: localBattle || null, prev: null, cur: null, curAt: 0, ended: false, lastCount: null, lastT: -99, prevMine: null };
     const ev = EV.EVENTS[meta.ev];
     $('#battleHead').innerHTML = `<h2>${ev.icon} ${esc(ev.name)}</h2><p>${esc(ev.desc)}</p>
@@ -835,29 +874,45 @@
     const table = standings ? `
       <h3>함께 한 친구들 종합 순위</h3>
       <ol class="standings">${standings.map((x, i) => `<li class="${P.match && x.pid === P.match.you ? 'me' : ''}"><span class="medal">${medals[i] || i + 1}</span><span class="st-name">${esc(x.nick)}${x.bot ? ' <em>AI</em>' : ''}</span><span class="st-places">${x.places.slice(0, standings.length).map((n, k) => `${medals[k]}${n}`).join(' ')}</span><b>${x.pts}점</b></li>`).join('')}</ol>
-      <p class="hint">대결 점수: 1등 ${standings.length}점 … 꼴등 1점 (3번 합계)</p>` : '';
+      <p class="hint">대결 점수: 1등 ${standings.length}점 … 꼴등 1점 (${battleCount()}번 합계)</p>` : '';
     $('#scFinal').innerHTML = `
-      <section class="panel final">
-        <h2>오늘의 곤충 리그 결과</h2>
-        ${table}
-        <p class="hint">${esc(GameKit.state.nickname)} 선수의 점수</p>
-        <p class="big-num">${P.score.toLocaleString()}</p>
-        <dl class="final-stats">
-          <div><dt>퀴즈 정답</dt><dd>${P.correct} / ${P.total}</dd></div>
-          <div><dt>모은 곤충</dt><dd>${P.bugs.length}마리${legends || heroes ? ` (${[legends ? `전설 ${legends}` : '', heroes ? `영웅 ${heroes}` : ''].filter(Boolean).join(' · ')})` : ''}</dd></div>
-          <div><dt>대결 성적</dt><dd>🥇${P.places[0]} 🥈${P.places[1]} 🥉${P.places[2]}${P.places[3] ? ` 4️⃣${P.places[3]}` : ''}</dd></div>
-          <div><dt>남은 코인</dt><dd><i class="coin"></i>${P.coins}</dd></div>
-        </dl>
-        <div class="mini-bugs">${P.bugs.map(b => `<img src="${pic(b.type, 64, 'happy', b.tier)}" alt="${esc(D.INSECTS[b.type].name)}" title="${esc(D.INSECTS[b.type].name)}">`).join('')}</div>
-        <p class="hint" data-gk-submit-status>${esc(GameKit.submitStatusText())}</p>
-        ${GameKit.rankingButtonsHTML()}
-        ${P.wrong.length ? `<details class="review"><summary>틀린 문제 다시 보기 (${P.wrong.length})</summary><ol>${P.wrong.map(w => `<li>[${esc(w.subject)}] ${esc(w.q)}<br><span class="ans">정답: ${esc(w.a)}</span></li>`).join('')}</ol></details>` : '<p>틀린 문제가 하나도 없어요! 👏</p>'}
-        <div class="final-next">
-          <button type="button" class="btn big" id="again">🔄 처음부터 다시 시작</button>
-          <button type="button" class="btn primary big" id="toGrow">🌱 곤충 키우기</button>
+      <div class="hscroll final-wrap">
+        <div class="page">
+          <section class="panel final">
+            <div class="final-top">
+              <h2>오늘의 곤충 리그 결과</h2>
+              <button type="button" class="btn big" id="again">🔄 처음부터 다시 시작</button>
+              <button type="button" class="btn primary big" id="toGrow">🌱 곤충 키우기</button>
+            </div>
+            <div class="final-body">
+              <div>
+                ${standings ? table : `<h3>대결 성적</h3><p class="hint">혼자 연습 · AI 곤충과 ${P.history.length}번 겨뤘어요.</p>`}
+                <div class="mini-bugs">${P.bugs.map(b => `<img src="${pic(b.type, 64, 'happy', b.tier)}" alt="${esc(D.INSECTS[b.type].name)}" title="${esc(D.INSECTS[b.type].name)}">`).join('')}</div>
+                <p class="hint">곤충 키우기: 3마리를 골라 퀴즈로 계속 키워요. 키운 곤충은 다음 게임에서 기본 곤충으로 함께 출발해요.</p>
+              </div>
+              <div>
+                <div class="final-score"><p class="big-num">${P.score.toLocaleString()}</p><span class="hint">${esc(GameKit.state.nickname)} 선수의 점수</span></div>
+                <dl class="final-stats">
+                  <div><dt>퀴즈 정답</dt><dd>${P.correct} / ${P.total}</dd></div>
+                  <div><dt>모은 곤충</dt><dd>${P.bugs.length}마리${legends || heroes ? ` (${[legends ? `전설 ${legends}` : '', heroes ? `영웅 ${heroes}` : ''].filter(Boolean).join(' · ')})` : ''}</dd></div>
+                  <div><dt>대결 성적</dt><dd>🥇${P.places[0]} 🥈${P.places[1]} 🥉${P.places[2]}${P.places[3] ? ` 4️⃣${P.places[3]}` : ''}</dd></div>
+                  <div><dt>남은 코인</dt><dd><i class="coin"></i>${P.coins}</dd></div>
+                </dl>
+                ${P.wrong.length ? `<button type="button" class="btn page-btn" data-goto-page="1">틀린 문제 다시 보기 (${P.wrong.length}) ▶</button>` : '<p class="hint">틀린 문제가 하나도 없어요! 👏</p>'}
+              </div>
+            </div>
+            <div class="final-rank">
+              <p class="hint" data-gk-submit-status>${esc(GameKit.submitStatusText()) || '명예의 전당 기록'}</p>
+              ${GameKit.rankingButtonsHTML()}
+            </div>
+          </section>
         </div>
-        <p class="hint">곤충 키우기: 3마리를 골라 퀴즈로 계속 키워요. 키운 곤충은 다음 게임에서 기본 곤충으로 함께 출발해요.</p>
-      </section>`;
+        ${P.wrong.length ? `<div class="page review-page"><section class="panel review-page" style="width:100%">
+          <h2>틀린 문제 다시 보기 (${P.wrong.length})</h2>
+          <div class="hcols"><ol>${P.wrong.map(w => `<li>[${esc(w.subject)}] ${esc(w.q)}<br><span class="ans">정답: ${esc(w.a)}</span></li>`).join('')}</ol></div>
+          <button type="button" class="btn page-btn" data-goto-page="0">◀ 결과로 돌아가기</button>
+        </section></div>` : ''}
+      </div>`;
     $('#again').addEventListener('click', () => { P = null; showStart(); });
     $('#toGrow').addEventListener('click', () => chooseGarden(P.bugs));
     if (P.match) P.match = null;
@@ -959,6 +1014,7 @@
   }
   function startFromKit(kit) {
     A.init();
+    lockLandscape();
     settings.difficulty = kit.difficulty; saveSettings();
     newPlayer(kit);
     Q.reset();
@@ -971,11 +1027,13 @@
     showModal(`
       <div class="help">
         <h2>게임 방법</h2>
+        <div class="hcols">
+        <h3>진행 순서</h3>
         <ol>
           <li><b>곤충 채집</b> — 퀴즈 ${collectCount()}문제. 맞히면 곤충을 잡아요 (일반 55% · 희귀 28% · 영웅 12% · 전설 5%). 같은 곤충을 또 잡으면 능력치 +1. 하나도 못 맞혀도 기본 곤충 1마리는 받아요.</li>
           <li><b>코인 퀴즈</b> — 퀴즈 ${settings.coinCount}문제. 빨리 맞힐수록 코인이 많아요 (4명: 1등 20 · 15 · 10 · 4등 5, 2명: 10 · 5, 틀리면 0).</li>
           <li><b>곤충 연구소</b> — 코인으로 속도·힘·균형·점프·체력을 올려요. 업그레이드 합계가 기준을 넘으면 코인을 내고 <b>등급업</b>(일반 → 희귀 → 영웅 → 전설)! 등급마다 모든 능력치 +2, 업그레이드 한계도 늘어나요.</li>
-          <li><b>곤충 대결</b> — 무작위 종목으로 겨뤄요 (${settings.battleCount}번). 1등 코인 60 · 2등 40 · 3등 25 · 4등 15. 대결 사이에 연구소에서 재정비해요.</li>
+          <li><b>곤충 대결</b> — 무작위 종목으로 ${settings.battleCount}차전까지 겨뤄요. <b>한 곤충은 2번까지</b> 출전할 수 있어요. 1등 코인 60 · 2등 40 · 3등 25 · 4등 15. 대결 사이에 연구소에서 재정비해요.</li>
           <li><b>곤충 키우기</b> — 다 끝나면 3마리를 골라 퀴즈로 계속 키울 수 있어요. 키운 곤충은 다음 게임에서 기본 곤충으로 함께 출발해요.</li>
         </ol>
         <h3>대결 종목 10가지</h3>
@@ -989,8 +1047,9 @@
         </ul>
         <h3>점수</h3>
         <p class="hint">정답 100점 · 새 곤충 일반 50 / 희귀 100 / 영웅 150 / 전설 250 · 업그레이드 10 · 등급업 50~125 · 대결 1등 300 / 2등 150 / 3등 50 / 4등 20</p>
+        </div>
         <div class="row"><button type="button" class="btn primary" id="helpClose">알겠어요!</button></div>
-      </div>`, 'help');
+      </div>`, 'help', 'wide');
     $('#helpClose').addEventListener('click', () => { hideModal(); if (fromStart) showStart(); });
   }
 
@@ -1063,7 +1122,7 @@
         </section>
 
         ${adminUnlocked ? `
-        <section class="set-page" data-page="admin" hidden>
+        <section class="set-page hcols" data-page="admin" hidden>
           <p class="hint">게임 관리자·교사용 설정이에요. <b>저장</b>은 이 브라우저에만 적용돼요. 모든 학생에게 적용하려면 맨 아래 <b>전역 설정</b>을 쓰세요. 실시간 대결의 <b>종목·기다리는 시간·AI 세기</b>는 서버가 전역 설정(config.json)을 따라요.</p>
           <p class="ti-status ${globalConfig ? 'ok' : ''}">${globalConfig ? '전역 설정(config.json)을 불러왔어요. 모든 학생에게 같은 값이 적용돼요.' : '전역 설정(config.json)을 읽지 못해 기본값을 쓰고 있어요. 서버(Render) 주소로 열었을 때 읽혀요.'}</p>
           ${local.admin ? '<p class="ti-status bad">이 브라우저에는 관리자 설정이 따로 저장돼 있어서 전역 설정보다 먼저 적용돼요. <button type="button" class="btn" id="admReset">지우고 전역 설정 따르기</button></p>' : ''}
@@ -1072,7 +1131,7 @@
             <label>곤충 채집 문제 수<input type="number" id="admCollect" min="1" max="50" value="${goalNow}"></label>
             <label>코인 퀴즈 문제 수<input type="number" id="admCoinCount" min="1" max="50" value="${settings.coinCount}"></label>
             <label>곤충 키우기 정답 코인<input type="number" id="admCoinPer" min="1" max="200" value="${settings.coinPerCorrect}"></label>
-            <label>대결 횟수<input type="number" id="admBattles" min="1" max="5" value="${settings.battleCount}"></label>
+            <label>대결 횟수 (곤충마다 2번까지 출전)<input type="number" id="admBattles" min="1" max="10" value="${settings.battleCount}"></label>
             <label>함께 하기: AI와 자동 대결까지 기다리는 시간<select id="admWait">${opt([10, 15, 20, 30, 45, 60], settings.matchWait, v => `${v}초`)}</select></label>
             <label>함께 하기: 첫 연구소 시간<select id="admLab">${opt([60, 90, 120, 180, 240], settings.labTime, v => `${v / 60}분`)}</select></label>
             <label>함께 하기: 대결 사이 재정비 시간<select id="admRelab">${opt([30, 45, 60, 90, 120], settings.relabTime, v => `${v}초`)}</select></label>
@@ -1127,7 +1186,7 @@
           <button type="button" class="btn" id="setCancel">취소</button>
         </div>
         <p class="credit" id="credit">${esc(CREDIT)}</p>
-      </form>`, 'settings');
+      </form>`, 'settings', adminUnlocked ? 'wide' : '');
 
     const show = name => {
       if (name === 'admin' && !adminUnlocked) name = 'general';
@@ -1181,7 +1240,7 @@
         difficulty: $('#admDiff').value, subjects,
         timeLimit: Number($('#setLimit').value), mathLevel: $('#setMath').value,
         collectCount: int('#admCollect', 1, 50, 7), coinCount: int('#admCoinCount', 1, 30, 13), coinPerCorrect: int('#admCoinPer', 1, 200, 20),
-        battleCount: int('#admBattles', 1, 5, 3), matchWait: Number($('#admWait').value),
+        battleCount: int('#admBattles', 1, 10, 6), matchWait: Number($('#admWait').value),
         labTime: Number($('#admLab').value), relabTime: Number($('#admRelab').value),
         events, custom: $('#setCustom').value,
       };
@@ -1303,6 +1362,45 @@
     if (e.code === 'Space' || e.key === 'Enter') { if (ctl === 'hold') sendInput('hold', 0); document.querySelectorAll('#controls .ctl').forEach(b => b.classList.remove('press')); }
     if (ctl === 'lr' && ['ArrowLeft', 'ArrowRight', 'a', 'd'].includes(e.key)) { sendInput('dir', 0); document.querySelectorAll('#controls .ctl').forEach(b => b.classList.remove('press')); }
   });
+
+  // ---------- 16:9 판 맞추기 ----------
+  // 1024×576 판을 화면에 꽉 차게 늘리거나 줄여요. 세로로 든 터치 기기는 판을 90도 돌려 가로로 보여 줘요.
+  const STAGE_W = 1024, STAGE_H = 576;
+  const touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  function fitStage() {
+    const st = document.getElementById('stage'); if (!st) return;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const rotate = touch && vh > vw;
+    const k = rotate ? Math.min(vw / STAGE_H, vh / STAGE_W) : Math.min(vw / STAGE_W, vh / STAGE_H);
+    st.style.transform = `translate(-50%, -50%)${rotate ? ' rotate(90deg)' : ''} scale(${k})`;
+    st.classList.toggle('rotated', rotate);
+  }
+  window.addEventListener('resize', fitStage);
+  window.addEventListener('orientationchange', () => setTimeout(fitStage, 200));
+  fitStage();
+  // 휴대폰 · 태블릿: 게임을 시작할 때 전체 화면 + 가로 고정을 해 봐요 (안 되는 브라우저는 판을 돌려서 보여 줘요)
+  async function lockLandscape() {
+    if (!touch) return;
+    try { if (!document.fullscreenElement && document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen({ navigationUI: 'hide' }); } catch (e) { /* 무시 */ }
+    try { if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape'); } catch (e) { /* 무시 */ }
+    setTimeout(fitStage, 300);
+  }
+  // 좌우 쪽 넘기기: [다음 쪽] 버튼 · 마우스 휠을 좌우로
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('[data-goto-page]'); if (!b) return;
+    const hs = b.closest('.hscroll'); if (!hs) return;
+    hs.scrollTo({ left: hs.clientWidth * Number(b.dataset.gotoPage), behavior: 'smooth' });
+  });
+  document.addEventListener('wheel', e => {
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+    let el = e.target;
+    while (el && el !== document.body) {
+      if (el.scrollWidth > el.clientWidth + 2 && /(auto|scroll)/.test(getComputedStyle(el).overflowX)) {
+        el.scrollLeft += e.deltaY; e.preventDefault(); return;
+      }
+      el = el.parentElement;
+    }
+  }, { passive: false });
 
   // ---------- 반복 그리기 ----------
   let lastNow = performance.now();

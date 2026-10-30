@@ -96,11 +96,3 @@
 .gk-pulse { animation: gk-pulse 1.2s ease-in-out infinite; }
 @keyframes gk-pulse { 50% { opacity: 0.45; } }
 @media (prefers-reduced-motion: reduce) { .gk-pulse { animation: none; } }
-@media (max-width: 420px) {
-  .gk-card { padding: 20px 14px 16px; }
-  .gk-title { font-size: 30px; }
-  .gk-seg button { font-size: 12.5px; padding: 7px 2px; }
-  .gk-row { gap: 6px; }
-  .gk-row > span { width: 38px; font-size: 12px; }
-  .gk-rank-btns .gk-btn { font-size: 13px; padding: 9px 6px; }
-}

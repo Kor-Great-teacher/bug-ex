@@ -15,7 +15,7 @@
     "collectCount": 7,
     "coinCount": 13,
     "coinPerCorrect": 20,
-    "battleCount": 3,
+    "battleCount": 6,
     "matchWait": 30,
     "labTime": 120,
     "relabTime": 60,

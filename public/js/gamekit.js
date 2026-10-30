@@ -317,7 +317,7 @@ window.GameKit = (() => {
     if (root) return root;
     root = document.createElement('div');
     root.className = 'gk-root';
-    document.body.appendChild(root);
+    (document.getElementById('stage') || document.body).appendChild(root); // 게임 판이 있으면 그 안에 (함께 늘고 줄어요)
     return root;
   }
   function overlay(cls) {

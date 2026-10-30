@@ -21,6 +21,7 @@ const REVEAL_MS = { collect: FAST ? 100 : 3500, coin: FAST ? 100 : 2500 }; // �
 const STAGE_GAP_MS = FAST ? 100 : 2500;         // 채집 → 코인 퀴즈 넘어가기 전 안내
 const RESULT_MS = FAST ? 200 : 6000;            // 대결 결과 보여 주는 시간
 const BATTLE_COINS = [60, 40, 25, 15];          // 대결 등수별 코인
+const USE_LIMIT = 2;                            // 한 곤충이 나갈 수 있는 대결 수
 const CONFIG_FILE = path.join(__dirname, 'config.json');
 
 // ---------- 전역 설정 (config.json) ----------
@@ -97,7 +98,7 @@ function joinLobby(socket, msg) {
     M = null;
   }
   if (!M) M = newMatch(code);
-  const p = { pid: socket.id, sid: socket.id, nick: cleanNick(msg.nickname), bot: false, ready: false, gone: false, pts: 0, quizCoins: 0, places: [0, 0, 0, 0] };
+  const p = { pid: socket.id, sid: socket.id, nick: cleanNick(msg.nickname), bot: false, ready: false, gone: false, pts: 0, quizCoins: 0, places: [0, 0, 0, 0], uses: {} };
   M.players.push(p);
   socket.join(`m:${M.id}`);
   socket.data.match = M.id;
@@ -141,7 +142,7 @@ function startMatch(M, fillAi) {
   M.opts = {
     timeLimit: o.timeLimit > 0 ? clampNum(o.timeLimit, 10, 60, 20) : 30,
     collectCount: clampNum(o.collectCount, 1, 20, 7), coinCount: clampNum(o.coinCount, 1, 30, 13),
-    labTime: clampNum(o.labTime, 20, 300, 120), relabTime: clampNum(o.relabTime, 15, 180, 60), battleCount: clampNum(o.battleCount, 1, 5, 3),
+    labTime: clampNum(o.labTime, 20, 300, 120), relabTime: clampNum(o.relabTime, 15, 180, 60), battleCount: clampNum(o.battleCount, 1, 10, 6),
   };
   M.host = host.pid;
   const info = { players: M.players.map(p => ({ pid: p.pid, nick: p.nick, bot: p.bot })), opts: M.opts, code: M.code, mode: M.mode };
@@ -239,7 +240,15 @@ function startLab(M) {
 function setPick(socket, msg) {
   const M = matches.get(socket.data.match); if (!M) return;
   const p = M.players.find(x => x.sid === socket.id); if (!p) return;
-  p.pick = Data.cleanEntry(msg.type, msg.lv, msg.tier);
+  const pick = Data.cleanEntry(msg.type, msg.lv, msg.tier);
+  if ((p.uses[pick.type] || 0) >= USE_LIMIT) return; // 한 곤충은 2번까지만 출전
+  p.pick = pick;
+}
+// 고른 곤충이 없거나 이미 2번 나갔으면 아직 출전하지 않은 기본 곤충으로 나가요
+function entryOf(p) {
+  if (p.pick && (p.uses[p.pick.type] || 0) < USE_LIMIT) return p.pick;
+  const type = Data.LIST.filter(i => i.rarity === 'common').map(i => i.id).find(t => (p.uses[t] || 0) < USE_LIMIT) || 'ant';
+  return { type, lv: Data.zeroLv(), tier: 0 };
 }
 function labReady(socket) {
   const M = matches.get(socket.data.match); if (!M || M.phase !== 'lab') return;
@@ -253,10 +262,12 @@ function labReady(socket) {
 function startBattle(M) {
   if (M.phase !== 'lab') return;
   M.phase = 'battle';
-  const humanPicks = M.players.filter(p => !p.bot).map(p => p.pick || { type: 'ant', lv: Data.zeroLv(), tier: 0 });
+  const humanPicks = M.players.filter(p => !p.bot).map(entryOf);
   const entrants = M.players.map(p => {
     if (p.bot) { const b = Data.makeBots(1, humanPicks, M.cfg.difficulty)[0]; return { ...b, name: p.nick, skill: p.skill }; }
-    const pk = p.pick || { type: 'ant', lv: Data.zeroLv(), tier: 0 };
+    const pk = entryOf(p);
+    p.uses[pk.type] = (p.uses[pk.type] || 0) + 1;
+    p.pick = null;
     return { name: p.nick, type: pk.type, lv: pk.lv, tier: pk.tier, bot: p.gone, skill: 0.5 };
   });
   const eventId = Events.pickEvent(M.cfg.events, M.lastEvent);
