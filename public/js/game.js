@@ -1002,12 +1002,16 @@
   function showStart() {
     showScreen(null);
     clearInterval(labTimer); clearInterval(qTimer);
+    // 키우던 곤충이 있으면: [새 게임 시작] + 색이 다른 [곤충 키우기로 이어하기]
+    const growing = loadGarden().bugs.length > 0;
     GameKit.showStartScreen({
       logo: `<div class="logo-trio">${['bee', 'rhino', 'ladybug'].map(t => `<img src="${pic(t, 96, 'happy')}" alt="">`).join('')}</div>`,
       onStart: startFromKit,
+      startLabel: growing ? '▶ 새 게임 시작' : '▶ 게임 시작',
+      altButton: growing ? { label: '🌱 곤충 키우기로 이어하기', onClick: () => enterGrow() } : null,
       links: [
         { label: '게임 방법', onClick: () => { GameKit.hideStartScreen(); showHelp(true); } },
-        { label: '🌱 곤충 키우기', onClick: () => enterGrow() },
+        ...(growing ? [] : [{ label: '🌱 곤충 키우기', onClick: () => enterGrow() }]),
         { label: '설정', onClick: () => { GameKit.hideStartScreen(); showSettings(true); } },
       ],
     });

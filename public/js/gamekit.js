@@ -412,6 +412,10 @@ window.GameKit = (() => {
       resetSubmit();
       hideStartScreen();
       if (startOpts.onStart) startOpts.onStart(api.state);
+    } else if ('gkAlt' in t.dataset) {
+      // 시작 버튼 옆 두 번째 버튼 (예: 이어하기)
+      state.nickname = cleanNickname(state.nickname) || generateNickname();
+      if (startOpts.altButton && startOpts.altButton.onClick) startOpts.altButton.onClick(api.state);
     } else if (t.dataset.gkLink !== undefined) {
       const link = (startOpts.links || [])[Number(t.dataset.gkLink)];
       if (link && link.onClick) link.onClick();
@@ -446,7 +450,9 @@ window.GameKit = (() => {
           </div>
           <p class="gk-hint">${esc(config.modeDescriptions[s.mode].replace('{n}', s.quizGoal))} · ${esc(config.difficultyDescriptions[s.difficulty] || '')}</p>
         </div>
-        ${s.ready ? '<button type="button" class="gk-btn gk-btn-start" data-gk-start>▶ 게임 시작</button>' : '<p class="gk-loading gk-pulse">문제를 불러오는 중...</p>'}
+        ${!s.ready ? '<p class="gk-loading gk-pulse">문제를 불러오는 중...</p>'
+          : startOpts.altButton ? `<div class="gk-start-row"><button type="button" class="gk-btn gk-btn-start" data-gk-start>${esc(startOpts.startLabel || '▶ 게임 시작')}</button><button type="button" class="gk-btn gk-btn-start gk-btn-alt" data-gk-alt>${esc(startOpts.altButton.label)}</button></div>`
+          : `<button type="button" class="gk-btn gk-btn-start" data-gk-start>${esc(startOpts.startLabel || '▶ 게임 시작')}</button>`}
         ${rankingButtonsHTML()}
         ${(startOpts.links || []).length ? `<div class="gk-links">${startOpts.links.map((l, i) => `<button type="button" data-gk-link="${i}">${esc(l.label)}</button>`).join('<i>·</i>')}</div>` : ''}
       </div>`;
