@@ -4,7 +4,8 @@ window.BugArena = (() => {
   const W = 960, H = 540;
   const COLORS = ['#ef4444', '#3b82f6', '#22c55e'];
   const E = () => window.BugEvents.EVENTS;
-  const draw = (...a) => window.BugArt.draw(...a);
+  // 경기장 캐릭터는 숨쉬기·눈 깜빡임을 해요
+  const draw = (c, type, x, y, size, o = {}) => window.BugArt.draw(c, type, x, y, size, { time: performance.now() / 1000, ...o });
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
   // ---------- 공통 그리기 도구 ----------

@@ -215,7 +215,7 @@
       SND(ins.rarity === 'legend' ? 'legend' : 'catch');
       html = `<div class="feedback good reveal">
         <h3>정답! ${esc(ins.name)}${had ? '' : ' 채집!'}</h3>
-        <img src="${pic(type, 150, 'happy')}" alt="">
+        <div class="stage ${ins.rarity}"><img src="${pic(type, 170, 'happy')}" alt="">${ins.rarity === 'common' ? '' : [[12, 20], [78, 14], [86, 70], [8, 74], [50, 4]].map(([l, t], i) => `<span class="sparkle" style="left:${l}%;top:${t}%;animation-delay:${i * 0.28}s">${ins.rarity === 'legend' ? '✨' : '✦'}</span>`).join('')}</div>
         <p><span class="rar ${ins.rarity}">${D.RARITY[ins.rarity].name}</span> ${extra}</p>
         <p class="fact">${esc(ins.fact)}</p>${expl}
         <button type="button" class="btn primary big" id="nextQ">${nextLabel}</button></div>`;
@@ -276,12 +276,12 @@
           <h2>내 곤충 ${P.bugs.length}마리</h2>
           <div class="bug-cards">${P.bugs.map(x => {
             const i = D.INSECTS[x.type];
-            return `<button type="button" class="bug-card ${x.type === P.sel ? 'on' : ''}" data-sel="${x.type}"><span class="rar ${i.rarity}">${D.RARITY[i.rarity].name}</span><img src="${pic(x.type, 72)}" alt=""><span>${esc(i.name)}</span><small>업그레이드 ${D.totalLv(x.lv)}</small></button>`;
+            return `<button type="button" class="bug-card r-${i.rarity} ${x.type === P.sel ? 'on' : ''}" data-sel="${x.type}"><span class="rar ${i.rarity}">${D.RARITY[i.rarity].name}</span><img src="${pic(x.type, 80, x.type === P.sel ? 'happy' : undefined)}" alt=""><span>${esc(i.name)}</span><small>업그레이드 ${D.totalLv(x.lv)}</small></button>`;
           }).join('')}</div>
         </section>
         <section class="panel lab-detail">
-          <div class="detail-top">
-            <img src="${pic(b.type, 130, 'happy')}" alt="">
+          <div class="detail-top ${ins.rarity}">
+            <img src="${pic(b.type, 150, 'happy')}" alt="">
             <div><h2>${esc(ins.name)} <span class="rar ${ins.rarity}">${D.RARITY[ins.rarity].name}</span></h2><p class="fact">${esc(ins.fact)}</p></div>
           </div>
           <div class="stat-rows">${rows}</div>
@@ -587,7 +587,7 @@
   function showStart() {
     showScreen(null);
     GameKit.showStartScreen({
-      logo: `<img src="${pic('rhino', 96, 'happy')}" alt="">`,
+      logo: `<div class="logo-trio">${['bee', 'rhino', 'ladybug'].map(t => `<img src="${pic(t, 96, 'happy')}" alt="">`).join('')}</div>`,
       onStart: startFromKit,
       links: [
         { label: '게임 방법', onClick: () => { GameKit.hideStartScreen(); showHelp(true); } },
