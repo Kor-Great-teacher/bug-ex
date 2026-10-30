@@ -6,7 +6,8 @@ window.BugArena = (() => {
   const E = () => window.BugEvents.EVENTS;
   // 경기장 캐릭터는 숨쉬기·눈 깜빡임을 해요
   // 두 발로 선 캐릭터는 키가 커서 경기장에서는 1.3배로 그려요
-  const draw = (c, type, x, y, size, o = {}) => window.BugArt.draw(c, type, x, y, size * 1.3, { time: performance.now() / 1000, ...o });
+  // en: 참가자 { type, tier } — 지금 등급에 맞는 장식으로 그려요
+  const draw = (c, en, x, y, size, o = {}) => window.BugArt.draw(c, en, x, y, size * 1.3, { time: performance.now() / 1000, rarity: window.BugData.TIERS[en.tier != null ? en.tier : window.BugData.nativeTier(en.type)], ...o });
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
   // ---------- 공통 그리기 도구 ----------
@@ -70,7 +71,7 @@ window.BugArena = (() => {
     s.e.forEach((e, i) => {
       const y = LANE_Y[i], x = laneX(e.x, 100), en = m.ents[i];
       if (e.boost > 0.2 && e.fin == null) { c.strokeStyle = 'rgba(255,255,255,0.8)'; c.lineWidth = 3; for (let k = 0; k < 3; k++) { c.beginPath(); c.moveTo(x - 36 - k * 4, y - 6 + k * 8); c.lineTo(x - 56 - e.boost * 30, y - 6 + k * 8); c.stroke(); } }
-      draw(c, en.type, x, y - 4, 64, { phase: s.t * (8 + e.v), pose: e.fin != null ? 'cheer' : 'run', mood: mood(e, e.en < 0.05 ? 'strain' : null) });
+      draw(c, en, x, y - 4, 64, { phase: s.t * (8 + e.v), pose: e.fin != null ? 'cheer' : 'run', mood: mood(e, e.en < 0.05 ? 'strain' : null) });
       tag(c, x, y - 56, en.name, COLORS[i], i === m.me);
       bar(c, x - 26, y - 42, 52, 6, e.en, '#fbbf24');
     });
@@ -89,10 +90,10 @@ window.BugArena = (() => {
       const y = LANE_Y[i], x = laneX(e.x, 60), en = m.ents[i];
       if (e.fallT > 0) {
         const k = 1 - e.fallT / 1.6;
-        draw(c, en.type, x + e.tilt * 18, y + 6 + Math.min(1, k * 3) * 22, 58, { mood: 'dizzy', pose: 'cheer', rot: e.tilt * 1.2 });
+        draw(c, en, x + e.tilt * 18, y + 6 + Math.min(1, k * 3) * 22, 58, { mood: 'dizzy', pose: 'cheer', rot: e.tilt * 1.2 });
         c.fillStyle = 'rgba(255,255,255,0.8)'; for (let d = 0; d < 5; d++) { c.beginPath(); c.arc(x + (d - 2) * 10, y + 14 - Math.sin(k * 6 + d) * 8, 3, 0, 7); c.fill(); }
       } else {
-        draw(c, en.type, x, y - 8, 58, { rot: e.tilt * 0.7, phase: s.t * 8, pose: e.fin != null ? 'cheer' : 'balance', mood: mood(e, Math.abs(e.tilt) > 0.6 ? 'strain' : null) });
+        draw(c, en, x, y - 8, 58, { rot: e.tilt * 0.7, phase: s.t * 8, pose: e.fin != null ? 'cheer' : 'balance', mood: mood(e, Math.abs(e.tilt) > 0.6 ? 'strain' : null) });
       }
       tag(c, x, y - 58, en.name, COLORS[i], i === m.me);
       // 기울기 막대: 가운데가 안전
@@ -122,7 +123,7 @@ window.BugArena = (() => {
       const x = cx + e.x * k, y = cy + e.y * k;
       if (e.dash > 0) { c.strokeStyle = 'rgba(255,255,255,0.9)'; c.lineWidth = 3; c.beginPath(); c.moveTo(x - e.vx * 0.3, y - e.vy * 0.3); c.lineTo(x, y); c.stroke(); }
       c.strokeStyle = COLORS[i]; c.lineWidth = 4; c.beginPath(); c.ellipse(x, y + 16, 26, 8, 0, 0, 7); c.stroke();
-      draw(c, en.type, x, y, 62, { flip: e.face < 0, phase: s.t * 10, pose: e.dash > 0 ? 'push' : 'run', mood: e.dash > 0 ? 'strain' : undefined });
+      draw(c, en, x, y, 62, { flip: e.face < 0, phase: s.t * 10, pose: e.dash > 0 ? 'push' : 'run', mood: e.dash > 0 ? 'strain' : undefined });
       tag(c, x, y - 46, en.name, COLORS[i], i === m.me);
       if (i === m.me) bar(c, x - 24, y + 28, 48, 6, 1 - e.cd / 1.6, '#38bdf8');
     });
@@ -139,7 +140,7 @@ window.BugArena = (() => {
       const x = 220 + i * 260, en = m.ents[i];
       // 최고 기록 표시
       if (e.best > 0) { const y = G - e.best * k; c.strokeStyle = COLORS[i]; c.lineWidth = 4; c.beginPath(); c.moveTo(x - 50, y); c.lineTo(x + 50, y); c.stroke(); text(c, `${e.best.toFixed(1)}`, x + 58, y, 15, COLORS[i], 'left', '#fff'); }
-      draw(c, en.type, x, G - 18 - e.h * k, 66, { phase: e.mode === 'jump' ? 0 : s.t * 4, pose: e.mode === 'jump' ? 'cheer' : 'stand', mood: e.mode === 'jump' ? 'happy' : undefined });
+      draw(c, en, x, G - 18 - e.h * k, 66, { phase: e.mode === 'jump' ? 0 : s.t * 4, pose: e.mode === 'jump' ? 'cheer' : 'stand', mood: e.mode === 'jump' ? 'happy' : undefined });
       tag(c, x, G + 30, en.name, COLORS[i], i === m.me);
       // 힘 막대 (꼭대기 = 최고)
       const bx = x + 70, by = G - 170, bh = 150;
@@ -165,7 +166,7 @@ window.BugArena = (() => {
       c.fillStyle = '#7a5230'; c.beginPath(); c.arc(0, 0, 17, 0, 7); c.fill(); c.strokeStyle = '#4a3020'; c.lineWidth = 2; c.stroke();
       c.fillStyle = '#5c3b22'; for (const [dx, dy] of [[5, -4], [-6, 3], [2, 7]]) { c.beginPath(); c.arc(dx, dy, 2.5, 0, 7); c.fill(); }
       c.restore();
-      draw(c, en.type, x - 18, y - 6, 56, { phase: s.t * 8, pose: e.fin != null ? 'cheer' : 'push', mood: mood(e, e.slip > 0 ? 'dizzy' : 'strain') });
+      draw(c, en, x - 18, y - 6, 56, { phase: s.t * 8, pose: e.fin != null ? 'cheer' : 'push', mood: mood(e, e.slip > 0 ? 'dizzy' : 'strain') });
       tag(c, x - 10, y - 56, en.name, COLORS[i], i === m.me);
       if (i === m.me && e.fin == null) text(c, e.slip > 0 ? '너무 빨라요!' : e.q >= 1 ? '좋은 박자!' : '', x + 40, y - 40, 15, e.slip > 0 ? '#b91c1c' : '#15803d', 'left', '#fff');
     });
@@ -184,7 +185,7 @@ window.BugArena = (() => {
     c.strokeStyle = 'rgba(255,255,255,0.35)'; c.lineWidth = 3; c.strokeRect(cx - ev.W / 2 * k - 20, cy - ev.H / 2 * k - 20, ev.W * k + 40, ev.H * k + 40);
     s.e.forEach((e, i) => {
       const x = cx + e.x * k, y = cy + e.y * k, en = m.ents[i];
-      draw(c, en.type, x, y, 54, { flip: e.face < 0, fly: true, pose: 'fly', phase: s.t * 6 + i, mood: e.dash > 0 ? 'strain' : undefined });
+      draw(c, en, x, y, 54, { flip: e.face < 0, fly: true, pose: 'fly', phase: s.t * 6 + i, mood: e.dash > 0 ? 'strain' : undefined });
       tag(c, x, y - 44, `${en.name} 🍯${e.n}`, COLORS[i], i === m.me);
     });
   };
@@ -203,7 +204,7 @@ window.BugArena = (() => {
       const x = kx + e.ux * dist, y = ky + e.uy * dist;
       c.strokeStyle = '#d6a65a'; c.lineWidth = 6; c.beginPath(); c.moveTo(kx, ky); c.lineTo(x, y); c.stroke();
       c.strokeStyle = '#a77a3a'; c.lineWidth = 2; c.setLineDash([6, 6]); c.beginPath(); c.moveTo(kx, ky); c.lineTo(x, y); c.stroke(); c.setLineDash([]);
-      draw(c, en.type, x + e.ux * 14, y + e.uy * 14, 62, { flip: e.ux > 0.1, phase: s.t * (4 + e.grip * 10), pose: 'pull', mood: e.grip > 0.4 ? 'strain' : undefined });
+      draw(c, en, x + e.ux * 14, y + e.uy * 14, 62, { flip: e.ux > 0.1, phase: s.t * (4 + e.grip * 10), pose: 'pull', mood: e.grip > 0.4 ? 'strain' : undefined });
       tag(c, x + e.ux * 14, y + e.uy * 14 - 44, en.name, COLORS[i], i === m.me);
       bar(c, x + e.ux * 14 - 24, y + e.uy * 14 + 30, 48, 6, e.en, '#fbbf24');
     });
@@ -221,7 +222,7 @@ window.BugArena = (() => {
       c.fillStyle = '#4caf50'; for (const [dx, dy, r] of [[-40, 0, 40], [30, -10, 44], [0, -40, 46]]) { c.beginPath(); c.arc(x + dx, top + dy, r, 0, 7); c.fill(); }
       c.fillStyle = '#ef4444'; c.beginPath(); c.arc(x + 20, top - 20, 7, 0, 7); c.fill();
       const y = bot - 20 - (bot - top - 40) * (e.y / 100);
-      draw(c, en.type, x, y, 58, { phase: s.t * 6, pose: e.fin != null ? 'cheer' : 'climb', shadow: false, mood: mood(e, e.slipT > 0 ? 'dizzy' : e.en < 0.25 ? 'strain' : null) });
+      draw(c, en, x, y, 58, { phase: s.t * 6, pose: e.fin != null ? 'cheer' : 'climb', shadow: false, mood: mood(e, e.slipT > 0 ? 'dizzy' : e.en < 0.25 ? 'strain' : null) });
       tag(c, x, bot + 20, en.name, COLORS[i], i === m.me);
       c.fillStyle = 'rgba(0,0,0,0.25)'; c.beginPath(); c.roundRect(x + 34, y - 30, 9, 60, 4); c.fill();
       c.fillStyle = e.en < 0.25 ? '#ef4444' : '#fbbf24'; c.beginPath(); c.roundRect(x + 34, y + 30 - 60 * e.en, 9, 60 * e.en, 4); c.fill();
@@ -241,7 +242,7 @@ window.BugArena = (() => {
       });
       const x = laneX(e.x, ev.len);
       const hop = e.air > 0 ? Math.sin(Math.PI * (1 - e.air / e.jd)) * 46 : 0;
-      draw(c, en.type, x, y - 4 - hop, 58, { phase: s.t * 12, pose: e.fin != null ? 'cheer' : hop > 0 ? 'cheer' : 'run', mood: mood(e, e.stun > 0 ? 'dizzy' : null) });
+      draw(c, en, x, y - 4 - hop, 58, { phase: s.t * 12, pose: e.fin != null ? 'cheer' : hop > 0 ? 'cheer' : 'run', mood: mood(e, e.stun > 0 ? 'dizzy' : null) });
       tag(c, x, y - 58 - hop, en.name, COLORS[i], i === m.me);
     });
   };
@@ -262,9 +263,9 @@ window.BugArena = (() => {
       c.fillStyle = '#4caf50'; c.beginPath(); c.ellipse(tipX, tipY - 6, 30, 9, -0.3 + wind * 0.4, 0, 7); c.fill();
       if (e.out != null) {
         const k = Math.min(1, (s.t - e.out) / 1.5);
-        draw(c, en.type, tipX + g.gd * k * 500, tipY + 30 - k * 120, 54, { rot: k * 8, pose: 'cheer', shadow: false, mood: 'dizzy' });
+        draw(c, en, tipX + g.gd * k * 500, tipY + 30 - k * 120, 54, { rot: k * 8, pose: 'cheer', shadow: false, mood: 'dizzy' });
       } else {
-        draw(c, en.type, tipX + wind * 18, tipY + 22, 58, { rot: wind * 0.6, phase: s.t * 3, pose: 'hang', shadow: false, mood: e.hold ? 'strain' : undefined });
+        draw(c, en, tipX + wind * 18, tipY + 22, 58, { rot: wind * 0.6, phase: s.t * 3, pose: 'hang', shadow: false, mood: e.hold ? 'strain' : undefined });
       }
       tag(c, bx, 505, en.name, COLORS[i], i === m.me);
       bar(c, bx - 40, 230, 80, 9, e.G / 100, e.G < 35 ? '#ef4444' : '#22c55e');

@@ -418,7 +418,7 @@
       done: false, results: null, g: {}, fx: [],
       ents: entrants.map((en, i) => ({
         i, name: en.name, type: en.type, bot: !!en.bot, skill: en.skill != null ? en.skill : 0.6,
-        st: Data.statsOf(en.type, en.lv), fin: null, out: null, hold: false, dir: 0,
+        st: Data.statsOf(en.type, en.lv, en.tier), tier: Data.tierOf(en.type, en.tier), fin: null, out: null, hold: false, dir: 0,
       })),
     };
     ev.init(b);

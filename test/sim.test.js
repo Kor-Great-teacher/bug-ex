@@ -22,6 +22,24 @@ function simAll() {
   console.log(`✓ 종목 ${Events.EVENT_IDS.length}개 시뮬레이션`);
 }
 
+// 등급 규칙: 등급이 오를수록 능력치가 분명히 높고, 아래 등급을 아무리 키워도 위 등급의 최고치는 못 넘어요
+function tierRules() {
+  for (const ins of Data.LIST) {
+    assert.strictEqual(ins.base.reduce((a, b) => a + b, 0), 25, `${ins.id}: 기본 능력치 합은 25`);
+    for (let t = 0; t < 3; t++) {
+      const max = { spd: 99, pow: 99, bal: 99, jmp: 99, sta: 99 };
+      assert(Data.powerOf(ins.id, Data.zeroLv(), t + 1) > Data.powerOf(ins.id, Data.zeroLv(), t), '새 등급이 더 세야 해요');
+      assert(Data.powerOf(ins.id, max, t + 1) > Data.powerOf(ins.id, max, t), '등급 최고치도 더 세야 해요');
+    }
+  }
+  // 서버 검사: 조건을 못 채운 등급은 낮춰요
+  assert.strictEqual(Data.cleanEntry('ant', { spd: 2 }, 3).tier, 0);
+  assert.strictEqual(Data.cleanEntry('ant', { spd: 3, pow: 3, bal: 2 }, 1).tier, 1);
+  assert.strictEqual(Data.cleanEntry('rhino', {}, 0).tier, 3);
+  assert.strictEqual(Data.cleanEntry('ant', { spd: 12 }, 0).lv.spd, 4, '등급 한계를 넘는 업그레이드는 잘라요');
+  console.log('✓ 등급 규칙');
+}
+
 // 열심히 누르는 사람이 가만히 있는 사람보다 잘해야 해요 (달리기)
 function skillMatters() {
   let wins = 0;
@@ -60,6 +78,7 @@ async function serverMatch() {
 
 (async () => {
   simAll();
+  tierRules();
   skillMatters();
   await serverMatch();
 })().catch(e => { console.error('✗', e.message); process.exit(1); });

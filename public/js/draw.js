@@ -523,14 +523,16 @@ window.BugArt = (() => {
 
   // 카드·목록용 그림 (dataURL, 한 번 만들면 다시 써요)
   const cache = {};
-  function portrait(type, px = 96, mood) {
-    const key = `${type}:${px}:${mood || ''}`;
+  // rarity: 지금 등급 (없으면 처음 잡았을 때 등급)
+  function portrait(type, px = 96, mood, rarity) {
+    const rar = rarity || rarityOf(type);
+    const key = `${type}:${px}:${mood || ''}:${rar}`;
     if (cache[key]) return cache[key];
     const cv = document.createElement('canvas'); cv.width = cv.height = px * 2;
     const c = cv.getContext('2d'); c.scale(2, 2);
-    const sp = SPEC[type] || SPEC.ant, rar = rarityOf(type);
+    const sp = SPEC[type] || SPEC.ant;
     const big = rar === 'legend' || rar === 'hero' || sp.horn || sp.longAnt;
-    draw(c, type, px * 0.52, px * (big ? 0.66 : 0.64), px * (big ? 0.64 : 0.7), { phase: 0.6, mood, pose: mood === 'happy' ? 'cheer' : 'stand', time: 0.35, shadow: true });
+    draw(c, type, px * 0.52, px * (big ? 0.66 : 0.64), px * (big ? 0.64 : 0.7), { phase: 0.6, mood, rarity: rar, pose: mood === 'happy' ? 'cheer' : 'stand', time: 0.35, shadow: true });
     return (cache[key] = cv.toDataURL());
   }
 

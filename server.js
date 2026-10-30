@@ -53,8 +53,8 @@ function room(code) {
 function roomInfo(r) {
   return {
     code: r.code,
-    members: [...r.members.values()].map(m => ({ nick: m.nick, status: m.status, insect: m.insect || null })),
-    queue: r.queue.map(q => ({ nick: q.name, type: q.type })),
+    members: [...r.members.values()].map(m => ({ nick: m.nick, status: m.status, insect: m.insect || null, tier: m.tier })),
+    queue: r.queue.map(q => ({ nick: q.name, type: q.type, tier: q.tier })),
     deadline: r.deadline ? Math.max(0, Math.round((r.deadline - Date.now()) / 1000)) : 0,
   };
 }
@@ -80,7 +80,7 @@ function tryMatch(r) {
 }
 
 function startBattle(r, entries, cfg) {
-  const humans = entries.map(q => ({ name: q.name, type: q.type, lv: q.lv }));
+  const humans = entries.map(q => ({ name: q.name, type: q.type, lv: q.lv, tier: q.tier }));
   const bots = Data.makeBots(3 - humans.length, humans, cfg.difficulty, humans.map(h => h.name));
   const entrants = [...humans, ...bots].sort(() => Math.random() - 0.5);
   const eventId = Events.pickEvent(cfg.events, r.lastEvent);
@@ -90,7 +90,7 @@ function startBattle(r, entries, cfg) {
   const sockets = entrants.map(en => { const q = entries.find(x => !en.bot && x.name === en.name && x.type === en.type && !x._used); if (q) { q._used = true; return q.sid; } return null; });
   const bt = { id, code: r.code, b, sockets };
   battles.set(id, bt);
-  const meta = { id, ev: eventId, ents: entrants.map(en => ({ name: en.name, type: en.type, bot: !!en.bot, lv: en.lv })) };
+  const meta = { id, ev: eventId, ents: entrants.map(en => ({ name: en.name, type: en.type, tier: Data.tierOf(en.type, en.tier), bot: !!en.bot, lv: en.lv })) };
   sockets.forEach((sid, i) => {
     if (!sid) return;
     const s = io.sockets.sockets.get(sid);
@@ -139,18 +139,19 @@ io.on('connection', socket => {
     const r = rooms.get(socket.data.room); if (!r) return;
     const m = r.members.get(socket.id); if (!m) return;
     if (['quiz', 'lab', 'done'].includes(msg.status) && m.status !== 'battle' && m.status !== 'queue') m.status = msg.status;
-    if (msg.insect && Data.INSECTS[msg.insect]) m.insect = msg.insect;
+    if (msg.insect && Data.INSECTS[msg.insect]) { m.insect = msg.insect; m.tier = Data.tierOf(msg.insect, msg.tier); }
     broadcastRoom(r);
   });
 
   socket.on('queue', (msg = {}) => {
     const r = rooms.get(socket.data.room); if (!r || socket.data.battle) return;
     if (r.queue.some(q => q.sid === socket.id)) return;
-    const type = Data.INSECTS[msg.type] ? msg.type : 'ant';
+    // 등급·업그레이드가 규칙에 맞는지 서버가 다시 확인해요
+    const { type, lv, tier } = Data.cleanEntry(msg.type, msg.lv, msg.tier);
     const m = r.members.get(socket.id);
     const name = m ? m.nick : cleanNick(msg.nickname);
-    if (m) { m.status = 'queue'; m.insect = type; }
-    r.queue.push({ sid: socket.id, name, type, lv: Data.cleanLv(msg.lv) });
+    if (m) { m.status = 'queue'; m.insect = type; m.tier = tier; }
+    r.queue.push({ sid: socket.id, name, type, lv, tier });
     tryMatch(r);
   });
 
