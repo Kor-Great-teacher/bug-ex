@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>꼬마 파브르 곤충 리그</title>
+<meta name="description" content="퀴즈를 맞혀 귀여운 곤충을 모으고, 코인으로 키워서 친구들과 10가지 종목으로 실시간 대결하는 교실용 게임">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<link rel="stylesheet" href="css/gamekit.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <img id="brandIcon" alt="" width="44" height="44">
+      <div><h1>꼬마 파브르 곤충 리그</h1><p>퀴즈로 곤충을 모으고, 키우고, 대결해요</p></div>
+    </div>
+    <dl class="hud">
+      <div><dt>단계</dt><dd id="hudStage">준비</dd></div>
+      <div><dt>코인</dt><dd><i class="coin"></i><span id="hudCoins">0</span></dd></div>
+      <div><dt>점수</dt><dd id="hudScore">0</dd></div>
+      <div><dt>곤충</dt><dd id="hudBugs">0마리</dd></div>
+      <div><dt>정답</dt><dd id="hudCorrect">0 / 0</dd></div>
+      <div id="hudNetBox" hidden><dt>교실</dt><dd id="hudNet">-</dd></div>
+    </dl>
+    <div class="icon-row">
+      <button type="button" class="btn icon-btn" id="settingsBtn" aria-label="설정" title="설정"></button>
+      <button type="button" class="btn icon-btn" id="sfxBtn" aria-pressed="true" aria-label="효과음" title="효과음"></button>
+      <button type="button" class="btn icon-btn" id="musicBtn" aria-pressed="true" aria-label="배경음악" title="배경음악"></button>
+      <button type="button" class="btn icon-btn" id="helpBtn" aria-label="게임 방법" title="게임 방법"></button>
+    </div>
+  </header>
+
+  <ol class="steps-bar" id="stepsBar" aria-label="진행 단계">
+    <li data-step="collect">① 곤충 채집</li>
+    <li data-step="coin">② 코인 퀴즈</li>
+    <li data-step="lab">③ 곤충 연구소</li>
+    <li data-step="battle">④ 곤충 대결</li>
+  </ol>
+
+  <main id="main">
+    <section id="scQuiz" class="screen" hidden></section>
+    <section id="scLab" class="screen" hidden></section>
+    <section id="scBattle" class="screen" hidden>
+      <div class="battle-head" id="battleHead"></div>
+      <div class="arena-wrap">
+        <canvas id="arena" width="960" height="540" aria-label="곤충 대결 경기장"></canvas>
+        <div id="banner" class="banner" aria-live="polite"></div>
+      </div>
+      <div id="controls" class="controls"></div>
+    </section>
+    <section id="scFinal" class="screen" hidden></section>
+  </main>
+
+  <footer class="foot-credit">제작자:열혈교사 최영환(teacher@happyclass.kr)</footer>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="modal" class="modal" hidden>
+  <div id="dialog" class="dialog" role="dialog" aria-modal="true"></div>
+</div>
+
+<!-- 실시간 대결 서버(Render)에서 열면 Socket.IO 가 읽혀요. 그냥 파일로 열면 '혼자 연습'만 돼요. -->
+<script src="socket.io/socket.io.js" onerror="window.io = undefined"></script>
+<script src="js/gamekit.js"></script>
+<script src="js/insects-data.js"></script>
+<script src="js/events.js"></script>
+<script src="js/quiz.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/draw.js"></script>
+<script src="js/arena.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

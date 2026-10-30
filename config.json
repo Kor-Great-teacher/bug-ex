@@ -1,0 +1,34 @@
+{
+  "_안내": "꼬마 파브르 곤충 리그 전역 설정 — 관리자 설정 페이지에서 만들었어요. 모든 학생에게 적용돼요.",
+  "settings": {
+    "difficulty": "normal",
+    "subjects": {
+      "math": true,
+      "korean": true,
+      "science": true,
+      "social": true,
+      "english": true,
+      "custom": false
+    },
+    "timeLimit": 20,
+    "mathLevel": "auto",
+    "collectCount": 7,
+    "coinCount": 10,
+    "coinPerCorrect": 20,
+    "battleCount": 3,
+    "matchWait": 15,
+    "events": {
+      "sprint": true,
+      "beam": true,
+      "sumo": true,
+      "highjump": true,
+      "dung": true,
+      "nectar": true,
+      "tug": true,
+      "climb": true,
+      "hurdles": true,
+      "grass": true
+    },
+    "custom": ""
+  }
+}

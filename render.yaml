@@ -1,0 +1,13 @@
+# Render 블루프린트: Render 대시보드 → New → Blueprint → 이 저장소를 고르면 아래 설정으로 만들어져요.
+services:
+  - type: web
+    name: bug-ex
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"

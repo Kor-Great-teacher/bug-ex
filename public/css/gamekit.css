@@ -1,0 +1,106 @@
+/* GameKit 공통 화면 (시작 화면 · 랭킹 팝업)
+   게임 분위기에 맞추려면 아래 변수만 게임 CSS 에서 다시 정하세요. */
+:root {
+  --gk-backdrop: rgba(6, 10, 20, 0.82);
+  --gk-card: #111827;
+  --gk-panel: #1f2937;
+  --gk-line: #374151;
+  --gk-ink: #f3f4f6;
+  --gk-dim: #9ca3af;
+  --gk-accent: #3b82f6;      /* 시작 버튼 · 선택된 난이도 */
+  --gk-accent-ink: #ffffff;
+  --gk-gold: #f59e0b;        /* 게임 모드 · 현재 게임 랭킹 */
+  --gk-gold-ink: #1f1300;
+  --gk-sky: #38bdf8;         /* 전체 랭킹 */
+  --gk-font-display: inherit;
+}
+.gk-overlay {
+  position: fixed; inset: 0; z-index: 80; display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; overflow-y: auto;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: var(--gk-backdrop); backdrop-filter: blur(4px); color: var(--gk-ink);
+}
+.gk-overlay[hidden] { display: none !important; }
+.gk-rank-overlay { z-index: 90; }
+.gk-root button { font: inherit; color: inherit; cursor: pointer; }
+.gk-root :focus-visible { outline: 3px solid var(--gk-sky); outline-offset: 2px; }
+
+/* 시작 화면 */
+.gk-card {
+  width: min(400px, 100%); background: var(--gk-card); border: 2px solid var(--gk-line); border-radius: 20px;
+  padding: 26px 22px 20px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5); display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center;
+}
+.gk-logo { margin-bottom: 6px; }
+.gk-logo img { width: 76px; height: 76px; }
+.gk-title { margin: 0; font-family: var(--gk-font-display); font-weight: 400; font-size: 36px; line-height: 1.1; color: var(--gk-gold); }
+.gk-subtitle { margin: 4px 0 0; font-family: var(--gk-font-display); font-size: 17px; }
+.gk-unit { margin: 4px 0 0; font-size: 13px; color: var(--gk-dim); }
+.gk-rows { width: 100%; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin-top: 20px; }
+.gk-row { display: flex; align-items: center; gap: 8px; }
+.gk-row > span { width: 44px; flex: none; text-align: left; font-size: 13px; color: var(--gk-dim); }
+.gk-row input {
+  flex: 1; min-width: 0; font: inherit; font-size: 16px; text-align: center; color: var(--gk-ink);
+  background: var(--gk-panel); border: 1px solid var(--gk-line); border-radius: 12px; padding: 8px 10px;
+}
+.gk-row input:focus { outline: none; border-color: var(--gk-accent); }
+.gk-seg { flex: 1; min-width: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px; background: var(--gk-panel); border: 1px solid var(--gk-line); border-radius: 12px; }
+.gk-seg button { appearance: none; border: 0; background: none; border-radius: 9px; padding: 7px 4px; font-size: 14px; color: var(--gk-dim); white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.gk-seg button:hover { color: var(--gk-ink); }
+.gk-seg button.on { background: var(--gk-accent); color: var(--gk-accent-ink); }
+.gk-seg button.on.gk-gold { background: var(--gk-gold); color: var(--gk-gold-ink); }
+.gk-hint { margin: 0; font-size: 12px; color: var(--gk-dim); }
+.gk-btn {
+  font: inherit; color: var(--gk-ink); cursor: pointer;
+  appearance: none; border: 1px solid var(--gk-line); background: var(--gk-panel); border-radius: 12px;
+  padding: 9px 12px; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+}
+.gk-btn:hover { filter: brightness(1.15); }
+.gk-btn-start {
+  margin-top: 18px; padding: 13px 44px; border-radius: 999px; border: 0; font-family: var(--gk-font-display); font-size: 22px;
+  background: var(--gk-accent); color: var(--gk-accent-ink); box-shadow: 0 0 24px color-mix(in srgb, var(--gk-accent) 45%, transparent);
+}
+.gk-btn-start:active { transform: translateY(1px); }
+.gk-loading { margin: 22px 0 4px; color: var(--gk-dim); }
+.gk-rank-btns { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+.gk-btn-gold { border-color: color-mix(in srgb, var(--gk-gold) 55%, transparent); color: var(--gk-gold); }
+.gk-btn-sky { border-color: color-mix(in srgb, var(--gk-sky) 55%, transparent); color: var(--gk-sky); }
+.gk-links { margin-top: 12px; display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--gk-dim); }
+.gk-links button { appearance: none; border: 0; background: none; padding: 2px 4px; color: var(--gk-dim); text-decoration: underline; text-underline-offset: 3px; }
+.gk-links button:hover { color: var(--gk-ink); }
+.gk-links i { font-style: normal; opacity: 0.5; }
+.gk-icon-btn { appearance: none; border: 0; background: none; color: var(--gk-dim); font-size: 18px; padding: 4px 8px; border-radius: 8px; }
+.gk-icon-btn:hover { color: var(--gk-ink); }
+.gk-icon-btn.gk-boxed { background: var(--gk-panel); border: 1px solid var(--gk-line); padding: 7px 9px; font-size: 16px; }
+
+/* 랭킹 팝업 */
+.gk-dialog {
+  width: min(420px, 100%); background: var(--gk-card); border: 2px solid color-mix(in srgb, var(--gk-gold) 50%, var(--gk-line)); border-radius: 18px;
+  padding: 16px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+.gk-dialog-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.gk-dialog-head h2 { margin: 0; font-family: var(--gk-font-display); font-weight: 400; font-size: 22px; color: var(--gk-gold); }
+.gk-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--gk-panel); border-radius: 12px; }
+.gk-tabs button { appearance: none; border: 0; background: none; border-radius: 9px; padding: 7px; font-size: 14px; color: var(--gk-dim); }
+.gk-tabs button.on { background: var(--gk-gold); color: var(--gk-gold-ink); }
+.gk-dim { margin: 8px 2px; font-size: 12px; color: var(--gk-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gk-rank-body { min-height: 220px; max-height: 56vh; overflow-y: auto; }
+.gk-empty { margin: 0; padding: 60px 0; text-align: center; color: var(--gk-dim); }
+.gk-rank-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.gk-rank-list li { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 12px; background: var(--gk-panel); }
+.gk-rank-list li.me { outline: 2px solid var(--gk-gold); }
+.gk-rank-no { width: 26px; text-align: center; font-family: var(--gk-font-display); font-weight: 400; font-size: 16px; color: var(--gk-dim); }
+.gk-rank-no.r1 { color: #fde047; font-size: 20px; } .gk-rank-no.r2 { color: #e5e7eb; font-size: 19px; } .gk-rank-no.r3 { color: #fdba74; font-size: 18px; }
+.gk-rank-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gk-rank-name small { display: block; font-size: 11px; color: var(--gk-dim); overflow: hidden; text-overflow: ellipsis; }
+.gk-rank-wave { font-size: 12px; color: var(--gk-sky); }
+.gk-rank-score { font-family: var(--gk-font-display); font-size: 17px; font-variant-numeric: tabular-nums; }
+.gk-pulse { animation: gk-pulse 1.2s ease-in-out infinite; }
+@keyframes gk-pulse { 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { .gk-pulse { animation: none; } }
+@media (max-width: 420px) {
+  .gk-card { padding: 20px 14px 16px; }
+  .gk-title { font-size: 30px; }
+  .gk-seg button { font-size: 12.5px; padding: 7px 2px; }
+  .gk-row { gap: 6px; }
+  .gk-row > span { width: 38px; font-size: 12px; }
+  .gk-rank-btns .gk-btn { font-size: 13px; padding: 9px 6px; }
+}
