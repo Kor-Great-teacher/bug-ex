@@ -995,36 +995,60 @@
   // ============================================================
   //  최종 결과 · 명예의 전당 · 다음 선택 (처음부터 다시 / 곤충 키우기)
   // ============================================================
+  // 이번 운동회에서 가장 좋은 성적을 낸 내 곤충 (서버가 없을 때)
+  function myBest() {
+    const by = new Map(), N = 3;
+    for (const h of P.history) {
+      const k = h.type, o = by.get(k) || { type: h.type, tier: h.tier || 0, pts: 0, top: 9 };
+      o.pts += N - h.rank + 1; o.top = Math.min(o.top, h.rank); by.set(k, o);
+    }
+    return [...by.values()].sort((x, y) => y.pts - x.pts || x.top - y.top)[0] || (P.bugs[0] ? { type: P.bugs[0].type, tier: P.bugs[0].tier } : { type: 'ant', tier: 0 });
+  }
+  // 시상식 단상: 2등 · 1등 · 3등 · 4등 자리 순서로 세워요
+  function podiumHTML(list) {
+    const order = [1, 0, 2, 3].filter(i => list[i]);
+    const H = [150, 116, 92, 74], medal = ['🥇', '🥈', '🥉', '4️⃣'];
+    return `<div class="podium-stage n${list.length}">${order.map(i => {
+      const x = list[i], b = x.best || { type: 'ant', tier: 0 }, tk = D.TIERS[b.tier || 0];
+      return `<div class="pd-col p${i + 1} ${x.me ? 'me' : ''}">
+        <div class="pd-bug ${tk}"><img src="${pic(b.type, i === 0 ? 120 : 96, i < 3 ? 'happy' : undefined, b.tier || 0)}" alt="${esc(D.INSECTS[b.type].name)}">${i === 0 ? '<span class="crown">👑</span>' : ''}</div>
+        <p class="pd-name">${x.me ? '★ ' : ''}${esc(x.nick)}${x.bot ? ' <em>AI</em>' : ''}</p>
+        <p class="pd-bugname"><span class="rar ${tk}">${D.RARITY[tk].name}</span> ${esc(D.INSECTS[b.type].name)}</p>
+        <div class="pd-block" style="height:${H[i]}px"><b>${medal[i]}</b><span>${x.pts}점</span>${x.places ? `<small>${x.places.slice(0, list.length).map((n, k) => `${medal[k]}${n}`).join(' ')}</small>` : ''}</div>
+      </div>`;
+    }).join('')}</div>`;
+  }
   function showFinal(standings) {
     P.stage = 'final';
     showScreen('final');
     updateHud();
     const legends = P.bugs.filter(b => b.tier === 3).length;
     const heroes = P.bugs.filter(b => b.tier === 2).length;
-    GameKit.submitResult({ score: P.score, wave: P.places[0], correct: P.correct, total: P.total, cleared: true });
-    const medals = ['🥇', '🥈', '🥉', '4️⃣'];
-    const table = standings ? `
-      <h3>함께 한 친구들 종합 순위</h3>
-      <ol class="standings">${standings.map((x, i) => `<li class="${P.match && x.pid === P.match.you ? 'me' : ''}"><span class="medal">${medals[i] || i + 1}</span><span class="st-name">${esc(x.nick)}${x.bot ? ' <em>AI</em>' : ''}</span><span class="st-places">${x.places.slice(0, standings.length).map((n, k) => `${medals[k]}${n}`).join(' ')}</span><b>${x.pts}점</b></li>`).join('')}</ol>
-      <p class="hint">운동회 점수: 1등 ${standings.length}점 … 꼴등 1점 (${battleCount()}번 합계)</p>` : '';
+    try { GameKit.submitResult({ score: P.score, wave: P.places[0], correct: P.correct, total: P.total, cleared: true }); } catch (e) { /* 기록 실패해도 결과는 보여요 */ }
+    const you = P.match && P.match.you;
+    const myPts = P.history.reduce((n, h) => n + (3 - h.rank + 1), 0);
+    const list = standings && standings.length
+      ? standings.map(x => ({ ...x, me: x.pid === you }))
+      : [{ nick: GameKit.state.nickname, pts: myPts, places: P.places.slice(0, 3), best: myBest(), me: true }];
+    const myRank = Math.max(0, list.findIndex(x => x.me));
     $('#scFinal').innerHTML = `
       <div class="hscroll final-wrap">
         <div class="page">
-          <section class="panel final">
+          <section class="panel final ceremony">
             <div class="final-top">
-              <h2>오늘의 곤충 운동회 결과</h2>
-              <button type="button" class="btn big" id="again">🔄 처음부터 시작하기</button>
-              ${standings ? '<button type="button" class="btn gold big" id="oneMore">🏃 곤충 운동회 한번 더</button>' : ''}
-              <button type="button" class="btn primary big" id="toGrow">🌱 곤충 키우기</button>
+              <h2>🏆 곤충 대운동회 시상식</h2>
+              <button type="button" class="btn gold big" id="oneMore">🏃 한 번 더</button>
+              <button type="button" class="btn primary big" id="toGrow">🌱 곤충 키우기로 이어하기</button>
+              <button type="button" class="btn big" id="again">🔄 처음부터 다시하기</button>
             </div>
             <div class="final-body">
-              <div>
-                ${standings ? table : `<h3>운동회 성적</h3><p class="hint">혼자 연습 · AI 곤충과 ${P.history.length}번 겨뤘어요.</p>`}
-                <div class="mini-bugs">${(collect ? P.bugs.filter(b => !b.garden) : P.bugs).map(b => `<img src="${pic(b.type, 64, 'happy', b.tier)}" alt="${esc(D.INSECTS[b.type].name)}" title="${esc(D.INSECTS[b.type].name)}">`).join('')}</div>
-                <p class="hint">곤충은 곤충 키우기와 같은 모음에 저장돼요. 다음 운동회에서는 지금까지 모은 곤충이 모두 함께 나가요 (저장된 곤충은 운동회마다 3번까지 출전).</p>
+              <div class="ceremony-main">
+                <div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, k) => `<i style="left:${(k * 37) % 100}%;animation-delay:${(k % 6) * 0.35}s;background:${['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#f472b6'][k % 6]}"></i>`).join('')}</div>
+                ${podiumHTML(list)}
+                <p class="hint pd-note">곤충은 각 선수가 이번 운동회에서 가장 좋은 성적을 낸 곤충이에요 · 순위 점수: 1등 ${list.length}점 … 꼴등 1점</p>
               </div>
-              <div>
-                <div class="final-score"><p class="big-num">${P.score.toLocaleString()}</p><span class="hint">${esc(GameKit.state.nickname)} 선수의 점수</span></div>
+              <div class="final-side">
+                <div class="final-score"><p class="big-num">${myRank + 1}등</p><span class="hint">${esc(GameKit.state.nickname)} · 점수 ${P.score.toLocaleString()}</span></div>
                 <dl class="final-stats">
                   <div><dt>퀴즈 정답</dt><dd>${P.correct} / ${P.total}</dd></div>
                   <div><dt>모은 곤충</dt><dd>${P.bugs.length}마리${legends || heroes ? ` (${[legends ? `전설 ${legends}` : '', heroes ? `영웅 ${heroes}` : ''].filter(Boolean).join(' · ')})` : ''}</dd></div>
@@ -1032,36 +1056,34 @@
                   <div><dt>남은 코인</dt><dd><i class="coin"></i>${P.coins}</dd></div>
                 </dl>
                 ${P.wrong.length ? `<button type="button" class="btn page-btn" data-goto-page="1">틀린 문제 다시 보기 (${P.wrong.length}) ▶</button>` : '<p class="hint">틀린 문제가 하나도 없어요! 👏</p>'}
+                <div class="final-rank">
+                  <p class="hint" data-gk-submit-status>${esc(GameKit.submitStatusText()) || '명예의 전당 기록'}</p>
+                  ${GameKit.rankingButtonsHTML()}
+                </div>
               </div>
-            </div>
-            <div class="final-rank">
-              <p class="hint" data-gk-submit-status>${esc(GameKit.submitStatusText()) || '명예의 전당 기록'}</p>
-              ${GameKit.rankingButtonsHTML()}
             </div>
           </section>
         </div>
         ${P.wrong.length ? `<div class="page review-page"><section class="panel review-page" style="width:100%">
           <h2>틀린 문제 다시 보기 (${P.wrong.length})</h2>
           <div class="hcols"><ol>${P.wrong.map(w => `<li>[${esc(w.subject)}] ${esc(w.q)}<br><span class="ans">정답: ${esc(w.a)}</span></li>`).join('')}</ol></div>
-          <button type="button" class="btn page-btn" data-goto-page="0">◀ 결과로 돌아가기</button>
+          <button type="button" class="btn page-btn" data-goto-page="0">◀ 시상식으로 돌아가기</button>
         </section></div>` : ''}
       </div>`;
+    SND(myRank === 0 ? 'win' : 'finish');
+    saveBugs();
     $('#again').addEventListener('click', () => { P = null; showStart(); });
-    // 같은 별명 · 같은 입장 코드로 바로 다시 모여요 (곤충은 곤충 키우기 모음의 가장 센 3마리로 새로 시작)
-    const om = $('#oneMore');
-    if (om) om.addEventListener('click', () => {
+    // 한 번 더: 같은 별명 · 같은 입장 코드로 바로 다시 모여요 (곤충 모음은 그대로 이어져요)
+    $('#oneMore').addEventListener('click', () => {
       let code = ''; try { code = localStorage.getItem('bugex-room') || ''; } catch (e) { /* 무시 */ }
       newPlayer({ ...GameKit.state, mode: 'game' }); updateHud();
       if (!ensureSocket()) return goSolo();
       joinLobby(code);
     });
-    $('#toGrow').addEventListener('click', () => chooseGarden(P.bugs));
+    $('#toGrow').addEventListener('click', () => chooseGarden());
     if (P.match) P.match = null;
   }
 
-  // ============================================================
-  //  곤충 키우기: 3마리를 골라 퀴즈로 코인을 모아 키워요 (이 브라우저에 저장)
-  // ============================================================
   function chooseGarden() {
     saveBugs();   // 운동회 곤충은 이미 같은 모음에 저장돼 있어요
     enterGrow();

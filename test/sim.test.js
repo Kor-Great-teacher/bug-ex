@@ -124,6 +124,8 @@ async function serverMatch() {
     assert.deepStrictEqual(b.mine.slice(0, 3), ['grasshopper', 'firefly', 'cricket']);
     assert.notStrictEqual(b.mine[3], 'dragonfly', '저장된 곤충은 3번까지만');
     assert.strictEqual(a.end.standings.length, 2);
+    // 시상식: 선수마다 가장 좋은 성적을 낸 곤충이 함께 와요
+    assert(a.end.standings.every(x => x.best && x.best.type && x.best.tier != null), '시상식 곤충');
     console.log('✓ 입장 코드 2명: 동시 퀴즈 · 순위 코인 · 작전 시간(종목 1~3라운드 공개) · 운동회 4라운드(곤충마다 2번 · 저장된 곤충 3번까지) · 최종 순위');
   } finally { srv.kill(); }
 }

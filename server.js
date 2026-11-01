@@ -299,18 +299,31 @@ function battleInput(socket, msg) {
 function endBattle(M) {
   clearInterval(M.bt.loop);
   const N = M.players.length;
-  for (const r of M.bt.b.results) { const p = M.players[r.i]; p.pts += N - r.rank + 1; p.places[r.rank - 1]++; }
+  for (const r of M.bt.b.results) {
+    const p = M.players[r.i], en = M.bt.meta.ents[r.i];
+    p.pts += N - r.rank + 1; p.places[r.rank - 1]++;
+    (p.hist = p.hist || []).push({ type: en.type, tier: en.tier, rank: r.rank, pts: N - r.rank + 1 });
+  }
   M.bt = null;
   M.battleNo++;
   later(M, RESULT_MS, () => { if (M.battleNo >= M.opts.battleCount) endMatch(M); else startLab(M); });
 }
 
 // ---------- 끝 ----------
+// 시상식에 세울 곤충: 이번 운동회에서 가장 좋은 성적을 낸 곤충 (얻은 점수 합 → 가장 좋은 순위)
+function bestBug(hist) {
+  const by = new Map();
+  for (const h of hist || []) {
+    const k = `${h.type}:${h.tier}`, o = by.get(k) || { type: h.type, tier: h.tier, pts: 0, top: 9, n: 0 };
+    o.pts += h.pts; o.top = Math.min(o.top, h.rank); o.n++; by.set(k, o);
+  }
+  return [...by.values()].sort((a, b) => b.pts - a.pts || a.top - b.top)[0] || null;
+}
 function endMatch(M, aborted, msg) {
   clearTimeout(M.timer); clearTimeout(M.aiTimer);
   if (M.bt) clearInterval(M.bt.loop);
   if (!aborted) {
-    const standings = M.players.map(p => ({ pid: p.pid, nick: p.nick, bot: p.bot, pts: p.pts, places: p.places, quizCoins: p.quizCoins }))
+    const standings = M.players.map(p => ({ pid: p.pid, nick: p.nick, bot: p.bot, pts: p.pts, places: p.places, quizCoins: p.quizCoins, best: bestBug(p.hist) }))
       .sort((a, b) => b.pts - a.pts || b.places[0] - a.places[0] || b.quizCoins - a.quizCoins);
     emitAll(M, 'match:end', { standings });
   } else emitAll(M, 'match:abort', { msg: msg || '경기가 끝났어요.' });

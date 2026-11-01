@@ -669,3 +669,44 @@ body { background: #cfe0b9; background-image: none; overscroll-behavior: none; }
 .cards-wrap { padding: 0 11px; }
 .cards-nav { width: 10px; height: 64px; font-size: 8px; border-radius: 6px; border-width: 0; }
 .cards-wrap::before { left: 11px; width: 18px; } .cards-wrap::after { right: 11px; width: 18px; }
+
+/* ---------- 시상식 ---------- */
+.ceremony .final-top h2 { font-size: 22px; }
+.ceremony .final-body { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 12px; flex: 1; min-height: 0; }
+.ceremony-main { position: relative; display: flex; flex-direction: column; justify-content: flex-end; min-height: 0; overflow: hidden; border-radius: 16px; background: radial-gradient(ellipse at 50% 100%, #fff7d6 0, #fef3c7 30%, #eef7e4 70%); padding: 6px 10px 4px; }
+.podium-stage { display: flex; align-items: flex-end; justify-content: center; gap: 10px; position: relative; z-index: 1; }
+.pd-col { flex: 0 1 150px; display: flex; flex-direction: column; align-items: center; text-align: center; animation: pdRise .7s cubic-bezier(.2,.9,.3,1.2) both; }
+.pd-col.p1 { animation-delay: .9s; } .pd-col.p2 { animation-delay: .5s; } .pd-col.p3 { animation-delay: .25s; } .pd-col.p4 { animation-delay: 0s; }
+@keyframes pdRise { from { opacity: 0; transform: translateY(40px); } }
+.pd-bug { position: relative; display: grid; place-items: center; }
+.pd-bug img { width: 92px; height: 92px; object-fit: contain; animation: hop 1.6s ease-in-out infinite; }
+.p1 .pd-bug img { width: 118px; height: 118px; }
+.pd-bug.legend::before, .pd-bug.hero::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: radial-gradient(circle, rgba(251,191,36,.45), transparent 70%); }
+.pd-bug.hero::before { background: radial-gradient(circle, rgba(168,85,247,.35), transparent 70%); }
+.pd-bug .crown { position: absolute; top: -18px; font-size: 26px; animation: twinkle 1.6s ease-in-out infinite; }
+.pd-name { margin: 2px 0 0; font-family: var(--font-display); font-size: 15px; white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+.pd-name em { font-style: normal; font-size: 11px; color: var(--ink-dim); }
+.pd-bugname { margin: 0 0 4px; font-size: 11px; color: var(--ink-dim); white-space: nowrap; }
+.pd-bugname .rar { font-size: 9.5px; padding: 0 5px; }
+.pd-block { width: 100%; border-radius: 12px 12px 4px 4px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 6px; color: #fff; font-family: var(--font-display); box-shadow: inset 0 -6px 0 rgba(0,0,0,.12); }
+.pd-block b { font-size: 26px; font-weight: 400; line-height: 1.1; }
+.pd-block span { font-size: 16px; }
+.pd-block small { font-size: 10px; opacity: .9; font-family: var(--font-body); }
+.p1 .pd-block { background: linear-gradient(180deg, #fbbf24, #d97706); }
+.p2 .pd-block { background: linear-gradient(180deg, #cbd5e1, #94a3b8); }
+.p3 .pd-block { background: linear-gradient(180deg, #f0a46c, #c2703a); }
+.p4 .pd-block { background: linear-gradient(180deg, #a7c4a0, #78a06d); }
+.pd-col.me .pd-name { color: #b45309; }
+.pd-col.me .pd-block { outline: 3px solid #fde047; outline-offset: 2px; }
+.pd-note { position: relative; z-index: 1; margin: 6px 0 0; text-align: center; font-size: 11px; }
+.confetti i { position: absolute; top: -12px; width: 8px; height: 12px; border-radius: 2px; opacity: .85; animation: confetti 3.2s linear infinite; }
+@keyframes confetti { to { transform: translateY(460px) rotate(540deg); } }
+.final-side { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+.final-side .final-score .big-num { font-size: 40px; }
+.final-side .final-rank { margin-top: auto; flex-direction: column; align-items: stretch; }
+@media (prefers-reduced-motion: reduce) { .confetti i, .pd-col, .pd-bug img, .pd-bug .crown { animation: none !important; } }
+.final.ceremony { grid-template-rows: auto minmax(0, 1fr); }
+.final-side .final-rank { display: flex; gap: 4px; }
+.final-side .final-rank .gk-rank-btns { width: 100%; }
+.p3 .pd-block b, .p4 .pd-block b { font-size: 20px; }
+.p4 .pd-block span { font-size: 14px; }
