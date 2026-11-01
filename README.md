@@ -194,6 +194,20 @@
 우리 반 담임 선생님의 성은? | 김 | 이 | 박 | 최
 ```
 
+## 캐릭터 그림 바꾸기
+
+캐릭터는 `public/img/bugs/` 의 그림으로 그려요 (그림이 없는 곤충은 게임 안의 캔버스 그림으로 대신 그려요).
+
+1. 그림을 `art/bugs/` 에 넣어요. **배경 투명 PNG/WebP**, 캐릭터는 **오른쪽을 보는** 모습.
+   - 대표 그림: `<곤충>.webp` (카드 · 목록 · 채집 화면, 자세 그림이 없으면 대결에서도 이 그림을 움직여 써요)
+   - 자세 그림(선택): `<곤충>_<자세>.png` — `stand · happy · strain · dizzy · run1 run2 · push1 push2 · pull1 pull2 · balance1 balance2 · climb1 climb2 · hang1 hang2 · fly1 fly2 · cheer1 cheer2 · attack1 attack2 · damage1 damage2 · defend1 defend2 · idle1 idle2`
+   - `<곤충>`: `ant ladybug bee grasshopper cricket butterfly firefly dragonfly dungbeetle mantis cicada rhino stag swallowtail`
+2. 자세 모음 그림(포즈 시트, 사슴벌레 시트와 같은 4줄 배치)은 잘라서 넣을 수 있어요: `python3 tools/cut_sheet.py art/sheets/<곤충>.png <곤충>`
+3. `python3 tools/build_sprites.py` → 투명 테두리를 잘라 360px 이하 WebP 로 줄이고 `public/img/bugs/manifest.json` 을 만들어요. (Pillow · numpy 필요)
+
+- 대결에서는 자세 그림이 있으면 번갈아 보여 주고(달리기 run1↔run2 등), 한 장뿐이면 통통 뛰기 · 기울기 · 흔들기로 움직여요. 기분(땀방울 · 빙글빙글 별 · 반짝이)과 등급 장식(영웅 보랏빛 기운과 도는 별, 전설 후광과 황금 빛살, 반짝이)은 그림 위에 덧그려요.
+- 지금 그림: 14종 대표 그림 + 사슴벌레 자세 28장 (ChatGPT로 만든 그림).
+
 ## 소리
 
 녹음 파일 없이 Web Audio로 만든 소리예요. 오른쪽 위 **효과음 / 배경음악** 버튼으로 따로 켜고 끌 수 있어요.
@@ -210,7 +224,10 @@ public/css/gamekit.css 시작 화면 · 랭킹 팝업 (GameKit, ant-ex와 같음
 public/js/gamekit.js   시작 화면 · 별명 · 구글 시트/URL 파라미터 · 명예의 전당 (GameKit)
 public/js/insects-data.js  곤충 14종 · 능력치 · 업그레이드 · AI 곤충 (서버와 함께 씀)
 public/js/events.js    대결 10종목 계산 (서버와 함께 씀)
-public/js/draw.js      귀여운 곤충 캐릭터 그리기
+public/js/draw.js      캐릭터 그리기 (그림 캐릭터 + 그림이 없을 때 쓰는 캔버스 캐릭터)
+public/img/bugs/       캐릭터 그림 (WebP) · manifest.json
+art/                   캐릭터 원본 그림 · 포즈 시트
+tools/                 cut_sheet.py (포즈 시트 자르기) · build_sprites.py (게임용 그림 만들기)
 public/js/arena.js     종목별 경기장 그리기
 public/js/quiz.js      문제 은행과 수학 문제 생성기
 public/js/audio.js     효과음·배경음악

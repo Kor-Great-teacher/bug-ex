@@ -1439,6 +1439,8 @@
   window.__bugex = { get P() { return P; }, get BT() { return BT; }, get settings() { return settings; }, Net, startLocalBattle, goLab, showFinal, answer, enterGrow, get curQ() { return curQ; } };
   loadGlobalConfig().then(() => {
     startKit();
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(boot); else boot();
+    // 글꼴과 캐릭터 그림을 기다렸다가 시작해요 (그림이 늦어도 4초 뒤에는 시작)
+    const fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    Promise.race([Promise.all([fonts, ART.load()]), new Promise(r => setTimeout(r, 4000))]).then(boot);
   });
 })();

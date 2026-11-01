@@ -435,6 +435,10 @@ window.BugArt = (() => {
       for (const [x, y] of [[-10.5, -8.5], [0, -11.5], [10.5, -8.5]]) vol(c, E(c, x, y, 1.5, 1.5), '#fff3b0', x, y, 1.5, 0.9);
       c.restore();
     }
+    decoParticles(c, rar, t);
+  }
+  // 반짝이 · 빛 알갱이 (희귀 · 전설)
+  function decoParticles(c, rar, t) {
     const n = { rare: 3, legend: 7 }[rar] || 0;
     for (let i = 0; i < n; i++) {
       const ph = t * (1.2 + i * 0.13) + i * 2.1, k = (Math.sin(ph) + 1) / 2;
@@ -445,8 +449,136 @@ window.BugArt = (() => {
     }
   }
 
+  // ============================================================
+  //  그림 캐릭터 (img/bugs/manifest.json) — 그림이 있는 곤충은 그림으로, 없으면 위의 캔버스 그림으로 그려요
+  //  자세 그림(run1 run2 …)이 있으면 번갈아 보여 주고, 그림이 한 장뿐이면 통통 · 기울기 · 흔들기로 움직여요
+  // ============================================================
+  const SPR = { ready: false, data: {} };   // 종류 → { 자세: { img, w, h } }
+  function load(base = 'img/bugs/') {
+    const one = (type, pose, f) => new Promise(res => {
+      const img = new Image();
+      img.onload = () => { (SPR.data[type] = SPR.data[type] || {})[pose] = { img, w: f.w, h: f.h }; res(); };
+      img.onerror = () => res();
+      img.src = base + f.file;
+    });
+    return fetch(base + 'manifest.json', { cache: 'no-cache' })
+      .then(r => (r.ok ? r.json() : {}))
+      .then(man => Promise.all(Object.entries(man).flatMap(([type, poses]) => Object.entries(poses).map(([pose, f]) => one(type, pose, f)))))
+      .catch(() => {})
+      .then(() => { SPR.ready = true; for (const k in cache) delete cache[k]; });
+  }
+  const hasSprite = type => !!SPR.data[type];
+  const POSE_FRAMES = {
+    stand: ['idle1', 'idle2'], run: ['run1', 'run2'], push: ['push1', 'push2'], pull: ['pull1', 'pull2'],
+    balance: ['balance1', 'balance2'], climb: ['climb1', 'climb2'], hang: ['hang1', 'hang2'], fly: ['fly1', 'fly2'],
+    cheer: ['cheer1', 'cheer2'], attack: ['attack1', 'attack2'], damage: ['damage1', 'damage2'], defend: ['defend1', 'defend2'],
+  };
+  function pickFrame(fr, pose, mood, ph, t, forCard) {
+    if (forCard) return mood === 'happy' && fr.happy ? 'happy' : fr.card ? 'card' : 'stand';
+    if (mood === 'dizzy' && fr.dizzy) return 'dizzy';
+    if (mood === 'strain' && ['stand', 'balance', 'run'].includes(pose) && fr.strain) return 'strain';
+    if (mood === 'happy' && pose === 'stand' && fr.happy) return 'happy';
+    const list = (POSE_FRAMES[pose] || []).filter(n => fr[n]);
+    if (list.length) {
+      const k = pose === 'run' || pose === 'climb' || pose === 'push' ? Math.floor(ph / Math.PI) : Math.floor(t * (pose === 'stand' ? 1.1 : 3));
+      return list[((k % list.length) + list.length) % list.length];
+    }
+    return fr.stand ? 'stand' : 'card';
+  }
+  // 그림이 한 장뿐일 때 기분을 덧그려요 (땀방울 · 빙글빙글 별 · 반짝 하트)
+  function moodOverlay(c, mood, t, top, size) {
+    const hx = size * 0.12, hy = top + size * 0.16;
+    if (mood === 'strain') {
+      const dx = hx - size * 0.2, dy = hy - size * 0.02;
+      c.beginPath(); c.moveTo(dx, dy - size * 0.05); c.quadraticCurveTo(dx + size * 0.04, dy + size * 0.01, dx, dy + size * 0.035); c.quadraticCurveTo(dx - size * 0.04, dy + size * 0.01, dx, dy - size * 0.05);
+      const g = c.createLinearGradient(dx, dy - size * 0.05, dx, dy + size * 0.04); g.addColorStop(0, '#e0f6ff'); g.addColorStop(1, '#5fb8f0');
+      c.fillStyle = g; c.fill(); c.lineWidth = 0.8; c.strokeStyle = '#3b82c4'; c.stroke();
+      c.strokeStyle = 'rgba(220,38,38,0.8)'; c.lineWidth = Math.max(1, size * 0.018); c.lineCap = 'round';
+      for (const a of [-0.5, 0, 0.5]) { c.beginPath(); c.moveTo(hx + size * 0.22 + Math.cos(a) * size * 0.04, hy - size * 0.1 + Math.sin(a) * size * 0.04); c.lineTo(hx + size * 0.22 + Math.cos(a) * size * 0.08, hy - size * 0.1 + Math.sin(a) * size * 0.08); c.stroke(); }
+    } else if (mood === 'dizzy') {
+      for (let i = 0; i < 3; i++) {
+        const a = t * 4 + i * Math.PI * 2 / 3;
+        star(c, hx + Math.cos(a) * size * 0.2, top + size * 0.02 + Math.sin(a) * size * 0.05, size * 0.045, a, 5, 0.45);
+        c.fillStyle = '#facc15'; c.fill(); c.lineWidth = 0.8; c.strokeStyle = '#b45309'; c.stroke();
+      }
+    } else if (mood === 'happy') {
+      for (let i = 0; i < 2; i++) {
+        const k = ((t * 0.8 + i * 0.5) % 1), x = hx + size * (0.18 + i * 0.1), y = top + size * (0.1 - k * 0.15);
+        c.globalAlpha = 1 - k; star(c, x, y, size * 0.04, t * 2 + i); c.fillStyle = i ? '#fda4af' : '#fde047'; c.fill(); c.globalAlpha = 1;
+      }
+    }
+  }
+  // 그림 캐릭터 둘레 등급 장식: 영웅 도는 별 · 전설 후광 · 반짝이 (단위: 몸길이/62)
+  function decoSprite(c, rar, t, topU) {
+    if (rar === 'hero') {
+      for (let i = 0; i < 4; i++) {
+        const a = t * 1.8 + i * Math.PI / 2, ox = Math.cos(a) * 34, oy = -8 + Math.sin(a) * 12;
+        star(c, ox, oy, (2.6 + Math.sin(t * 5 + i) * 0.8) * 1.6, t * 2 + i); c.fillStyle = Math.sin(a) > 0 ? '#f3e8ff' : '#c084fc'; c.fill();
+      }
+    }
+    if (rar === 'legend') {
+      const hy2 = topU - 5 + Math.sin(t * 2.5) * 1.2;
+      c.save(); c.shadowColor = '#ffd84d'; c.shadowBlur = 8;
+      ell(c, 4, hy2, 13, 3.6); c.lineWidth = 2.8; c.strokeStyle = '#ffe680'; c.stroke();
+      c.restore();
+      ell(c, 4, hy2, 13, 3.6); c.lineWidth = 0.8; c.strokeStyle = '#fffbe6'; c.stroke();
+    }
+    decoParticles(c, rar, t);
+  }
+  function drawSprite(c, type, x, y, size, o) {
+    const fr = SPR.data[type]; if (!fr) return false;
+    const ph = o.phase || 0, mood = o.mood, t = o.time != null ? o.time : 0;
+    const rar = o.deco === false ? 'common' : o.rarity || rarityOf(type);
+    const pose = o.pose || (o.fly ? 'fly' : 'stand');
+    const name = pickFrame(fr, pose, mood, ph, t, o.card), f = fr[name];
+    const base = o.card ? f : fr.stand || fr.card;
+    const multi = Object.keys(fr).length > 2;           // 자세 그림이 따로 있어요
+    const k = size * 0.95 / Math.max(base.h, base.w * 0.8), u = size / 62;
+    // 움직임
+    let bob = 0, rot = 0, sx = 1, sy = 1, shake = 0;
+    const s1 = Math.sin(ph);
+    switch (pose) {
+      case 'run': bob = -Math.abs(s1) * 0.05 * size; if (!multi) rot = s1 * 0.05; break;
+      case 'push': bob = -Math.abs(s1) * 0.02 * size; if (!multi) rot = 0.1; break;
+      case 'pull': if (!multi) rot = -0.12 + s1 * 0.02; break;
+      case 'balance': rot = Math.sin(t * 3) * 0.06; break;
+      case 'climb': bob = -Math.abs(s1) * 0.04 * size; break;
+      case 'hang': rot = Math.sin(t * 2) * 0.07; break;
+      case 'fly': bob = Math.sin(t * 4 + ph) * 0.05 * size - 0.08 * size; if (!multi) sy = 1 + Math.sin(t * 22) * 0.015; break;
+      case 'cheer': bob = -Math.abs(Math.sin(t * 6)) * 0.1 * size; break;
+      default: { const br = Math.sin(t * 3 + type.length) * 0.022; sy = 1 + br; sx = 1 - br * 0.5; }
+    }
+    if (mood === 'strain') shake = Math.sin(t * 45) * 0.012 * size;
+    if (mood === 'dizzy' && !fr.dizzy) rot += Math.sin(t * 5) * 0.08;
+    const groundY = 0.36 * size;
+    c.save();
+    c.translate(x, y);
+    if (o.rot) c.rotate(o.rot);
+    if (o.flip) c.scale(-1, 1);
+    if (o.shadow !== false && pose !== 'hang' && pose !== 'fly') {
+      const g = c.createRadialGradient(0, groundY, 1, 0, groundY, size * 0.32);
+      g.addColorStop(0, 'rgba(0,0,0,0.26)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      ell(c, 0, groundY, size * 0.32, size * 0.06); c.fillStyle = g; c.fill();
+    }
+    c.save(); c.scale(u, u); decoAura(c, rar, t); c.restore();
+    c.save();
+    c.translate(shake, groundY + bob); c.rotate(rot); c.scale(sx, sy);
+    const w = f.w * k, h = f.h * k;
+    c.drawImage(f.img, -w / 2, -h, w, h);
+    c.restore();
+    const top = groundY + bob - base.h * k;
+    c.save(); c.scale(u, u); decoSprite(c, rar, t, top / u); c.restore();
+    if (mood && !(mood === 'happy' ? fr.happy || fr.cheer1 : fr[mood])) moodOverlay(c, mood, t, top, size);
+    c.restore();
+    return true;
+  }
+
   // ---------- 전체 그리기 ----------
   function draw(c, type, x, y, size, o = {}) {
+    if (drawSprite(c, type, x, y, size, o)) return;
+    drawVector(c, type, x, y, size, o);
+  }
+  function drawVector(c, type, x, y, size, o = {}) {
     const sp = SPEC[type] || SPEC.ant, ph = o.phase || 0, mood = o.mood, live = o.time != null, t = live ? o.time : 0;
     const rar = o.deco === false ? 'common' : o.rarity || rarityOf(type);
     const pose = o.pose || (o.fly ? 'fly' : mood === 'happy' && !o.pose ? 'cheer' : 'stand');
@@ -531,10 +663,16 @@ window.BugArt = (() => {
     const cv = document.createElement('canvas'); cv.width = cv.height = px * 2;
     const c = cv.getContext('2d'); c.scale(2, 2);
     const sp = SPEC[type] || SPEC.ant;
+    if (hasSprite(type)) {
+      // 그림 캐릭터: 대표 그림(card)을 칸에 맞춰요 (전설은 후광 자리를 위에 남겨요)
+      const legend = rar === 'legend';
+      drawSprite(c, type, px * 0.5, px * (legend ? 0.6 : 0.56), px * (legend ? 0.66 : 0.74), { card: true, mood, rarity: rar, time: 0.35, shadow: true });
+      return (cache[key] = cv.toDataURL());
+    }
     const big = rar === 'legend' || rar === 'hero' || sp.horn || sp.longAnt;
-    draw(c, type, px * 0.52, px * (big ? 0.66 : 0.64), px * (big ? 0.64 : 0.7), { phase: 0.6, mood, rarity: rar, pose: mood === 'happy' ? 'cheer' : 'stand', time: 0.35, shadow: true });
+    drawVector(c, type, px * 0.52, px * (big ? 0.66 : 0.64), px * (big ? 0.64 : 0.7), { phase: 0.6, mood, rarity: rar, pose: mood === 'happy' ? 'cheer' : 'stand', time: 0.35, shadow: true });
     return (cache[key] = cv.toDataURL());
   }
 
-  return { draw, portrait, SPEC };
+  return { draw, portrait, load, hasSprite, SPEC };
 })();

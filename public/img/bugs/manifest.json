@@ -1,0 +1,240 @@
+{
+ "ant": {
+  "card": {
+   "file": "ant_card.webp",
+   "w": 262,
+   "h": 349
+  }
+ },
+ "bee": {
+  "card": {
+   "file": "bee_card.webp",
+   "w": 307,
+   "h": 344
+  }
+ },
+ "butterfly": {
+  "card": {
+   "file": "butterfly_card.webp",
+   "w": 313,
+   "h": 342
+  }
+ },
+ "cicada": {
+  "card": {
+   "file": "cicada_card.webp",
+   "w": 296,
+   "h": 349
+  }
+ },
+ "cricket": {
+  "card": {
+   "file": "cricket_card.webp",
+   "w": 321,
+   "h": 348
+  }
+ },
+ "dragonfly": {
+  "card": {
+   "file": "dragonfly_card.webp",
+   "w": 360,
+   "h": 307
+  }
+ },
+ "dungbeetle": {
+  "card": {
+   "file": "dungbeetle_card.webp",
+   "w": 360,
+   "h": 303
+  }
+ },
+ "firefly": {
+  "card": {
+   "file": "firefly_card.webp",
+   "w": 341,
+   "h": 347
+  }
+ },
+ "grasshopper": {
+  "card": {
+   "file": "grasshopper_card.webp",
+   "w": 344,
+   "h": 350
+  }
+ },
+ "ladybug": {
+  "card": {
+   "file": "ladybug_card.webp",
+   "w": 286,
+   "h": 346
+  }
+ },
+ "mantis": {
+  "card": {
+   "file": "mantis_card.webp",
+   "w": 268,
+   "h": 346
+  }
+ },
+ "rhino": {
+  "card": {
+   "file": "rhino_card.webp",
+   "w": 360,
+   "h": 330
+  }
+ },
+ "stag": {
+  "card": {
+   "file": "stag_card.webp",
+   "w": 323,
+   "h": 339
+  },
+  "attack1": {
+   "file": "stag_attack1.webp",
+   "w": 187,
+   "h": 160
+  },
+  "attack2": {
+   "file": "stag_attack2.webp",
+   "w": 162,
+   "h": 199
+  },
+  "balance1": {
+   "file": "stag_balance1.webp",
+   "w": 156,
+   "h": 179
+  },
+  "balance2": {
+   "file": "stag_balance2.webp",
+   "w": 145,
+   "h": 176
+  },
+  "cheer1": {
+   "file": "stag_cheer1.webp",
+   "w": 151,
+   "h": 182
+  },
+  "cheer2": {
+   "file": "stag_cheer2.webp",
+   "w": 149,
+   "h": 182
+  },
+  "climb1": {
+   "file": "stag_climb1.webp",
+   "w": 152,
+   "h": 189
+  },
+  "climb2": {
+   "file": "stag_climb2.webp",
+   "w": 136,
+   "h": 191
+  },
+  "damage1": {
+   "file": "stag_damage1.webp",
+   "w": 165,
+   "h": 174
+  },
+  "damage2": {
+   "file": "stag_damage2.webp",
+   "w": 173,
+   "h": 182
+  },
+  "defend1": {
+   "file": "stag_defend1.webp",
+   "w": 172,
+   "h": 180
+  },
+  "defend2": {
+   "file": "stag_defend2.webp",
+   "w": 148,
+   "h": 177
+  },
+  "dizzy": {
+   "file": "stag_dizzy.webp",
+   "w": 208,
+   "h": 224
+  },
+  "fly1": {
+   "file": "stag_fly1.webp",
+   "w": 171,
+   "h": 156
+  },
+  "fly2": {
+   "file": "stag_fly2.webp",
+   "w": 145,
+   "h": 155
+  },
+  "hang1": {
+   "file": "stag_hang1.webp",
+   "w": 127,
+   "h": 164
+  },
+  "hang2": {
+   "file": "stag_hang2.webp",
+   "w": 132,
+   "h": 172
+  },
+  "happy": {
+   "file": "stag_happy.webp",
+   "w": 186,
+   "h": 226
+  },
+  "idle1": {
+   "file": "stag_idle1.webp",
+   "w": 152,
+   "h": 188
+  },
+  "idle2": {
+   "file": "stag_idle2.webp",
+   "w": 147,
+   "h": 181
+  },
+  "pull1": {
+   "file": "stag_pull1.webp",
+   "w": 157,
+   "h": 166
+  },
+  "pull2": {
+   "file": "stag_pull2.webp",
+   "w": 123,
+   "h": 167
+  },
+  "push1": {
+   "file": "stag_push1.webp",
+   "w": 157,
+   "h": 175
+  },
+  "push2": {
+   "file": "stag_push2.webp",
+   "w": 151,
+   "h": 167
+  },
+  "run1": {
+   "file": "stag_run1.webp",
+   "w": 170,
+   "h": 173
+  },
+  "run2": {
+   "file": "stag_run2.webp",
+   "w": 145,
+   "h": 174
+  },
+  "stand": {
+   "file": "stag_stand.webp",
+   "w": 216,
+   "h": 212
+  },
+  "strain": {
+   "file": "stag_strain.webp",
+   "w": 194,
+   "h": 219
+  }
+ },
+ "swallowtail": {
+  "card": {
+   "file": "swallowtail_card.webp",
+   "w": 360,
+   "h": 334
+  }
+ }
+}
