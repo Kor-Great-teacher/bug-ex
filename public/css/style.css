@@ -455,6 +455,7 @@ body { background: #cfe0b9; background-image: none; overscroll-behavior: none; }
 .lab-main > .panel, .lab-info > .panel { min-height: 0; overflow: hidden; }
 .lab-list { display: flex; flex-direction: column; }
 .lab-list h2 small { font-size: 10.5px; color: var(--ink-dim); font-family: var(--font-body); }
+.lab-list { gap: 4px; }
 .lab-list .bug-cards { flex: 1; min-height: 0; display: grid; grid-auto-flow: column; grid-template-rows: repeat(4, minmax(0, 1fr)); grid-template-columns: none; grid-auto-columns: 88px; gap: 6px; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; padding-bottom: 2px; }
 .bug-card { padding: 2px; gap: 0; border-radius: 12px; align-content: center; }
 .bug-card img { width: 50px; height: 50px; }
@@ -609,3 +610,57 @@ body { background: #cfe0b9; background-image: none; overscroll-behavior: none; }
 .next-ev small { color: var(--ink-dim); font-size: 11px; margin-left: 4px; white-space: nowrap; }
 .next-ev.secret { background: #ede9fe; } .next-ev.secret b { color: #6d28d9; }
 .final-top { flex-wrap: wrap; }
+
+/* ---------- 곤충 목록: 정렬 · 새 곤충/저장된 곤충 색 · 좌우 넘기기 ---------- */
+.list-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.list-head h2 { margin: 0; font-size: 16px; white-space: nowrap; }
+.sort-seg { display: flex; gap: 2px; padding: 2px; background: var(--panel); border-radius: 9px; }
+.sort-seg button { appearance: none; border: 0; background: none; border-radius: 7px; padding: 3px 7px; font-family: var(--font-display); font-size: 11.5px; color: var(--ink-dim); cursor: pointer; white-space: nowrap; }
+.sort-seg button[aria-pressed="true"] { background: var(--leaf); color: #fff; }
+.list-legend { margin: 0; font-size: 10.5px; color: var(--ink-dim); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.list-legend .lg { width: 12px; height: 12px; border-radius: 4px; display: inline-block; border: 1px solid rgba(0,0,0,.12); }
+.list-legend .lg.new { background: #c9f5b4; } .list-legend .lg.old { background: #cdeafe; margin-left: 6px; }
+.list-legend b { color: #0369a1; font-weight: 700; }
+.bug-card.new { background: linear-gradient(180deg, #d9fbc6, #effde6); }
+.bug-card.old { background: linear-gradient(180deg, #d4edfd, #eef8ff); }
+.bug-card.on { background-color: transparent; border-width: 3px; border-color: var(--leaf-dark); box-shadow: 0 0 0 2px #fde047, 0 3px 0 var(--leaf-dark); }
+.bug-card.new.on { background: linear-gradient(180deg, #d9fbc6, #effde6); } .bug-card.old.on { background: linear-gradient(180deg, #d4edfd, #eef8ff); }
+.new-tag { position: absolute; top: 19px; left: 2px; padding: 0 4px; border-radius: 6px; background: #ef4444; color: #fff; font-family: var(--font-display); font-size: 9px !important; line-height: 13px; letter-spacing: .5px; box-shadow: 0 1px 0 #b91c1c; animation: newPop 1.6s ease-in-out infinite; }
+@keyframes newPop { 50% { transform: scale(1.12); } }
+.cards-wrap { position: relative; flex: 1; min-height: 0; display: flex; }
+.cards-wrap .bug-cards { flex: 1; scrollbar-width: none; }
+.cards-wrap .bug-cards::-webkit-scrollbar { display: none; }
+.cards-wrap::before, .cards-wrap::after { content: ''; position: absolute; top: 0; bottom: 0; width: 26px; pointer-events: none; z-index: 1; opacity: 0; transition: opacity .2s; }
+.cards-wrap::before { left: 0; background: linear-gradient(90deg, rgba(35,51,28,.28), transparent); border-radius: 10px 0 0 10px; }
+.cards-wrap::after { right: 0; background: linear-gradient(270deg, rgba(35,51,28,.28), transparent); border-radius: 0 10px 10px 0; }
+.cards-wrap.more-left::before, .cards-wrap.more-right::after { opacity: 1; }
+.cards-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 30px; height: 54px; border: 2px solid #fff; border-radius: 10px; background: var(--leaf); color: #fff; font-size: 15px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+.cards-nav.prev { left: -4px; } .cards-nav.next { right: -4px; }
+.cards-nav:disabled { opacity: 0; pointer-events: none; }
+.cards-wrap.more-right .cards-nav.next { animation: nudge 1.4s ease-in-out infinite; }
+@keyframes nudge { 50% { transform: translate(3px, -50%); } }
+.cards-pager { display: flex; align-items: center; gap: 6px; font-family: var(--font-display); font-size: 12px; color: var(--leaf-dark); }
+.cards-pager span { white-space: nowrap; min-width: 46px; }
+.cards-track { position: relative; flex: 1; height: 10px; border-radius: 99px; background: #e2ead9; cursor: pointer; }
+.cards-track i { position: absolute; top: 0; bottom: 0; border-radius: 99px; background: var(--leaf); min-width: 18px; transition: left .1s; }
+.one-page .cards-pager { visibility: hidden; }
+@media (prefers-reduced-motion: reduce) { .new-tag, .cards-nav { animation: none !important; } }
+/* 화살표는 카드 바깥 양옆에, 전설 반짝이는 왼쪽 아래로 (모은 수 배지와 겹치지 않게) */
+.cards-wrap { padding: 0 24px; }
+.cards-nav { width: 22px; height: 76px; border-width: 1px; padding: 0; font-size: 13px; }
+.cards-nav.prev { left: 0; } .cards-nav.next { right: 0; }
+.cards-nav:disabled { opacity: .25; pointer-events: none; background: #9ca3af; }
+.cards-wrap::before { left: 24px; } .cards-wrap::after { right: 24px; }
+.bug-card.r-legend::after { top: auto; right: auto; bottom: 18px; left: 5px; font-size: 11px; }
+.lab-list .bug-card small { white-space: nowrap; letter-spacing: -0.3px; font-size: 9px; }
+.cards-wrap .bug-cards { scroll-snap-type: x mandatory; }
+.cards-wrap .bug-card { scroll-snap-align: start; }
+/* 목록 칸에 곤충 카드가 딱 2줄(열)씩 보이게 */
+.cards-wrap { padding: 0 17px; }
+.cards-nav { width: 16px; font-size: 11px; border-radius: 8px; }
+.cards-wrap::before { left: 17px; } .cards-wrap::after { right: 17px; }
+.cards-wrap .bug-cards { grid-auto-columns: calc((100% - 6px) / 2); }
+.lab-list .bug-card span { font-size: 12.5px; white-space: nowrap; }
+.lab-list .bug-card small { line-height: 1.15; }
+.lab-list .bug-card .rar { font-size: 9px; z-index: 1; }
+.lab-list .bug-card .copies, .lab-list .bug-card .new-tag { z-index: 1; }
