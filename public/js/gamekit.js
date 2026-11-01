@@ -271,7 +271,7 @@ window.GameKit = (() => {
 
   const compact = s => String(s || '').replace(/\s+/g, '').toLowerCase();
   const unitKeyword = u => String(u || '').replace(/^[\d\s.\-)]+/, '').replace(/["']/g, '').trim();
-  // "곤충 리그" → '.*곤[ ]*충[ ]*리[ ]*그.*' (띄어쓰기가 달라도 같은 게임으로 찾기)
+  // "곤충 운동회" → '.*곤[ ]*충[ ]*운[ ]*동[ ]*회.*' (띄어쓰기가 달라도 같은 게임으로 찾기)
   const gamePattern = name => { const ch = [...compact(name)].filter(c => /[0-9a-z가-힣]/i.test(c)); return ch.length ? `.*${ch.join('[ ]*')}.*` : ''; };
 
   async function gviz(tq) {

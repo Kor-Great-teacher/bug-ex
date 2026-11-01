@@ -1,4 +1,4 @@
-// 꼬마 파브르 곤충 리그 — 게임 본체
+// 꼬마 파브르 곤충 운동회 — 게임 본체
 // 흐름: ① 곤충 채집 퀴즈(7문제) → ② 코인 퀴즈(10문제) → ③ 연구소(업그레이드) → ④ 대결(3마리, 무작위 종목) × 3번 → 결과·명예의 전당
 (() => {
   'use strict';
@@ -1007,7 +1007,7 @@
         <div class="page">
           <section class="panel final">
             <div class="final-top">
-              <h2>오늘의 곤충 리그 결과</h2>
+              <h2>오늘의 곤충 운동회 결과</h2>
               <button type="button" class="btn big" id="again">🔄 처음부터 시작하기</button>
               ${standings ? '<button type="button" class="btn gold big" id="oneMore">🏃 곤충 운동회 한번 더</button>' : ''}
               <button type="button" class="btn primary big" id="toGrow">🌱 곤충 키우기</button>
@@ -1199,7 +1199,7 @@
     return { owner, repo };
   }
   const repoEditUrl = () => { const { owner, repo } = repoInfo(); return `https://github.com/${owner}/${repo}/edit/main/config.json`; };
-  const configJson = v => JSON.stringify({ '_안내': '꼬마 파브르 곤충 리그 전역 설정 — 관리자 설정 페이지에서 만들었어요. 모든 학생에게 적용돼요.', settings: v }, null, 2) + '\n';
+  const configJson = v => JSON.stringify({ '_안내': '꼬마 파브르 곤충 운동회 전역 설정 — 관리자 설정 페이지에서 만들었어요. 모든 학생에게 적용돼요.', settings: v }, null, 2) + '\n';
 
   // ---------- 관리자 설정에서 GitHub의 config.json 을 바로 저장 ----------
   // 선생님이 만든 GitHub 토큰(이 저장소 Contents 쓰기 권한만)으로 GitHub API에 직접 저장해요.
@@ -1545,7 +1545,7 @@
   // ---------- 시작 ----------
   function startKit() {
     return GameKit.init({
-      gameName: '꼬마 파브르 곤충 리그',
+      gameName: '꼬마 파브르 곤충 운동회',
       defaultMode: 'game',
       defaultDifficulty: settings.difficulty,
       defaultQuizGoal: settings.collectCount,

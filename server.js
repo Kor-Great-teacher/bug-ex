@@ -1,4 +1,4 @@
-// 꼬마 파브르 곤충 리그 — 실시간 '함께 하기' 서버 (Render 배포용)
+// 꼬마 파브르 곤충 운동회 — 실시간 '함께 하기' 서버 (Render 배포용)
 // 정적 파일(public/) + Socket.IO. 한 판(경기)은 최대 4명이 함께해요.
 //   대기실 → ① 곤충 채집 퀴즈(모두 같은 문제, 다 풀면 정답 공개) → ② 코인 퀴즈(빨리 맞힐수록 코인 많이)
 //   → ③ 연구소(2분) → ④ 대결 → 연구소(1분) → 대결 … (3차전까지) → 최종 순위
@@ -364,4 +364,4 @@ io.on('connection', socket => {
   socket.on('disconnect', () => { clearInterval(refill); leaveMatch(socket); });
 });
 
-server.listen(PORT, () => console.log(`곤충 리그 서버가 ${PORT}번 포트에서 열렸어요`));
+server.listen(PORT, () => console.log(`곤충 운동회 서버가 ${PORT}번 포트에서 열렸어요`));

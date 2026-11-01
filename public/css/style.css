@@ -1,4 +1,4 @@
-/* 꼬마 파브르 곤충 리그 — 밝은 풀밭 테마 */
+/* 꼬마 파브르 곤충 운동회 — 밝은 풀밭 테마 */
 :root {
   --bg: #f3f8e8;
   --card: #ffffff;
@@ -664,3 +664,8 @@ body { background: #cfe0b9; background-image: none; overscroll-behavior: none; }
 .lab-list .bug-card small { line-height: 1.15; }
 .lab-list .bug-card .rar { font-size: 9px; z-index: 1; }
 .lab-list .bug-card .copies, .lab-list .bug-card .new-tag { z-index: 1; }
+/* 곤충 목록 칸 10% 넓게 (206 → 227px), 능력치 칸은 그만큼 좁게 · 좌우 넘기기 버튼은 좁게 */
+.lab-main { grid-template-columns: 227px minmax(0, 1fr) 262px; }
+.cards-wrap { padding: 0 11px; }
+.cards-nav { width: 10px; height: 64px; font-size: 8px; border-radius: 6px; border-width: 0; }
+.cards-wrap::before { left: 11px; width: 18px; } .cards-wrap::after { right: 11px; width: 18px; }

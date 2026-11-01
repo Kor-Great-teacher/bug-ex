@@ -1,4 +1,4 @@
-# 꼬마 파브르 곤충 리그 (bug-ex)
+# 꼬마 파브르 곤충 운동회 (bug-ex)
 
 교실용 멀티플레이 퀴즈 대결 게임입니다. 파브르 곤충기처럼 다양한 **귀여운 곤충 캐릭터**를 퀴즈로 모으고, 코인으로 키워서, 친구들과 **실시간으로 대결**해요. 함께 하기는 최대 4명이에요.
 
@@ -187,7 +187,7 @@
 #### 관리자 설정에서 바로 저장하기 (GitHub 토큰)
 
 1. GitHub 로그인 → 오른쪽 위 프로필 → **Settings** → 맨 아래 **Developer settings** → **Personal access tokens** → **Fine-grained tokens** → **Generate new token**
-2. 이름(예: `곤충 리그 설정`), 기한(예: 90일)을 정하고 **Repository access**는 **Only select repositories** → `bug-ex` 하나만 고르기
+2. 이름(예: `곤충 운동회 설정`), 기한(예: 90일)을 정하고 **Repository access**는 **Only select repositories** → `bug-ex` 하나만 고르기
 3. **Permissions → Repository permissions → Contents** 를 **Read and write** 로 (다른 권한은 주지 않아요)
 4. **Generate token** → 나온 `github_pat_…` 토큰을 관리자 설정의 **GitHub 토큰** 칸에 붙여 넣고 **전역 설정 바로 저장**
 
