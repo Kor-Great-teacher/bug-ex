@@ -575,3 +575,8 @@ body { background: #cfe0b9; background-image: none; overscroll-behavior: none; }
 .gk-rank-body { max-height: 330px; min-height: 180px; }
 .review-page > .panel { flex: 1 1 auto; min-height: 0; }
 .hcols h3 { break-after: avoid; }
+
+/* 곤충 카드 오른쪽 아래: 이 등급에서 모은 수 */
+.bug-card .copies { position: absolute; right: 3px; bottom: 3px; min-width: 22px; padding: 0 5px; border-radius: 999px; background: #23331c; color: #fff; font-family: var(--font-display); font-weight: 400; font-size: 11px; line-height: 16px; text-align: center; }
+.bug-card.r-rare .copies { background: #0284c7; } .bug-card.r-hero .copies { background: #7c3aed; } .bug-card.r-legend .copies { background: #d97706; }
+.promo .promo-bar + .promo-bar { margin-top: 2px; }

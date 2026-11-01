@@ -94,7 +94,7 @@
     const given = [];
     while (P.bugs.length < need) {
       const t = basics.find(x => !bug(x)); if (!t) break;
-      P.bugs.push({ type: t, lv: D.zeroLv(), tier: 0 }); given.push(D.INSECTS[t].name);
+      P.bugs.push({ type: t, lv: D.zeroLv(), tier: 0, copies: 1 }); given.push(D.INSECTS[t].name);
     }
     if (!P.sel || !bug(P.sel)) P.sel = P.bugs[0].type;
     if (given.length) toast(`대결에 나갈 곤충이 모자라 기본 곤충 ${given.join(' · ')}을(를) 받았어요!`, 'warn');
@@ -110,11 +110,11 @@
   function loadGarden() {
     try {
       const g = JSON.parse(localStorage.getItem(GKEY));
-      if (g && Array.isArray(g.bugs)) return { bugs: g.bugs.slice(0, 3).map(b => D.cleanEntry(b.type, b.lv, b.tier)), coins: Math.max(0, g.coins | 0) };
+      if (g && Array.isArray(g.bugs)) return { bugs: g.bugs.slice(0, 3).map(b => ({ ...D.cleanEntry(b.type, b.lv, b.tier), copies: Math.max(1, b.copies | 0) })), coins: Math.max(0, g.coins | 0) };
     } catch (e) { /* 저장소를 못 쓰면 빈 정원 */ }
     return { bugs: [], coins: 0 };
   }
-  function saveGarden(g) { try { localStorage.setItem(GKEY, JSON.stringify({ bugs: g.bugs.map(b => ({ type: b.type, lv: b.lv, tier: b.tier })), coins: g.coins })); } catch (e) { /* 무시 */ } }
+  function saveGarden(g) { try { localStorage.setItem(GKEY, JSON.stringify({ bugs: g.bugs.map(b => ({ type: b.type, lv: b.lv, tier: b.tier, copies: b.copies || 1 })), coins: g.coins })); } catch (e) { /* 무시 */ } }
   function saveIfGrow() { if (P && P.mode === 'grow') saveGarden({ bugs: P.bugs, coins: P.coins }); }
 
   // ============================================================
@@ -257,21 +257,51 @@
       if (i === q.answer) b.classList.add('right'); else if (i === picked) b.classList.add('wrong');
     });
   }
-  // 채집 성공: 곤충 하나 뽑기 (이미 있으면 능력치 +1)
+  // 채집 성공: 곤충은 14종 중 아무거나, 등급은 확률로 (일반 55 · 희귀 28 · 영웅 12 · 전설 5)
+  //  - 처음 잡은 곤충: 새 친구
+  //  - 이미 있는 곤충을 더 높은 등급으로 잡으면: 그 등급으로 올라가요 (모은 수 1부터)
+  //  - 같거나 낮은 등급이면: 모은 수 +1 · 능력치 하나 +1
   function catchHTML(expl, button) {
-    const type = D.rollInsect(), ins = D.INSECTS[type], had = bug(type);
-    let extra;
-    if (had) {
-      const open = D.STAT_KEYS.filter(s => had.lv[s] < D.capOf(had.tier)), k = open[Math.floor(Math.random() * open.length)];
-      if (k) { had.lv[k]++; extra = `이미 있는 친구라 <b>${D.STATS.find(s => s.k === k).name} +1</b> 올랐어요!`; } else { P.coins += 30; extra = '이 등급의 능력치가 모두 최고라 코인 30개를 받았어요!'; }
-    } else { P.bugs.push({ type, lv: D.zeroLv(), tier: D.nativeTier(type) }); P.score += D.RARITY[ins.rarity].score; extra = '새로운 곤충 친구를 만났어요!'; }
+    const type = D.rollInsect(), tier = D.rollTier(), ins = D.INSECTS[type], tk = D.TIERS[tier];
+    let b = bug(type), extra;
+    if (!b) {
+      b = { type, lv: D.zeroLv(), tier, copies: 1 }; P.bugs.push(b);
+      P.score += D.RARITY[tk].score; extra = '새로운 곤충 친구를 만났어요!';
+    } else if (tier > b.tier) {
+      b.tier = tier; b.copies = 1; P.score += D.RARITY[tk].score;
+      extra = `더 높은 <b>${D.RARITY[tk].name}</b> 등급으로 잡아서 등급이 올라갔어요!`;
+    } else {
+      b.copies = (b.copies || 1) + 1;
+      const open = D.STAT_KEYS.filter(s => b.lv[s] < D.capOf(b.tier)), k = open[Math.floor(Math.random() * open.length)];
+      if (k) b.lv[k]++; else P.coins += 30;
+      extra = `같은 곤충을 또 모았어요! <b>×${b.copies}</b>${k ? ` · ${D.STATS.find(s => s.k === k).name} +1` : ' · 코인 30'}`;
+    }
     if (!P.sel) P.sel = type;
-    SND(ins.rarity === 'legend' || ins.rarity === 'hero' ? 'legend' : 'catch');
+    const up = checkPromote(b, false);
+    if (up) extra += ` 🎉 <b>${D.RARITY[tierKey(b)].name}</b> 등급업!`;
+    const shown = D.TIERS[b.tier];
+    SND(b.tier >= 2 ? 'legend' : 'catch');
     return `<div class="feedback good reveal">
-      <h3>정답! ${esc(ins.name)}${had ? '' : ' 채집!'}</h3>
-      <div class="stage ${ins.rarity}"><img src="${pic(type, 170, 'happy')}" alt="">${ins.rarity === 'common' ? '' : [[12, 20], [78, 14], [86, 70], [8, 74], [50, 4]].map(([l, t], i) => `<span class="sparkle" style="left:${l}%;top:${t}%;animation-delay:${i * 0.28}s">${ins.rarity === 'legend' ? '✨' : ins.rarity === 'hero' ? '💜' : '✦'}</span>`).join('')}</div>
-      <p><span class="rar ${ins.rarity}">${D.RARITY[ins.rarity].name}</span> ${extra}</p>
+      <h3>정답! ${esc(ins.name)} 채집!</h3>
+      <div class="stage ${shown}"><img src="${pic(type, 170, 'happy', b.tier)}" alt="">${shown === 'common' ? '' : [[12, 20], [78, 14], [86, 70], [8, 74], [50, 4]].map(([l, t], i) => `<span class="sparkle" style="left:${l}%;top:${t}%;animation-delay:${i * 0.28}s">${shown === 'legend' ? '✨' : shown === 'hero' ? '💜' : '✦'}</span>`).join('')}</div>
+      <p><span class="rar ${tk}">${D.RARITY[tk].name}</span> ${extra}</p>
       <p class="fact">${esc(ins.fact)}</p>${expl}${button}</div>`;
+  }
+  // 3초 뒤 저절로 다음으로 (버튼에 남은 초를 보여 줘요)
+  let autoTimer = 0;
+  function autoNext(btn, fn, sec = 3) {
+    if (!btn) return;
+    clearInterval(autoTimer);
+    const label = btn.textContent;
+    let left = sec;
+    const tick = () => {
+      if (!btn.isConnected) return clearInterval(autoTimer);
+      if (left <= 0) { clearInterval(autoTimer); fn(); return; }
+      btn.textContent = `${label} (${left})`; left--;
+    };
+    tick();
+    autoTimer = setInterval(tick, 1000);
+    btn.addEventListener('click', () => clearInterval(autoTimer), { once: true });
   }
   function answer(value) {
     if (answered) return;
@@ -306,6 +336,7 @@
     $('#feedback').innerHTML = html;
     $('#nextQ').addEventListener('click', advance);
     $('#nextQ').focus({ preventScroll: true });
+    autoNext($('#nextQ'), advance);
     updateHud();
   }
   function advance() {
@@ -429,13 +460,14 @@
         <button type="button" class="btn ${maxed ? '' : 'gold'}" data-up="${s.k}" ${maxed || P.coins < cost ? 'disabled' : ''}>${maxed ? `등급 한계 ${cap}` : `+1 · <i class="coin"></i>${cost}`}</button>
       </div>`;
     }).join('');
-    // 등급업
-    const pi = D.promoInfo(b.type, b.lv, b.tier);
+    // 등급업: 같은 곤충 모으기 + 업그레이드 두 조건을 채우면 저절로 올라가요
+    const pi = D.promoInfo(b.type, b.lv, b.tier, b.copies || 1);
+    const pbar = (have, need, label) => `<div class="promo-bar"><i style="width:${Math.min(100, have / need * 100)}%"></i><span>${label} ${Math.min(have, need)} / ${need}${have >= need ? ' ✔' : ''}</span></div>`;
     const promo = pi.max ? `<div class="promo max"><b>👑 최고 등급(전설)이에요!</b><span>능력치마다 ${cap}단계까지 키울 수 있어요.</span></div>`
       : `<div class="promo ${pi.next}">
-          <div class="promo-head"><b>⭐ 등급업: ${tierName(b)} → <span class="rar ${pi.next}">${D.RARITY[pi.next].name}</span></b><span>모든 능력치 +2 · 업그레이드 한계 ${cap} → ${D.TIER_CAP[b.tier + 1]}</span></div>
-          <div class="promo-bar"><i style="width:${Math.min(100, pi.have / pi.need * 100)}%"></i><span>업그레이드 합계 ${pi.have} / ${pi.need}</span></div>
-          <button type="button" class="btn ${pi.ok ? 'primary' : ''}" id="promote" ${pi.ok && P.coins >= pi.cost ? '' : 'disabled'}>${pi.ok ? `등급업 하기 · <i class="coin"></i>${pi.cost}` : `업그레이드 ${pi.need - pi.have}번 더 하면 등급업`}</button>
+          <div class="promo-head"><b>⭐ 다음 등급 <span class="rar ${pi.next}">${D.RARITY[pi.next].name}</span></b><span>두 조건을 채우면 저절로 올라가요 · 모든 능력치 +2 · 한계 ${cap} → ${D.TIER_CAP[b.tier + 1]}</span></div>
+          ${pbar(pi.copies, pi.copyNeed, '같은 곤충 모으기')}
+          ${pbar(pi.have, pi.need, '업그레이드 합계')}
         </div>`;
     const enabled = EV.EVENT_IDS.filter(id => settings.events[id] !== false);
     const evList = EV.EVENT_IDS.map(id => { const e = EV.EVENTS[id]; return `<li class="${enabled.includes(id) ? '' : 'off'}">${e.icon} ${esc(e.name)}<small>${e.stats.map(k => D.STATS.find(s => s.k === k).name).join('·')}</small></li>`; }).join('');
@@ -448,8 +480,8 @@
           <section class="panel lab-list">
             <h2>내 곤충 ${P.bugs.length}마리 ${grow ? '' : '<small>곤충마다 2번까지 출전</small>'}</h2>
             <div class="bug-cards">${P.bugs.map(x => {
-              const i = D.INSECTS[x.type], tk = tierKey(x), can = D.promoInfo(x.type, x.lv, x.tier).ok, u = usesOf(x.type);
-              return `<button type="button" class="bug-card r-${tk} ${x.type === P.sel ? 'on' : ''} ${canEnter(x.type) ? '' : 'spent'}" data-sel="${x.type}"><span class="rar ${tk}">${D.RARITY[tk].name}</span>${grow ? '' : `<span class="uses">${u >= USE_LIMIT ? '출전 끝' : `출전 ${u}/${USE_LIMIT}`}</span>`}${x.garden ? '<span class="garden-tag" title="곤충 키우기에서 키운 곤충">🌱</span>' : ''}${can ? '<span class="promo-dot" title="등급업 가능">⬆</span>' : ''}<img src="${pic(x.type, 80, x.type === P.sel ? 'happy' : undefined, x.tier)}" alt=""><span>${esc(i.name)}</span><small>능력 ${D.powerOf(x.type, x.lv, x.tier)} · 업 ${D.totalLv(x.lv)}</small></button>`;
+              const i = D.INSECTS[x.type], tk = tierKey(x), u = usesOf(x.type);
+              return `<button type="button" class="bug-card r-${tk} ${x.type === P.sel ? 'on' : ''} ${canEnter(x.type) ? '' : 'spent'}" data-sel="${x.type}"><span class="rar ${tk}">${D.RARITY[tk].name}</span>${grow ? '' : `<span class="uses">${u >= USE_LIMIT ? '출전 끝' : `출전 ${u}/${USE_LIMIT}`}</span>`}${x.garden ? '<span class="garden-tag" title="곤충 키우기에서 키운 곤충">🌱</span>' : ''}<img src="${pic(x.type, 80, x.type === P.sel ? 'happy' : undefined, x.tier)}" alt=""><span>${esc(i.name)}</span><small>능력 ${D.powerOf(x.type, x.lv, x.tier)}</small><b class="copies" title="이 등급에서 모은 수">×${x.copies || 1}</b></button>`;
             }).join('')}</div>
           </section>
           <section class="panel lab-detail">
@@ -470,7 +502,7 @@
           <section class="panel">
             ${together() ? `<h2>함께 하는 친구</h2><ul class="members" id="members">${membersHTML()}</ul>` : ''}
             <h2>등급표</h2>
-            <table class="tier-table"><thead><tr><th>등급</th><th>보너스</th><th>한계</th><th>등급업</th></tr></thead><tbody>${D.TIERS.map((t, i) => `<tr class="${i === b.tier ? 'on' : ''}"><td><span class="rar ${t}">${D.RARITY[t].name}</span></td><td>+${D.TIER_BONUS[i]}</td><td>${D.TIER_CAP[i]}</td><td>${i < 3 ? `업 ${D.PROMO_REQ[i]} · <i class="coin"></i>${D.PROMO_COST[i]}` : '-'}</td></tr>`).join('')}</tbody></table>
+            <table class="tier-table"><thead><tr><th>등급</th><th>확률</th><th>보너스</th><th>한계</th><th>다음 등급 조건</th></tr></thead><tbody>${D.TIERS.map((t, i) => `<tr class="${i === b.tier ? 'on' : ''}"><td><span class="rar ${t}">${D.RARITY[t].name}</span></td><td>${D.RARITY[t].weight}%</td><td>+${D.TIER_BONUS[i]}</td><td>${D.TIER_CAP[i]}</td><td>${i < 3 ? `모으기 ×${D.COPY_REQ[i]} · 업 ${D.PROMO_REQ[i]}` : '-'}</td></tr>`).join('')}</tbody></table>
           </section>
           <section class="panel">
             <h2>대결 종목 (무작위)</h2>
@@ -487,7 +519,6 @@
     { const bc = $('#scLab .bug-cards'); if (bc) bc.scrollLeft = listScroll; const hs = $('#scLab .hscroll'); if (hs) { hs.style.scrollBehavior = 'auto'; hs.scrollLeft = pageScroll; hs.style.scrollBehavior = ''; } }
     document.querySelectorAll('[data-sel]').forEach(el => el.addEventListener('click', () => { P.sel = el.dataset.sel; SND('select'); renderLab(); }));
     document.querySelectorAll('[data-up]').forEach(el => el.addEventListener('click', () => upgrade(el.dataset.up)));
-    const pb = $('#promote'); if (pb) pb.addEventListener('click', promote);
     const gb = $('#goBattle'); if (gb) gb.addEventListener('click', requestBattle);
     const lr = $('#labReady'); if (lr) lr.addEventListener('click', () => { P.labReady = true; sendPick(); Net.socket.emit('lab:ready'); SND('select'); renderLab(); });
     if (P.mode === 'grow') bindGrow();
@@ -516,28 +547,35 @@
     if (b.lv[k] >= D.capOf(b.tier) || P.coins < cost) { SND('deny'); return; }
     P.coins -= cost; b.lv[k]++; P.score += 10;
     SND('upgrade');
-    const pi = D.promoInfo(b.type, b.lv, b.tier);
-    if (pi.ok && pi.have === pi.need) toast(`등급업 조건을 채웠어요! ${D.RARITY[pi.next].name} 등급으로 올릴 수 있어요.`, 'good');
-    else toast(`${D.INSECTS[b.type].name}의 ${D.STATS.find(s => s.k === k).name}이(가) 올랐어요!`, 'good');
+    if (!checkPromote(b, true)) {
+      const pi = D.promoInfo(b.type, b.lv, b.tier, b.copies || 1);
+      toast(pi.max || pi.have < pi.need ? `${D.INSECTS[b.type].name}의 ${D.STATS.find(s => s.k === k).name}이(가) 올랐어요!` : `업그레이드 조건 완료! 같은 곤충을 ${pi.copyNeed - pi.copies}마리 더 모으면 등급이 올라가요.`, 'good');
+    }
     renderLab(); updateHud(); saveIfGrow();
   }
-  // 등급업: 업그레이드는 그대로, 모든 능력치 +2, 업그레이드 한계가 늘어나요
-  function promote() {
-    const b = bug(P.sel), pi = D.promoInfo(b.type, b.lv, b.tier);
-    if (!pi.ok || P.coins < pi.cost) { SND('deny'); return; }
-    const before = D.powerOf(b.type, b.lv, b.tier);
-    P.coins -= pi.cost; b.tier++; P.score += Math.round(D.RARITY[tierKey(b)].score / 2);
+  // 등급업: 같은 곤충 모으기 + 업그레이드 조건을 채우면 저절로 1등급씩 올라가요
+  // (업그레이드는 그대로, 모든 능력치 +2, 업그레이드 한계가 늘어나요, 모은 수는 1부터 다시)
+  function checkPromote(b, showCard) {
+    if (!b) return false;
+    const before = D.powerOf(b.type, b.lv, b.tier), from = b.tier;
+    for (let pi = D.promoInfo(b.type, b.lv, b.tier, b.copies || 1); pi.ok; pi = D.promoInfo(b.type, b.lv, b.tier, b.copies || 1)) {
+      b.tier++; b.copies = 1;
+      P.score += Math.round(D.RARITY[tierKey(b)].score / 2);
+    }
+    if (b.tier === from) return false;
     const after = D.powerOf(b.type, b.lv, b.tier), tk = tierKey(b);
-    SND('legend');
-    updateHud(); renderLab(); saveIfGrow();
+    SND('legend'); saveIfGrow();
+    if (!showCard) { toast(`🎉 ${D.INSECTS[b.type].name} ${D.RARITY[tk].name} 등급업!`, 'good'); return true; }
     showModal(`
       <div class="feedback good reveal">
         <h3>등급업! <span class="rar ${tk}">${D.RARITY[tk].name}</span> ${esc(D.INSECTS[b.type].name)}</h3>
         <div class="stage ${tk}"><img src="${pic(b.type, 170, 'happy', b.tier)}" alt="">${[[12, 20], [78, 14], [86, 70], [8, 74], [50, 4]].map(([l, t], i) => `<span class="sparkle" style="left:${l}%;top:${t}%;animation-delay:${i * 0.28}s">${tk === 'legend' ? '✨' : tk === 'hero' ? '💜' : '✦'}</span>`).join('')}</div>
-        <p>능력치 합 <b>${before} → ${after}</b> · 업그레이드 한계 ${D.TIER_CAP[b.tier - 1]} → <b>${D.TIER_CAP[b.tier]}</b></p>
+        <p>같은 곤충을 모으고 업그레이드를 해서 등급이 올라갔어요!</p>
+        <p>능력치 합 <b>${before} → ${after}</b> · 업그레이드 한계 ${D.TIER_CAP[from]} → <b>${D.TIER_CAP[b.tier]}</b></p>
         <div class="row"><button type="button" class="btn primary big" id="promoOk">좋아요!</button></div>
       </div>`, 'promo');
     $('#promoOk').addEventListener('click', hideModal);
+    return true;
   }
   function membersHTML() {
     if (!together()) return '';
@@ -926,7 +964,7 @@
     // 같은 곤충은 더 센 쪽만 남겨요
     const best = new Map();
     for (const b of [...garden.bugs, ...candidates]) {
-      const e = D.cleanEntry(b.type, b.lv, b.tier), prev = best.get(e.type);
+      const e = { ...D.cleanEntry(b.type, b.lv, b.tier), copies: b.copies || 1 }, prev = best.get(e.type);
       if (!prev || D.powerOf(e.type, e.lv, e.tier) > D.powerOf(prev.type, prev.lv, prev.tier)) best.set(e.type, e);
     }
     const list = [...best.values()].sort((a, b) => D.powerOf(b.type, b.lv, b.tier) - D.powerOf(a.type, a.lv, a.tier));
@@ -981,6 +1019,12 @@
       P.total++; if (ok) { P.correct++; P.coins += settings.coinPerCorrect; }
       G.picked = value; G.ok = ok;
       G.html = ok ? `<p class="good-line">정답! <i class="coin"></i> +${settings.coinPerCorrect}</p>` : `<p class="bad-line">아쉬워요! 정답: <b>${esc(GameKit.correctText(q))}</b></p>`;
+      if (ok && Math.random() < 1 / 3) {
+        const gb = P.bugs[Math.floor(Math.random() * P.bugs.length)];
+        gb.copies = (gb.copies || 1) + 1;
+        G.html += `<p class="good-line">🎁 ${esc(D.INSECTS[gb.type].name)}을(를) 한 마리 더 모았어요! ×${gb.copies}</p>`;
+        checkPromote(gb, false);
+      }
       G.html += `<button type="button" class="btn primary" id="growNext">다음 문제 ▶</button>`;
       SND(ok ? 'coin' : 'wrong');
       saveIfGrow(); updateHud(); renderLab();
@@ -992,7 +1036,8 @@
       box.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => finish(Number(b.dataset.i))));
       const f = box.querySelector('#shortForm'); if (f) f.addEventListener('submit', e => { e.preventDefault(); finish($('#shortIn').value); });
     }
-    const nx = $('#growNext'); if (nx) nx.addEventListener('click', () => { P.growQ = null; renderLab(); });
+    const nx = $('#growNext');
+    if (nx) { const go = () => { P.growQ = null; renderLab(); }; nx.addEventListener('click', go); autoNext(nx, go); }
     $('#growExit').addEventListener('click', () => { saveIfGrow(); P = null; showStart(); });
   }
 
@@ -1005,7 +1050,7 @@
     // 키우던 곤충이 있으면: [새 게임 시작] + 색이 다른 [곤충 키우기로 이어하기]
     const growing = loadGarden().bugs.length > 0;
     GameKit.showStartScreen({
-      logo: `<div class="logo-trio">${['bee', 'rhino', 'ladybug'].map(t => `<img src="${pic(t, 96, 'happy')}" alt="">`).join('')}</div>`,
+      logo: `<div class="logo-trio">${[['bee', 1], ['rhino', 3], ['ladybug', 2]].map(([t, k]) => `<img src="${pic(t, 96, 'happy', k)}" alt="">`).join('')}</div>`,
       onStart: startFromKit,
       startLabel: growing ? '▶ 새 게임 시작' : '▶ 게임 시작',
       altButton: growing ? { label: '🌱 곤충 키우기로 이어하기', onClick: () => enterGrow() } : null,
@@ -1034,9 +1079,9 @@
         <div class="hcols">
         <h3>진행 순서</h3>
         <ol>
-          <li><b>곤충 채집</b> — 퀴즈 ${collectCount()}문제. 맞히면 곤충을 잡아요 (일반 55% · 희귀 28% · 영웅 12% · 전설 5%). 같은 곤충을 또 잡으면 능력치 +1. 하나도 못 맞혀도 기본 곤충 1마리는 받아요.</li>
+          <li><b>곤충 채집</b> — 퀴즈 ${collectCount()}문제. 맞히면 곤충을 잡아요. 어떤 곤충이든 등급은 확률로 정해져요 (일반 55% · 희귀 28% · 영웅 12% · 전설 5%). 같은 곤충을 또 잡으면 모은 수 +1 · 능력치 +1. 하나도 못 맞혀도 기본 곤충은 받아요. 문제를 풀면 3초 뒤 저절로 다음 문제로 넘어가요.</li>
           <li><b>코인 퀴즈</b> — 퀴즈 ${settings.coinCount}문제. 빨리 맞힐수록 코인이 많아요 (4명: 1등 20 · 15 · 10 · 4등 5, 2명: 10 · 5, 틀리면 0).</li>
-          <li><b>곤충 연구소</b> — 코인으로 속도·힘·균형·점프·체력을 올려요. 업그레이드 합계가 기준을 넘으면 코인을 내고 <b>등급업</b>(일반 → 희귀 → 영웅 → 전설)! 등급마다 모든 능력치 +2, 업그레이드 한계도 늘어나요.</li>
+          <li><b>곤충 연구소</b> — 코인으로 속도·힘·균형·점프·체력을 올려요. <b>같은 곤충을 모은 수</b>(일반→희귀 ×2 · 희귀→영웅 ×3 · 영웅→전설 ×4)와 <b>업그레이드 합계</b>(6 · 14 · 24)를 채우면 저절로 <b>등급업</b>! 등급마다 모든 능력치 +2, 업그레이드 한계도 늘어나요. 곤충 카드 오른쪽 아래 숫자가 모은 수예요.</li>
           <li><b>곤충 대결</b> — 무작위 종목으로 ${settings.battleCount}차전까지 겨뤄요. <b>한 곤충은 2번까지</b> 출전할 수 있어요. 1등 코인 60 · 2등 40 · 3등 25 · 4등 15. 대결 사이에 연구소에서 재정비해요.</li>
           <li><b>곤충 키우기</b> — 다 끝나면 3마리를 골라 퀴즈로 계속 키울 수 있어요. 키운 곤충은 다음 게임에서 기본 곤충으로 함께 출발해요.</li>
         </ol>

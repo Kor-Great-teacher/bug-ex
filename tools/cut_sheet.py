@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """자세 모음 그림(포즈 시트)을 자세별 그림으로 잘라요.
 
-사용법:  python3 tools/cut_sheet.py art/sheets/stag.png stag
+사용법:  python3 tools/cut_sheet.py art/sheets/stag.png stag [--double]
   → art/bugs/stag_stand.png, art/bugs/stag_run1.png … 를 만들어요.
 
-시트 모양 (ChatGPT로 만든 사슴벌레 시트와 같은 배치, 배경은 투명):
+시트 모양 (ChatGPT로 만든 시트와 같은 배치):
   1줄: stand · happy · strain · dizzy
-  2줄: run1 run2 · push1 push2 · pull1 pull2 · balance1 balance2
-  3줄: climb1 climb2 · hang1 hang2 · fly1 fly2 · cheer1 cheer2
-  4줄: attack1 attack2 · damage1 damage2 · defend1 defend2 · idle1 idle2
+  (--double 이면 2줄에 그 두 번째 모습: stand2 · happy2 · strain2 · dizzy — 첫 줄 dizzy 는 dizzy1 로 저장)
+  다음 줄: run1 run2 · push1 push2 · pull1 pull2 · balance1 balance2
+  다음 줄: climb1 climb2 · hang1 hang2 · fly1 fly2 · cheer1 cheer2
+  다음 줄: attack1 attack2 · damage1 damage2 · defend1 defend2 · idle1 idle2
+배경이 투명하지 않으면(어두운 배경) 가장자리에서 이어진 어두운 배경을 지워요.
 이름표(파란 알약 모양 글자)는 지우고, 캐릭터 몸통과 노란 별만 남겨요.
 필요한 것: Python 3, Pillow, numpy
 """
@@ -24,6 +26,38 @@ ROWS = [
     ['climb1', 'climb2', 'hang1', 'hang2', 'fly1', 'fly2', 'cheer1', 'cheer2'],
     ['attack1', 'attack2', 'damage1', 'damage2', 'defend1', 'defend2', 'idle1', 'idle2'],
 ]
+
+
+DOUBLE_TOP = [['stand', 'happy', 'strain', 'dizzy1'], ['stand2', 'happy2', 'strain2', 'dizzy']]
+DOUBLE_BOUNDS = [0, 0.217, 0.405, 0.598, 0.793, 1]   # 5줄 시트의 줄 나눔 (세로 비율)
+
+
+def key_background(im):
+    """불투명한 어두운 배경을 지워요: 가장자리에서 이어진 푸르스름한·어두운 픽셀 + 이름표."""
+    a = np.array(im.convert('RGB')).astype(np.int32)
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    v = np.maximum(np.maximum(r, g), b)
+    cand = ((b >= g - 6) & (b >= r - 6) & (v < 150)) | ((b > 90) & (r < 90) & (b - r > 45))
+    pill = (b > 90) & (r < 90) & (g < 130) & (b - r > 45)
+    near = pill.copy()
+    for _ in range(7):
+        near = near | np.roll(near, 1, 0) | np.roll(near, -1, 0) | np.roll(near, 1, 1) | np.roll(near, -1, 1)
+    cand |= near & (r > 150) & (g > 150) & (b > 150)
+    m = Image.fromarray((cand * 255).astype(np.uint8)).copy()   # copy: 바로 쓰면 floodfill 이 안 돼요
+    h, w = cand.shape
+    for x in range(0, w, 8):
+        for y in (0, h - 1):
+            if m.getpixel((x, y)) == 255:
+                ImageDraw.floodfill(m, (x, y), 128)
+    for y in range(0, h, 8):
+        for x in (0, w - 1):
+            if m.getpixel((x, y)) == 255:
+                ImageDraw.floodfill(m, (x, y), 128)
+    bg = (np.array(m) == 128) | near | ((b - r > 10) & (b >= g) & (v < 125))
+    alpha = Image.fromarray(np.where(bg, 0, 255).astype(np.uint8)).filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(0.8))
+    out = im.convert('RGBA')
+    out.putalpha(alpha)
+    return out
 
 
 def remove_labels(a):
@@ -78,8 +112,12 @@ def keep_body(frame):
     return Image.fromarray(a.astype(np.uint8), 'RGBA').crop((xs.min(), ys.min(), xs.max() + 1, ys.max() + 1))
 
 
-def main(sheet_path, name, out_dir='art/bugs'):
-    im = Image.open(sheet_path).convert('RGBA')
+def main(sheet_path, name, out_dir='art/bugs', double=False):
+    im = Image.open(sheet_path)
+    if im.mode != 'RGBA' or np.array(im.convert('RGBA'))[..., 3].min() == 255:
+        im = key_background(im)
+    im = im.convert('RGBA')
+    rows = DOUBLE_TOP + ROWS[1:] if double else ROWS
     a = np.array(im).astype(np.int32)
     remove_labels(a)
     sheet = Image.fromarray(a.astype(np.uint8), 'RGBA')
@@ -96,11 +134,13 @@ def main(sheet_path, name, out_dir='art/bugs'):
             if y - s > 60:
                 bounds.append((s, y))
         y += 1
-    if len(bounds) != len(ROWS):
-        step = h // len(ROWS)
-        bounds = [(i * step, (i + 1) * step) for i in range(len(ROWS))]
+    if double:
+        bounds = [(int(DOUBLE_BOUNDS[i] * h), int(DOUBLE_BOUNDS[i + 1] * h)) for i in range(len(rows))]
+    elif len(bounds) != len(rows):
+        step = h // len(rows)
+        bounds = [(i * step, (i + 1) * step) for i in range(len(rows))]
     os.makedirs(out_dir, exist_ok=True)
-    for (y0, y1), names in zip(bounds, ROWS):
+    for (y0, y1), names in zip(bounds, rows):
         for (x0, x1), pose in zip(segments(mask[y0:y1].sum(0), len(names)), names):
             frame = keep_body(sheet.crop((x0, y0, x1, y1)))
             frame.save(os.path.join(out_dir, f'{name}_{pose}.png'))
@@ -110,4 +150,4 @@ def main(sheet_path, name, out_dir='art/bugs'):
 if __name__ == '__main__':
     if len(sys.argv) < 3:
         sys.exit(__doc__)
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], double='--double' in sys.argv)

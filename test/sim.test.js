@@ -32,10 +32,16 @@ function tierRules() {
       assert(Data.powerOf(ins.id, max, t + 1) > Data.powerOf(ins.id, max, t), '등급 최고치도 더 세야 해요');
     }
   }
-  // 서버 검사: 조건을 못 채운 등급은 낮춰요
-  assert.strictEqual(Data.cleanEntry('ant', { spd: 2 }, 3).tier, 0);
-  assert.strictEqual(Data.cleanEntry('ant', { spd: 3, pow: 3, bal: 2 }, 1).tier, 1);
-  assert.strictEqual(Data.cleanEntry('rhino', {}, 0).tier, 3);
+  // 등급은 곤충 종류와 상관없이 채집 확률로 (일반 55 · 희귀 28 · 영웅 12 · 전설 5)
+  const cnt = [0, 0, 0, 0];
+  for (let i = 0; i < 20000; i++) cnt[Data.rollTier()]++;
+  assert(cnt[0] > cnt[1] && cnt[1] > cnt[2] && cnt[2] > cnt[3] && cnt[3] > 600, `등급 확률 ${cnt}`);
+  // 등급업: 같은 곤충 모은 수 + 업그레이드 합계 두 조건
+  assert.strictEqual(Data.promoInfo('ant', { spd: 4, pow: 2 }, 0, 1).ok, false, '모은 수가 모자라면 안 돼요');
+  assert.strictEqual(Data.promoInfo('ant', { spd: 2 }, 0, 2).ok, false, '업그레이드가 모자라면 안 돼요');
+  assert.strictEqual(Data.promoInfo('ant', { spd: 4, pow: 2 }, 0, 2).ok, true);
+  // 서버 검사: 등급은 0~3, 업그레이드는 등급 한계까지
+  assert.strictEqual(Data.cleanEntry('ant', {}, 9).tier, 3);
   assert.strictEqual(Data.cleanEntry('ant', { spd: 12 }, 0).lv.spd, 4, '등급 한계를 넘는 업그레이드는 잘라요');
   console.log('✓ 등급 규칙');
 }

@@ -247,7 +247,7 @@ function setPick(socket, msg) {
 // 고른 곤충이 없거나 이미 2번 나갔으면 아직 출전하지 않은 기본 곤충으로 나가요
 function entryOf(p) {
   if (p.pick && (p.uses[p.pick.type] || 0) < USE_LIMIT) return p.pick;
-  const type = Data.LIST.filter(i => i.rarity === 'common').map(i => i.id).find(t => (p.uses[t] || 0) < USE_LIMIT) || 'ant';
+  const type = Data.LIST.map(i => i.id).find(t => (p.uses[t] || 0) < USE_LIMIT) || 'ant';
   return { type, lv: Data.zeroLv(), tier: 0 };
 }
 function labReady(socket) {

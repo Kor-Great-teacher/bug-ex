@@ -70,10 +70,165 @@
   }
  },
  "mantis": {
-  "card": {
-   "file": "mantis_card.webp",
-   "w": 268,
-   "h": 346
+  "attack1": {
+   "file": "mantis_attack1.webp",
+   "w": 183,
+   "h": 149
+  },
+  "attack2": {
+   "file": "mantis_attack2.webp",
+   "w": 147,
+   "h": 141
+  },
+  "balance1": {
+   "file": "mantis_balance1.webp",
+   "w": 147,
+   "h": 144
+  },
+  "balance2": {
+   "file": "mantis_balance2.webp",
+   "w": 135,
+   "h": 156
+  },
+  "cheer1": {
+   "file": "mantis_cheer1.webp",
+   "w": 151,
+   "h": 162
+  },
+  "cheer2": {
+   "file": "mantis_cheer2.webp",
+   "w": 134,
+   "h": 169
+  },
+  "climb1": {
+   "file": "mantis_climb1.webp",
+   "w": 161,
+   "h": 167
+  },
+  "climb2": {
+   "file": "mantis_climb2.webp",
+   "w": 142,
+   "h": 140
+  },
+  "damage1": {
+   "file": "mantis_damage1.webp",
+   "w": 144,
+   "h": 141
+  },
+  "damage2": {
+   "file": "mantis_damage2.webp",
+   "w": 136,
+   "h": 142
+  },
+  "defend1": {
+   "file": "mantis_defend1.webp",
+   "w": 148,
+   "h": 146
+  },
+  "defend2": {
+   "file": "mantis_defend2.webp",
+   "w": 121,
+   "h": 154
+  },
+  "dizzy": {
+   "file": "mantis_dizzy.webp",
+   "w": 170,
+   "h": 185
+  },
+  "dizzy1": {
+   "file": "mantis_dizzy1.webp",
+   "w": 187,
+   "h": 192
+  },
+  "fly1": {
+   "file": "mantis_fly1.webp",
+   "w": 175,
+   "h": 153
+  },
+  "fly2": {
+   "file": "mantis_fly2.webp",
+   "w": 143,
+   "h": 147
+  },
+  "hang1": {
+   "file": "mantis_hang1.webp",
+   "w": 132,
+   "h": 165
+  },
+  "hang2": {
+   "file": "mantis_hang2.webp",
+   "w": 108,
+   "h": 156
+  },
+  "happy": {
+   "file": "mantis_happy.webp",
+   "w": 179,
+   "h": 193
+  },
+  "happy2": {
+   "file": "mantis_happy2.webp",
+   "w": 202,
+   "h": 177
+  },
+  "idle1": {
+   "file": "mantis_idle1.webp",
+   "w": 142,
+   "h": 152
+  },
+  "idle2": {
+   "file": "mantis_idle2.webp",
+   "w": 104,
+   "h": 150
+  },
+  "pull1": {
+   "file": "mantis_pull1.webp",
+   "w": 143,
+   "h": 138
+  },
+  "pull2": {
+   "file": "mantis_pull2.webp",
+   "w": 130,
+   "h": 145
+  },
+  "push1": {
+   "file": "mantis_push1.webp",
+   "w": 158,
+   "h": 145
+  },
+  "push2": {
+   "file": "mantis_push2.webp",
+   "w": 158,
+   "h": 150
+  },
+  "run1": {
+   "file": "mantis_run1.webp",
+   "w": 156,
+   "h": 139
+  },
+  "run2": {
+   "file": "mantis_run2.webp",
+   "w": 150,
+   "h": 136
+  },
+  "stand": {
+   "file": "mantis_stand.webp",
+   "w": 220,
+   "h": 195
+  },
+  "stand2": {
+   "file": "mantis_stand2.webp",
+   "w": 201,
+   "h": 175
+  },
+  "strain": {
+   "file": "mantis_strain.webp",
+   "w": 207,
+   "h": 194
+  },
+  "strain2": {
+   "file": "mantis_strain2.webp",
+   "w": 192,
+   "h": 180
   }
  },
  "rhino": {

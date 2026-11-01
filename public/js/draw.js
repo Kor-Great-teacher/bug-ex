@@ -476,8 +476,10 @@ window.BugArt = (() => {
   function pickFrame(fr, pose, mood, ph, t, forCard) {
     if (forCard) return mood === 'happy' && fr.happy ? 'happy' : fr.card ? 'card' : 'stand';
     if (mood === 'dizzy' && fr.dizzy) return 'dizzy';
-    if (mood === 'strain' && ['stand', 'balance', 'run'].includes(pose) && fr.strain) return 'strain';
-    if (mood === 'happy' && pose === 'stand' && fr.happy) return 'happy';
+    // 표정 그림이 두 장(happy · happy2)이면 번갈아 보여 줘요
+    const alt = n => (fr[n + '2'] && Math.floor(t * 2) % 2 ? n + '2' : n);
+    if (mood === 'strain' && ['stand', 'balance', 'run'].includes(pose) && fr.strain) return alt('strain');
+    if (mood === 'happy' && pose === 'stand' && fr.happy) return alt('happy');
     const list = (POSE_FRAMES[pose] || []).filter(n => fr[n]);
     if (list.length) {
       const k = pose === 'run' || pose === 'climb' || pose === 'push' ? Math.floor(ph / Math.PI) : Math.floor(t * (pose === 'stand' ? 1.1 : 3));
