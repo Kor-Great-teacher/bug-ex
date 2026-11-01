@@ -241,13 +241,14 @@ function setPick(socket, msg) {
   const M = matches.get(socket.data.match); if (!M) return;
   const p = M.players.find(x => x.sid === socket.id); if (!p) return;
   const pick = Data.cleanEntry(msg.type, msg.lv, msg.tier);
-  if ((p.uses[pick.type] || 0) >= USE_LIMIT) return; // 한 곤충은 2번까지만 출전
+  if ((p.uses[useKey(pick)] || 0) >= USE_LIMIT) return; // 한 곤충(같은 곤충 · 같은 등급)은 2번까지만 출전
   p.pick = pick;
 }
 // 고른 곤충이 없거나 이미 2번 나갔으면 아직 출전하지 않은 기본 곤충으로 나가요
+const useKey = e => `${e.type}:${e.tier}`;
 function entryOf(p) {
-  if (p.pick && (p.uses[p.pick.type] || 0) < USE_LIMIT) return p.pick;
-  const type = Data.LIST.map(i => i.id).find(t => (p.uses[t] || 0) < USE_LIMIT) || 'ant';
+  if (p.pick && (p.uses[useKey(p.pick)] || 0) < USE_LIMIT) return p.pick;
+  const type = Data.LIST.map(i => i.id).find(t => (p.uses[`${t}:0`] || 0) < USE_LIMIT) || 'ant';
   return { type, lv: Data.zeroLv(), tier: 0 };
 }
 function labReady(socket) {
@@ -266,7 +267,7 @@ function startBattle(M) {
   const entrants = M.players.map(p => {
     if (p.bot) { const b = Data.makeBots(1, humanPicks, M.cfg.difficulty)[0]; return { ...b, name: p.nick, skill: p.skill }; }
     const pk = entryOf(p);
-    p.uses[pk.type] = (p.uses[pk.type] || 0) + 1;
+    p.uses[useKey(pk)] = (p.uses[useKey(pk)] || 0) + 1;
     p.pick = null;
     return { name: p.nick, type: pk.type, lv: pk.lv, tier: pk.tier, bot: p.gone, skill: 0.5 };
   });

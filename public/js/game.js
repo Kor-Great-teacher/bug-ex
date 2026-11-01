@@ -75,35 +75,38 @@
       correct: 0, total: 0, wrong: [], marks: [],
       // 곤충 키우기에서 키운 곤충은 기본 곤충으로 함께 출발해요
       bugs: garden.bugs.map(b => ({ ...clone(b), garden: true })),
-      sel: garden.bugs.length ? garden.bugs[0].type : null, coins: 0, score: 0,
+      sel: garden.bugs.length ? garden.bugs[0].id : null, coins: 0, score: 0,
       battleNo: 0, places: [0, 0, 0, 0], history: [], lastEvent: null, labReady: false, labDeadline: 0, coinBoard: null, uses: {},
     };
   }
-  const bug = type => P.bugs.find(b => b.type === type);
+  // 곤충 카드 하나 = 같은 곤충 · 같은 등급 (등급이 다르면 따로 모아요). id 로 찾아요.
+  const bug = id => P.bugs.find(b => b.id === id);
+  const hasType = t => P.bugs.some(b => b.type === t);
+  const newId = () => Math.random().toString(36).slice(2, 10);
   const collectCount = () => Math.max(1, GameKit.state.quizGoal || settings.collectCount || 7);
   const battleCount = () => (P && P.match ? P.match.opts.battleCount : settings.battleCount);
   const together = () => !!(P && P.mode === 'together' && P.match);
   const BATTLE_COINS = [60, 40, 25, 15], BATTLE_SCORE = [300, 150, 50, 20];
   // 한 곤충은 대결에 2번까지 나갈 수 있어요
   const USE_LIMIT = 2;
-  const usesOf = t => (P.uses && P.uses[t]) || 0;
-  const canEnter = t => P.mode === 'grow' || usesOf(t) < USE_LIMIT;
+  const usesOf = id => (P.uses && P.uses[id]) || 0;
+  const canEnter = id => P.mode === 'grow' || usesOf(id) < USE_LIMIT;
   // 퀴즈를 하나도 못 맞혀도 기본 곤충은 꼭 있어요. 대결을 다 치를 만큼(6차전이면 3마리) 모자라면 기본 곤충을 채워 줘요.
   function ensureBugs() {
     const need = Math.max(1, Math.ceil(battleCount() / USE_LIMIT));
     const basics = ['ant', 'ladybug', 'bee', 'grasshopper', 'cricket', 'butterfly'];
     const given = [];
     while (P.bugs.length < need) {
-      const t = basics.find(x => !bug(x)); if (!t) break;
-      P.bugs.push({ type: t, lv: D.zeroLv(), tier: 0, copies: 1 }); given.push(D.INSECTS[t].name);
+      const t = basics.find(x => !hasType(x)); if (!t) break;
+      P.bugs.push({ id: newId(), type: t, lv: D.zeroLv(), tier: 0, copies: 1 }); given.push(D.INSECTS[t].name);
     }
-    if (!P.sel || !bug(P.sel)) P.sel = P.bugs[0].type;
+    if (!P.sel || !bug(P.sel)) P.sel = P.bugs[0].id;
     if (given.length) toast(`대결에 나갈 곤충이 모자라 기본 곤충 ${given.join(' · ')}을(를) 받았어요!`, 'warn');
   }
   // 출전할 수 있는 곤충 중 가장 센 곤충
   function bestEntrant() {
-    const ok = P.bugs.filter(b => canEnter(b.type)).sort((a, b) => D.powerOf(b.type, b.lv, b.tier) - D.powerOf(a.type, a.lv, a.tier));
-    return ok.length ? ok[0].type : P.bugs[0].type;
+    const ok = P.bugs.filter(b => canEnter(b.id)).sort((a, b) => D.powerOf(b.type, b.lv, b.tier) - D.powerOf(a.type, a.lv, a.tier));
+    return ok.length ? ok[0].id : P.bugs[0].id;
   }
 
   // ---------- 곤충 키우기 저장 (이 브라우저에 최대 3마리) ----------
@@ -111,11 +114,22 @@
   function loadGarden() {
     try {
       const g = JSON.parse(localStorage.getItem(GKEY));
-      if (g && Array.isArray(g.bugs)) return { bugs: g.bugs.map(b => ({ ...D.cleanEntry(b.type, b.lv, b.tier), copies: Math.max(1, b.copies | 0) })), coins: Math.max(0, g.coins | 0) };
+      if (g && Array.isArray(g.bugs)) return { bugs: mergeSame(g.bugs.map(b => ({ id: b.id || newId(), ...D.cleanEntry(b.type, b.lv, b.tier), copies: Math.max(1, b.copies | 0) }))), coins: Math.max(0, g.coins | 0) };
     } catch (e) { /* 저장소를 못 쓰면 빈 정원 */ }
     return { bugs: [], coins: 0 };
   }
-  function saveGarden(g) { try { localStorage.setItem(GKEY, JSON.stringify({ bugs: g.bugs.map(b => ({ type: b.type, lv: b.lv, tier: b.tier, copies: b.copies || 1 })), coins: g.coins })); } catch (e) { /* 무시 */ } }
+  function saveGarden(g) { try { localStorage.setItem(GKEY, JSON.stringify({ bugs: g.bugs.map(b => ({ id: b.id, type: b.type, lv: b.lv, tier: b.tier, copies: b.copies || 1 })), coins: g.coins })); } catch (e) { /* 무시 */ } }
+  // 같은 곤충 · 같은 등급 카드가 여럿이면 하나로 (모은 수는 더하고, 업그레이드는 더 높은 쪽)
+  function mergeSame(list) {
+    const out = [];
+    for (const b of list) {
+      const same = out.find(x => x.type === b.type && x.tier === b.tier);
+      if (!same) { out.push(b); continue; }
+      same.copies = (same.copies || 1) + (b.copies || 1);
+      for (const k of D.STAT_KEYS) same.lv[k] = Math.min(D.capOf(same.tier), Math.max(same.lv[k], b.lv[k]));
+    }
+    return out;
+  }
   function saveIfGrow() { if (P && P.mode === 'grow') saveGarden({ bugs: P.bugs, coins: P.coins }); }
 
   // ============================================================
@@ -259,27 +273,25 @@
     });
   }
   // 채집 성공: 곤충은 14종 중 아무거나, 등급은 확률로 (일반 55 · 희귀 28 · 영웅 12 · 전설 5)
-  //  - 처음 잡은 곤충: 새 친구
-  //  - 이미 있는 곤충을 더 높은 등급으로 잡으면: 그 등급으로 올라가요 (모은 수 1부터)
-  //  - 같거나 낮은 등급이면: 모은 수 +1 · 능력치 하나 +1
+  //  - 같은 곤충 · 같은 등급 카드가 있으면: 모은 수 +1 · 능력치 하나 +1
+  //  - 없으면 (처음 잡았거나 등급이 다르면): 새 카드 — 등급이 다른 곤충은 따로 세다가, 아래 등급이 등급업하면 위 등급 카드에 합쳐져요
   function catchHTML(expl, button) {
     const type = D.rollInsect(), tier = D.rollTier(), ins = D.INSECTS[type], tk = D.TIERS[tier];
-    let b = bug(type), extra;
+    let b = P.bugs.find(x => x.type === type && x.tier === tier), extra;
     if (!b) {
-      b = { type, lv: D.zeroLv(), tier, copies: 1 }; P.bugs.push(b);
-      P.score += D.RARITY[tk].score; extra = '새로운 곤충 친구를 만났어요!';
-    } else if (tier > b.tier) {
-      b.tier = tier; b.copies = 1; P.score += D.RARITY[tk].score;
-      extra = `더 높은 <b>${D.RARITY[tk].name}</b> 등급으로 잡아서 등급이 올라갔어요!`;
+      const before = hasType(type);
+      b = { id: newId(), type, lv: D.zeroLv(), tier, copies: 1 }; P.bugs.push(b);
+      P.score += D.RARITY[tk].score;
+      extra = before ? `<b>${D.RARITY[tk].name}</b> 등급 ${esc(ins.name)}은(는) 따로 모아요!` : '새로운 곤충 친구를 만났어요!';
     } else {
       b.copies = (b.copies || 1) + 1;
       const open = D.STAT_KEYS.filter(s => b.lv[s] < D.capOf(b.tier)), k = open[Math.floor(Math.random() * open.length)];
       if (k) b.lv[k]++; else P.coins += 30;
       extra = `같은 곤충을 또 모았어요! <b>×${b.copies}</b>${k ? ` · ${D.STATS.find(s => s.k === k).name} +1` : ' · 코인 30'}`;
     }
-    if (!P.sel) P.sel = type;
+    if (!P.sel) P.sel = b.id;
     const up = checkPromote(b, false);
-    if (up) extra += ` 🎉 <b>${D.RARITY[tierKey(b)].name}</b> 등급업!`;
+    if (up) { b = up; extra += ` 🎉 <b>${D.RARITY[tierKey(b)].name}</b> 등급업! (×${b.copies})`; }
     const shown = D.TIERS[b.tier];
     SND(b.tier >= 2 ? 'legend' : 'catch');
     return `<div class="feedback good reveal">
@@ -445,11 +457,11 @@
   // 함께 하기: 고른 곤충은 바뀔 때마다 서버에 알려요 (시간이 끝나면 이 곤충으로 자동 출전)
   function sendPick() {
     if (!together() || P.stage !== 'lab') return;
-    const b = bug(P.sel); if (!b || !canEnter(b.type)) return;
+    const b = bug(P.sel); if (!b || !canEnter(b.id)) return;
     Net.socket.emit('lab:pick', { type: b.type, lv: b.lv, tier: b.tier });
   }
   function renderLab() {
-    if (!P.sel || !bug(P.sel)) P.sel = P.bugs[0].type;
+    if (!P.sel || !bug(P.sel)) P.sel = P.bugs[0].id;
     const b = bug(P.sel), ins = D.INSECTS[b.type], st = D.statsOf(b.type, b.lv, b.tier), cap = D.capOf(b.tier);
     const maxV = 9 + D.TIER_BONUS[3] + D.MAX_LV, tb = D.TIER_BONUS[b.tier], tcol = D.RARITY[tierKey(b)].color;
     const rows = D.STATS.map((s, i) => {
@@ -481,8 +493,8 @@
           <section class="panel lab-list">
             <h2>내 곤충 ${P.bugs.length}마리 ${grow ? '' : '<small>곤충마다 2번까지 출전</small>'}</h2>
             <div class="bug-cards">${P.bugs.map(x => {
-              const i = D.INSECTS[x.type], tk = tierKey(x), u = usesOf(x.type);
-              return `<button type="button" class="bug-card r-${tk} ${x.type === P.sel ? 'on' : ''} ${canEnter(x.type) ? '' : 'spent'}" data-sel="${x.type}"><span class="rar ${tk}">${D.RARITY[tk].name}</span>${grow ? '' : `<span class="uses">${u >= USE_LIMIT ? '출전 끝' : `출전 ${u}/${USE_LIMIT}`}</span>`}${x.garden ? '<span class="garden-tag" title="곤충 키우기에서 키운 곤충">🌱</span>' : ''}<img src="${pic(x.type, 80, x.type === P.sel ? 'happy' : undefined, x.tier)}" alt=""><span>${esc(i.name)}</span><small>능력 ${D.powerOf(x.type, x.lv, x.tier)}</small><b class="copies" title="이 등급에서 모은 수">×${x.copies || 1}</b></button>`;
+              const i = D.INSECTS[x.type], tk = tierKey(x), u = usesOf(x.id);
+              return `<button type="button" class="bug-card r-${tk} ${x.id === P.sel ? 'on' : ''} ${canEnter(x.id) ? '' : 'spent'}" data-sel="${x.id}"><span class="rar ${tk}">${D.RARITY[tk].name}</span><b class="copies" title="이 등급에서 모은 수">×${x.copies || 1}</b>${x.garden ? '<span class="garden-tag" title="곤충 키우기에서 키운 곤충">🌱</span>' : ''}<img src="${pic(x.type, 80, x.id === P.sel ? 'happy' : undefined, x.tier)}" alt=""><span>${esc(i.name)}</span><small>능력 ${D.powerOf(x.type, x.lv, x.tier)}${grow ? '' : ` · <em class="uses">${u >= USE_LIMIT ? '출전 끝' : `출전 ${u}/${USE_LIMIT}`}</em>`}</small></button>`;
             }).join('')}</div>
           </section>
           <section class="panel lab-detail">
@@ -559,24 +571,34 @@
   function checkPromote(b, showCard) {
     if (!b) return false;
     const before = D.powerOf(b.type, b.lv, b.tier), from = b.tier;
+    let merged = false;
     for (let pi = D.promoInfo(b.type, b.lv, b.tier, b.copies || 1); pi.ok; pi = D.promoInfo(b.type, b.lv, b.tier, b.copies || 1)) {
-      b.tier++; b.copies = 1;
+      const up = P.bugs.find(x => x !== b && x.type === b.type && x.tier === b.tier + 1);
+      if (up) {
+        // 위 등급 카드에 합쳐져요: 모은 수 +1, 업그레이드는 더 높은 쪽
+        up.copies = (up.copies || 1) + 1;
+        for (const k of D.STAT_KEYS) up.lv[k] = Math.min(D.capOf(up.tier), Math.max(up.lv[k], b.lv[k]));
+        P.bugs.splice(P.bugs.indexOf(b), 1);
+        if (P.sel === b.id) P.sel = up.id;
+        if (P.uses && P.uses[b.id]) P.uses[up.id] = Math.max(usesOf(up.id), P.uses[b.id]);
+        b = up; merged = true;
+      } else { b.tier++; b.copies = 1; }
       P.score += Math.round(D.RARITY[tierKey(b)].score / 2);
     }
-    if (b.tier === from) return false;
+    if (b.tier === from && !merged) return false;
     const after = D.powerOf(b.type, b.lv, b.tier), tk = tierKey(b);
     SND('legend'); saveIfGrow();
-    if (!showCard) { toast(`🎉 ${D.INSECTS[b.type].name} ${D.RARITY[tk].name} 등급업!`, 'good'); return true; }
+    if (!showCard) { toast(`🎉 ${D.INSECTS[b.type].name} ${D.RARITY[tk].name} 등급업!${merged ? ` 모은 수 ×${b.copies}` : ''}`, 'good'); return b; }
     showModal(`
       <div class="feedback good reveal">
         <h3>등급업! <span class="rar ${tk}">${D.RARITY[tk].name}</span> ${esc(D.INSECTS[b.type].name)}</h3>
         <div class="stage ${tk}"><img src="${pic(b.type, 170, 'happy', b.tier)}" alt="">${[[12, 20], [78, 14], [86, 70], [8, 74], [50, 4]].map(([l, t], i) => `<span class="sparkle" style="left:${l}%;top:${t}%;animation-delay:${i * 0.28}s">${tk === 'legend' ? '✨' : tk === 'hero' ? '💜' : '✦'}</span>`).join('')}</div>
-        <p>같은 곤충을 모으고 업그레이드를 해서 등급이 올라갔어요!</p>
+        <p>${merged ? `이미 있던 <b>${D.RARITY[tk].name}</b> ${esc(D.INSECTS[b.type].name)}에 합쳐져서 모은 수가 <b>×${b.copies}</b>이 됐어요!` : '같은 곤충을 모으고 업그레이드를 해서 등급이 올라갔어요!'}</p>
         <p>능력치 합 <b>${before} → ${after}</b> · 업그레이드 한계 ${D.TIER_CAP[from]} → <b>${D.TIER_CAP[b.tier]}</b></p>
         <div class="row"><button type="button" class="btn primary big" id="promoOk">좋아요!</button></div>
       </div>`, 'promo');
     $('#promoOk').addEventListener('click', hideModal);
-    return true;
+    return b;
   }
   function membersHTML() {
     if (!together()) return '';
@@ -760,8 +782,7 @@
   const BTN_LABEL = { sprint: '달려! 👟', sumo: '돌진! 💥', highjump: '점프! ⬆️', dung: '굴려! 🟤', nectar: '슝~ 빨리! 💨', tug: '영차! 💪', climb: '올라가! 🧗', hurdles: '점프! 🦘' };
   function beginBattle(mode, meta, localBattle) {
     P.stage = 'battle'; P.lastEvent = meta.ev;
-    const mt = meta.ents[meta.me] && meta.ents[meta.me].type;
-    if (mt) P.uses[mt] = usesOf(mt) + 1;
+    if (P.sel) P.uses[P.sel] = usesOf(P.sel) + 1;   // 지금 고른 곤충 카드가 한 번 출전했어요
     BT = { mode, meta, me: meta.me, b: localBattle || null, prev: null, cur: null, curAt: 0, ended: false, lastCount: null, lastT: -99, prevMine: null };
     const ev = EV.EVENTS[meta.ev];
     $('#battleHead').innerHTML = `<h2>${ev.icon} ${esc(ev.name)}</h2><p>${esc(ev.desc)}</p>
@@ -962,23 +983,20 @@
   // ============================================================
   function chooseGarden(candidates) {
     const garden = loadGarden();
-    const best = new Map();
-    for (const b of [...garden.bugs, ...candidates]) {
-      const e = { ...D.cleanEntry(b.type, b.lv, b.tier), copies: b.copies || 1 }, prev = best.get(e.type);
-      if (!prev || D.powerOf(e.type, e.lv, e.tier) > D.powerOf(prev.type, prev.lv, prev.tier)) best.set(e.type, e);
-    }
-    saveGarden({ bugs: [...best.values()], coins: garden.coins });
+    const byId = new Map();
+    for (const b of [...garden.bugs, ...candidates]) byId.set(b.id || newId(), { id: b.id || newId(), ...D.cleanEntry(b.type, b.lv, b.tier), copies: b.copies || 1 });
+    saveGarden({ bugs: mergeSame([...byId.values()]), coins: garden.coins });
     toast('운동회 곤충을 곤충 키우기 모음에 합쳤어요!', 'good');
     enterGrow();
   }
   function enterGrow() {
     const g = loadGarden();
     const first = !g.bugs.length;
-    if (first) { g.bugs.push({ type: 'ant', lv: D.zeroLv(), tier: 0, copies: 1 }); saveGarden(g); }
+    if (first) { g.bugs.push({ id: newId(), type: 'ant', lv: D.zeroLv(), tier: 0, copies: 1 }); saveGarden(g); }
     A.init();
     GameKit.hideStartScreen();
     P = { mode: 'grow', online: false, match: null, stage: 'grow', qIndex: 0, qTotal: 0, asked: 0, correct: 0, total: 0, wrong: [], marks: [],
-      bugs: g.bugs, sel: g.bugs[0].type, coins: g.coins, score: 0, battleNo: 0, places: [0, 0, 0, 0], history: [], growQ: null, growKind: 'collect', uses: {} };
+      bugs: g.bugs, sel: g.bugs[0].id, coins: g.coins, score: 0, battleNo: 0, places: [0, 0, 0, 0], history: [], growQ: null, growKind: 'collect', uses: {} };
     showScreen('lab');
     renderLab(); updateHud();
     toast(first ? '첫 친구 개미와 함께 시작해요! 곤충 수집 퀴즈로 친구를 더 모아요.' : '곤충 수집 퀴즈로 모으고, 코인 수집 퀴즈로 키워요. 자동으로 저장돼요!', 'good');
@@ -993,7 +1011,7 @@
         <button type="button" role="tab" data-grow-kind="collect" aria-selected="${kind === 'collect'}">🦋 곤충 수집 퀴즈</button>
         <button type="button" role="tab" data-grow-kind="coin" aria-selected="${kind === 'coin'}">🪙 코인 수집 퀴즈 <small>+${settings.coinPerCorrect}</small></button>
       </div>
-      <p class="hint">${kind === 'collect' ? '맞히면 곤충을 잡아요 (등급은 확률). 같은 곤충은 모은 수 +1!' : `맞히면 코인 ${settings.coinPerCorrect}개. 코인으로 능력치를 올려요.`}</p>
+      <p class="hint">${kind === 'collect' ? '맞히면 곤충을 잡아요 (등급은 확률). 같은 곤충 · 같은 등급이면 모은 수 +1!' : `맞히면 코인 ${settings.coinPerCorrect}개. 코인으로 능력치를 올려요.`}</p>
       <p class="q-subject">${esc(Q.label(q.subject))}</p>
       <p class="grow-q">${esc(q.q)}</p>
       ${questionHTML(q)}
@@ -1459,8 +1477,8 @@
       defaultMode: 'game',
       defaultDifficulty: settings.difficulty,
       defaultQuizGoal: settings.collectCount,
-      modeLabels: { free: '🌱 혼자 하기', game: '🏃 여럿이 하기' },
-      modeDescriptions: { free: '곤충 키우기 · 곤충 수집 퀴즈로 모으고, 코인 수집 퀴즈로 키워요 (자동 저장)', game: '곤충 운동회 · 최대 4명 실시간 · 퀴즈 → 연구소 → 무작위 종목 대결' },
+      modeLabels: { free: '🌱 혼자 하기\n곤충 키우기', game: '🏃 여럿이 하기\n곤충 운동회' },
+      modeDescriptions: { free: '곤충 수집 퀴즈로 모으고, 코인 수집 퀴즈로 키워요 (자동 저장)', game: '최대 4명 실시간 · 퀴즈 → 연구소 → 무작위 종목 대결' },
       difficultyDescriptions: { easy: 'AI 곤충이 약해요', normal: 'AI 곤충이 나와 비슷해요', hard: 'AI 곤충이 강해요' },
       waveLabel: '🥇{n}',
     }).then(kit => {
