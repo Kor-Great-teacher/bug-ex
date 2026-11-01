@@ -1,4 +1,4 @@
-// 꼬마 파브르 곤충 운동회 — 게임 본체
+// 꼬마 곤충 대운동회 — 게임 본체
 // 흐름: ① 곤충 채집 퀴즈(7문제) → ② 코인 퀴즈(10문제) → ③ 연구소(업그레이드) → ④ 대결(3마리, 무작위 종목) × 3번 → 결과·명예의 전당
 (() => {
   'use strict';
@@ -846,14 +846,14 @@
   // ============================================================
   let BT = null;  // { mode, meta, me, b(로컬), prev, cur, curAt, ended, lastCount, keys }
   const arenaCanvas = $('#arena'), actx = arenaCanvas.getContext('2d');
-  const BTN_LABEL = { sprint: '달려! 👟', sumo: '돌진! 💥', highjump: '점프! ⬆️', dung: '굴려! 🟤', nectar: '슝~ 빨리! 💨', tug: '영차! 💪', climb: '올라가! 🧗', hurdles: '점프! 🦘' };
+  const BTN_LABEL = { sprint: '달려! 👟', sumo: '돌진! 💥', highjump: '점프! ⬆️', dung: '굴려! 🟤', nectar: '슝~ 빨리! 💨', tug: '영차! 💪', climb: '올라가! 🧗', hurdles: '점프! 🦘', rhythm: '반짝! ✨' };
   function beginBattle(mode, meta, localBattle) {
     P.stage = 'battle'; P.lastEvent = meta.ev;
     if (P.sel) { P.uses[P.sel] = usesOf(P.sel) + 1; if (bug(P.sel) && bug(P.sel).garden) P.oldUses = (P.oldUses || 0) + 1; }   // 지금 고른 곤충 카드가 한 번 출전했어요
     BT = { mode, meta, me: meta.me, b: localBattle || null, prev: null, cur: null, curAt: 0, ended: false, lastCount: null, lastT: -99, prevMine: null };
     const ev = EV.EVENTS[meta.ev];
     $('#battleHead').innerHTML = `<h2>${ev.icon} ${esc(ev.name)}</h2><p>${esc(ev.desc)}</p>
-      <span class="keys">중요 능력: <b>${ev.stats.map(k => D.STATS.find(s => s.k === k).name).join(' · ')}</b> · 키보드: ${ev.control === 'lr' ? '← →' : ev.control === 'hold' ? 'Space 누르고 있기' : 'Space'}</span>`;
+      <span class="keys">중요 능력: <b>${ev.stats.map(k => D.STATS.find(s => s.k === k).name).join(' · ')}</b> · 키보드: ${ev.control === 'lr' ? (ev.keys || '← →') : ev.control === 'hold' ? 'Space 누르고 있기' : 'Space'}</span>`;
     renderControls(ev);
     showScreen('battle');
     updateHud();
@@ -862,9 +862,10 @@
   }
   function renderControls(ev) {
     const box = $('#controls');
-    if (ev.control === 'lr') box.innerHTML = `<button type="button" class="ctl lr" data-dir="-1">◀ 왼쪽<small>몸을 왼쪽으로</small></button><button type="button" class="ctl lr" data-dir="1">오른쪽 ▶<small>몸을 오른쪽으로</small></button>`;
-    else if (ev.control === 'hold') box.innerHTML = `<button type="button" class="ctl hold" data-hold>✊ 꽉 잡기<small>돌풍이 올 때 누르고 있어요</small></button>`;
-    else box.innerHTML = `<button type="button" class="ctl" data-tap>${BTN_LABEL[BT.meta.ev] || '누르기!'}<small>${ev.control === 'timing' ? '막대가 맨 위일 때!' : '화면 버튼 또는 Space'}</small></button>`;
+    const lr = ev.lrLabels || [['◀ 왼쪽', '몸을 왼쪽으로'], ['오른쪽 ▶', '몸을 오른쪽으로']], hl = ev.holdLabel || ['✊ 꽉 잡기', '돌풍이 올 때 누르고 있어요'];
+    if (ev.control === 'lr') box.innerHTML = `<button type="button" class="ctl lr" data-dir="-1">${lr[0][0]}<small>${lr[0][1]}</small></button><button type="button" class="ctl lr" data-dir="1">${lr[1][0]}<small>${lr[1][1]}</small></button>`;
+    else if (ev.control === 'hold') box.innerHTML = `<button type="button" class="ctl hold" data-hold>${hl[0]}<small>${hl[1]}</small></button>`;
+    else box.innerHTML = `<button type="button" class="ctl" data-tap>${BTN_LABEL[BT.meta.ev] || '누르기!'}<small>${ev.control === 'timing' ? '막대가 맨 위일 때!' : BT.meta.ev === 'rhythm' ? '빛이 동그라미에 닿을 때!' : '화면 버튼 또는 Space'}</small></button>`;
     box.querySelectorAll('.ctl').forEach(el => {
       const down = e => {
         e.preventDefault(); el.classList.add('press'); A.init();
@@ -888,6 +889,7 @@
     if (!BT || BT.ended) return;
     let val;
     if (BT.meta.ev === 'highjump' && BT.view) { const e = BT.view.e[BT.me]; if (e) val = e.pt; }
+    if (BT.meta.ev === 'rhythm' && BT.view) val = BT.view.t;   // 내 화면에서 빛이 닿은 순간으로 판정해요
     sendInput('tap', val);
     SND(BT.meta.ev === 'highjump' || BT.meta.ev === 'hurdles' ? 'jump' : 'tap');
   }
@@ -902,7 +904,7 @@
     handleFx(snap);
   }
   // 서버 상태는 1초에 20번 와요. 그 사이는 앞뒤 상태를 섞어서 부드럽게 그려요.
-  const NO_LERP = new Set(['fin', 'out', 'att', 'hi', 'falls', 'hits', 'n', 'mode']);
+  const NO_LERP = new Set(['fin', 'out', 'att', 'hi', 'falls', 'hits', 'n', 'mode', 'ni', 'sc', 'cb', 'mx', 'jg', 'jt', 'wi']);
   function lerpObj(a, b, k) {
     if (!a) return b;
     const o = Array.isArray(b) ? [] : {};
@@ -931,6 +933,9 @@
       else if (f.k === 'out' || f.k === 'slip') SND('fall');
       else if (f.k === 'trip') SND('bump');
       else if (f.k === 'nectar' && f.i === BT.me) SND('nectar');
+      else if (f.k === 'catch' && f.i === BT.me) SND(f.v > 1 ? 'coin' : 'nectar');
+      else if ((f.k === 'burr' || f.k === 'thorn') && f.i === BT.me) SND('bump');
+      else if (f.k === 'boost' && f.i === BT.me) SND('jump');
     }
     const mine = s.e[BT.me], pm = BT.prevMine;
     if (mine && pm) {
@@ -1168,7 +1173,7 @@
           <li><b>곤충 운동회</b> — ${settings.battleCount}라운드까지 겨뤄요. 1~3라운드 종목은 작전 시간에 미리 알려 주고, 4라운드부터는 비공개예요. <b>한 곤충은 2번까지</b>, 원래 갖고 있던 저장된 곤충은 모두 합쳐 <b>3번까지</b> 출전할 수 있어요. 1등 코인 60 · 2등 40 · 3등 25 · 4등 15. 라운드 사이 작전 시간에 연구소에서 곤충 수집 · 코인 수집 퀴즈를 풀고 재정비해요. 퀴즈를 풀던 중이어도 시간이 되면 운동회로 넘어가요.</li>
           <li><b>곤충 키우기 (혼자 하기)</b> — 곤충 연구소에서 <b>곤충 수집 퀴즈</b>(맞히면 곤충 채집)와 <b>코인 수집 퀴즈</b>(맞히면 코인 ${settings.coinPerCorrect}개)를 골라 풀며 곤충을 모으고 키워요. 자동으로 저장되고, 가장 센 3마리는 곤충 운동회에 기본 곤충으로 함께 나가요.</li>
         </ol>
-        <h3>운동회 종목 10가지</h3>
+        <h3>운동회 종목 ${EV.EVENT_IDS.length}가지</h3>
         <ul>${EV.EVENT_IDS.map(id => { const e = EV.EVENTS[id]; return `<li>${e.icon} <b>${esc(e.name)}</b> — ${esc(e.desc)}</li>`; }).join('')}</ul>
         <h3>함께 하기 (최대 4명)</h3>
         <ul>
@@ -1199,7 +1204,7 @@
     return { owner, repo };
   }
   const repoEditUrl = () => { const { owner, repo } = repoInfo(); return `https://github.com/${owner}/${repo}/edit/main/config.json`; };
-  const configJson = v => JSON.stringify({ '_안내': '꼬마 파브르 곤충 운동회 전역 설정 — 관리자 설정 페이지에서 만들었어요. 모든 학생에게 적용돼요.', settings: v }, null, 2) + '\n';
+  const configJson = v => JSON.stringify({ '_안내': '꼬마 곤충 대운동회 전역 설정 — 관리자 설정 페이지에서 만들었어요. 모든 학생에게 적용돼요.', settings: v }, null, 2) + '\n';
 
   // ---------- 관리자 설정에서 GitHub의 config.json 을 바로 저장 ----------
   // 선생님이 만든 GitHub 토큰(이 저장소 Contents 쓰기 권한만)으로 GitHub API에 직접 저장해요.
@@ -1476,9 +1481,10 @@
         e.preventDefault();
         if (ctl === 'hold') sendInput('hold', 1); else if (ctl !== 'lr') doTap();
         $('#controls .ctl') && $('#controls .ctl').classList.add('press');
-      } else if (ctl === 'lr' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'a' || e.key === 'd')) {
+      } else if (ctl === 'lr' && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'a', 'd', 'w', 's'].includes(e.key)) {
         e.preventDefault();
-        const d = e.key === 'ArrowLeft' || e.key === 'a' ? -1 : 1;
+        if (e.repeat) return;
+        const d = ['ArrowLeft', 'ArrowUp', 'a', 'w'].includes(e.key) ? -1 : 1;
         sendInput('dir', d);
         document.querySelectorAll('#controls .ctl').forEach(b => b.classList.toggle('press', Number(b.dataset.dir) === d));
       } else if (e.code === 'Space') e.preventDefault();
@@ -1492,7 +1498,7 @@
     if (!BT || BT.ended) return;
     const ctl = EV.EVENTS[BT.meta.ev].control;
     if (e.code === 'Space' || e.key === 'Enter') { if (ctl === 'hold') sendInput('hold', 0); document.querySelectorAll('#controls .ctl').forEach(b => b.classList.remove('press')); }
-    if (ctl === 'lr' && ['ArrowLeft', 'ArrowRight', 'a', 'd'].includes(e.key)) { sendInput('dir', 0); document.querySelectorAll('#controls .ctl').forEach(b => b.classList.remove('press')); }
+    if (ctl === 'lr' && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'a', 'd', 'w', 's'].includes(e.key)) { sendInput('dir', 0); document.querySelectorAll('#controls .ctl').forEach(b => b.classList.remove('press')); }
   });
 
   // ---------- 16:9 판 맞추기 ----------
@@ -1545,7 +1551,7 @@
   // ---------- 시작 ----------
   function startKit() {
     return GameKit.init({
-      gameName: '꼬마 파브르 곤충 운동회',
+      gameName: '꼬마 곤충 대운동회',
       defaultMode: 'game',
       defaultDifficulty: settings.difficulty,
       defaultQuizGoal: settings.collectCount,

@@ -1,4 +1,4 @@
-// 곤충 대결 10종목 시뮬레이션 (브라우저와 서버가 똑같은 코드를 써요)
+// 곤충 운동회 14종목 시뮬레이션 (브라우저와 서버가 똑같은 코드를 써요)
 // 대결 하나 = 곤충 2~4마리. 서버는 1초에 20번 step() 하고 snap() 을 모두에게 보내요.
 // 입력은 세 가지뿐: tap(누르기) · hold(누르고 있기) · dir(왼쪽 -1 / 가운데 0 / 오른쪽 1)
 (function (root, factory) {
@@ -402,6 +402,184 @@
         score: e.out == null ? 1e6 + e.G : e.out * 1000,
         label: e.out == null ? `버팀 ${Math.round(e.G)}%` : `${e.out.toFixed(1)}초에 날아감`,
       })),
+    },
+
+    // ============================================================
+    //  조작감 종목 4가지: 내가 직접 움직이는 만큼 결과가 바로 보여요
+    // ============================================================
+
+    // 11. 나뭇잎 배 급류 타기 — ▲ ▼ 로 배를 몰아 바위를 피하고 물살(≫)을 타요
+    raft: {
+      name: '나뭇잎 배 급류 타기', icon: '🍃', control: 'lr', stats: ['spd', 'bal'], limit: 30, len: 100,
+      lrLabels: [['▲ 위로', '배를 위로'], ['▼ 아래로', '배를 아래로']], keys: '↑ ↓',
+      desc: '나뭇잎 배는 저절로 떠내려가요. ▲ ▼ 로 배를 몰아 바위를 피하고, 물살(≫)을 타면 빨라져요!',
+      init(b) {
+        const rk = [], bs = [];
+        for (let x = 11; x < 95; x += rnd(6.5, 9)) rk.push({ x: Math.round(x * 10) / 10, y: Math.round(rnd(-0.85, 0.85) * 100) / 100 });
+        for (let x = 17; x < 92; x += rnd(15, 22)) bs.push({ x: Math.round(x * 10) / 10, y: Math.round(rnd(-0.8, 0.8) * 100) / 100 });
+        Object.assign(b.g, { rk, bs });
+        for (const e of b.ents) Object.assign(e, { x: 0, y: 0, vy: 0, stun: 0, boost: 0, hits: 0, _hit: -1, _bst: -1, _rt: 0 });
+      },
+      step(b, dt) {
+        const { rk, bs } = b.g;
+        for (const e of b.ents) {
+          if (e.fin != null) continue;
+          e.boost = Math.max(0, e.boost - dt);
+          if (e.stun > 0) { e.stun -= dt; e.x += 1.5 * dt; continue; }
+          e.vy += (e.dir * 1.7 * F(e.st.bal) - e.vy) * Math.min(1, 9 * dt);
+          e.y = clamp(e.y + e.vy * dt, -1, 1);
+          e.x += 6.4 * F(e.st.spd) * (e.boost > 0 ? 1.55 : 1) * dt;
+          rk.forEach((r, k) => {
+            if (k !== e._hit && Math.abs(r.x - e.x) < 1.5 && Math.abs(r.y - e.y) < 0.34) {
+              e._hit = k; e.stun = 0.75; e.hits++; e.x = Math.max(0, e.x - 1.2); e.boost = 0; b.fx.push({ k: 'bump', i: e.i });
+            }
+          });
+          bs.forEach((p, k) => { if (k !== e._bst && Math.abs(p.x - e.x) < 1.6 && Math.abs(p.y - e.y) < 0.36) { e._bst = k; e.boost = 1.3; b.fx.push({ k: 'boost', i: e.i }); } });
+          if (e.x >= this.len) { e.x = this.len; e.fin = b.t; }
+        }
+      },
+      bot(b, e, dt) {
+        e._rt -= dt; if (e._rt > 0) return;
+        e._rt = 0.06 + (1 - e.skill) * 0.3;
+        const look = 5 + 7 * e.skill;
+        const r = b.g.rk.find((q, k) => k !== e._hit && q.x > e.x - 1 && q.x < e.x + look && Math.abs(q.y - e.y) < 0.5);
+        let goal = e.y;
+        if (r) goal = r.y > e.y ? (r.y - 0.6 < -1 ? r.y + 0.6 : r.y - 0.6) : (r.y + 0.6 > 1 ? r.y - 0.6 : r.y + 0.6);
+        else if (e.skill > 0.5) { const p = b.g.bs.find(q => q.x > e.x && q.x < e.x + 10); if (p) goal = p.y; }
+        if (chance((1 - e.skill) * 0.25)) goal = rnd(-1, 1);
+        e.dir = goal > e.y + 0.08 ? 1 : goal < e.y - 0.08 ? -1 : 0;
+      },
+      over: allFinished, rank: raceRank('x', 'cm', e => e.hits ? ` · 쾅 ${e.hits}` : ''),
+    },
+
+    // 12. 민들레 씨앗 비행 — 누르고 있으면 위로, 떼면 아래로. 가시덤불 틈을 지나가요
+    seed: {
+      name: '민들레 씨앗 비행', icon: '🪂', control: 'hold', stats: ['jmp', 'bal'], limit: 30, len: 100,
+      holdLabel: ['🌬️ 날아올라!', '누르고 있으면 위로 · 떼면 아래로'],
+      desc: '누르고 있으면 올라가고, 떼면 내려가요. 높이 날수록 빨라요! 가시덤불 틈으로 쏙쏙 지나가세요.',
+      init(b) {
+        const wl = [];
+        for (let x = 13; x < 95; x += 11.5) wl.push({ x: Math.round(x * 10) / 10, c: Math.round(rnd(-0.55, 0.55) * 100) / 100 });
+        b.g.wl = wl;
+        for (const e of b.ents) Object.assign(e, { x: 0, a: 0.2, va: 0, stun: 0, hits: 0, wi: 0, _n: 0 });
+      },
+      gap(e) { return 0.3 * (0.82 + 0.2 * F(e.st.bal)); },
+      step(b, dt) {
+        const wl = b.g.wl;
+        for (const e of b.ents) {
+          if (e.fin != null) continue;
+          if (e.stun > 0) { e.stun -= dt; e.va = 0; continue; }
+          e.va += (e.hold ? -3.4 * F(e.st.jmp) : 2.5) * dt;
+          e.va *= Math.max(0, 1 - (1.1 + 0.5 * F(e.st.bal)) * dt);
+          e.va = clamp(e.va, -1.7, 1.7);
+          e.a += e.va * dt;
+          if (e.a <= -1) { e.a = -1; e.va = Math.max(0, e.va); }
+          const ground = e.a >= 1;
+          if (ground) { e.a = 1; e.va = Math.min(0, e.va); }
+          const prev = e.x;
+          e.x += 5.6 * (1 - 0.4 * e.a) * (ground ? 0.5 : 1) * dt;   // 높이 날수록 바람이 세서 빨라요
+          const w = wl[e.wi];
+          if (w && prev < w.x && e.x >= w.x) {
+            if (Math.abs(e.a - w.c) > this.gap(e)) { e.hits++; e.stun = 0.7; e.x = w.x - 2.2; e.a = clamp(e.a, -1, 1); b.fx.push({ k: 'thorn', i: e.i }); }
+            else e.wi++;
+          }
+          if (e.x >= this.len) { e.x = this.len; e.fin = b.t; }
+        }
+      },
+      bot(b, e, dt) {
+        const w = b.g.wl[e.wi];
+        if (e._n <= 0) e._noise = rnd(-1, 1) * (1 - e.skill) * 0.45, e._n = 0.6;
+        e._n -= dt;
+        const near = w && w.x - e.x < (2 + 6 * Math.abs(e.a - w.c)) * (1.45 - 0.4 * e.skill);
+        const target = (near ? w.c : -0.65 * e.skill) + e._noise, pred = e.a + e.va * (0.15 + 0.25 * e.skill);
+        e.hold = pred > target;
+      },
+      over: allFinished, rank: raceRank('x', 'cm', e => e.hits ? ` · 콕 ${e.hits}` : ''),
+    },
+
+    // 13. 도토리 받기 — ◀ ▶ 로 움직여 떨어지는 도토리를 받아요. 가시 밤송이는 피하기!
+    acorn: {
+      name: '도토리 받기', icon: '🌰', control: 'lr', stats: ['spd', 'bal'], limit: 25, fall: 1.9,
+      desc: '◀ ▶ 로 움직여 떨어지는 도토리를 받아요. 황금 도토리는 3개! 가시 밤송이에 맞으면 1개를 잃고 잠깐 어지러워요.',
+      init(b) {
+        Object.assign(b.g, { dr: [], nx: 0.4, id: 0 });
+        for (const e of b.ents) Object.assign(e, { x: 0, n: 0, stun: 0, _rt: 0 });
+      },
+      reach(e) { return 0.2 + 0.035 * F(e.st.bal); },
+      step(b, dt) {
+        const g = b.g;
+        if (b.t >= g.nx && b.t < this.limit - this.fall) {
+          const k = chance(0.13) ? 1 : chance(0.2) ? 2 : 0;
+          g.dr.push({ id: g.id++, x: Math.round(rnd(-0.92, 0.92) * 100) / 100, t0: Math.round(b.t * 100) / 100, k });
+          g.nx = b.t + rnd(0.42, 0.8) * (b.t > 12 ? 0.8 : 1);
+        }
+        for (const e of b.ents) {
+          if (e.stun > 0) { e.stun -= dt; continue; }
+          e.x = clamp(e.x + e.dir * 1.65 * F(e.st.spd) * dt, -1, 1);
+        }
+        g.dr = g.dr.filter(d => {
+          if (b.t - d.t0 < this.fall) return true;
+          for (const e of b.ents) {
+            if (Math.abs(e.x - d.x) > this.reach(e) || e.stun > 0) continue;
+            if (d.k === 2) { e.stun = 0.9; e.n = Math.max(0, e.n - 1); b.fx.push({ k: 'burr', i: e.i }); }
+            else { e.n += d.k === 1 ? 3 : 1; b.fx.push({ k: 'catch', i: e.i, v: d.k === 1 ? 3 : 1 }); }
+          }
+          return false;
+        });
+      },
+      bot(b, e, dt) {
+        e._rt -= dt; if (e._rt > 0) return;
+        e._rt = 0.05 + (1 - e.skill) * 0.3;
+        const live = b.g.dr.map(d => ({ d, left: this.fall - (b.t - d.t0) })).filter(o => o.left > 0);
+        const burr = live.find(o => o.d.k === 2 && o.left < 0.5 && Math.abs(o.d.x - e.x) < 0.3);
+        let goal = e.x;
+        if (burr) goal = burr.d.x > e.x ? e.x - 0.5 : e.x + 0.5;
+        else {
+          const sp = 1.65 * F(e.st.spd);
+          const ok = live.filter(o => o.d.k !== 2 && Math.abs(o.d.x - e.x) / sp < o.left + 0.1 * e.skill).sort((p, q) => p.left - q.left);
+          if (ok.length) goal = ok[0].d.x + (1 - e.skill) * rnd(-0.35, 0.35);
+        }
+        e.dir = goal > e.x + 0.06 ? 1 : goal < e.x - 0.06 ? -1 : 0;
+      },
+      over: () => false,
+      rank: b => b.ents.map(e => ({ i: e.i, score: e.n, label: `도토리 ${e.n}개` })),
+    },
+
+    // 14. 반딧불이 리듬 놀이 — 빛이 동그라미에 닿는 순간 반짝!
+    rhythm: {
+      name: '반딧불이 리듬 놀이', icon: '🎵', control: 'tap', stats: ['bal', 'sta'], limit: 27,
+      desc: '날아오는 반딧불 빛이 동그라미에 닿을 때 눌러요. 연속으로 맞히면 콤보 점수가 쑥쑥! 마구 누르면 끊겨요.',
+      init(b) {
+        const nt = [];
+        for (let t = 1.4; t < this.limit - 1.6; t += [0.45, 0.6, 0.6, 0.75, 0.9][Math.floor(Math.random() * 5)]) nt.push(Math.round(t * 100) / 100);
+        b.g.nt = nt;
+        for (const e of b.ents) Object.assign(e, { ni: 0, sc: 0, cb: 0, mx: 0, jg: -1, jt: -9, _off: null });
+      },
+      win(e) { const k = 0.9 + 0.12 * F(e.st.bal); return [0.08 * k, 0.15 * k, 0.24 * k]; },
+      tap(b, e, val) {
+        const t = typeof val === 'number' && Math.abs(val - b.t) < 0.3 ? val : b.t;
+        const note = b.g.nt[e.ni]; if (note == null) return;
+        const d = Math.abs(t - note), w = this.win(e);
+        if (d <= w[2]) {
+          const g = d <= w[0] ? 3 : d <= w[1] ? 2 : 1;
+          e.cb++; e.mx = Math.max(e.mx, e.cb);
+          e.sc += Math.round([0, 40, 70, 100][g] * (1 + Math.min(e.cb, 6 + 4 * F(e.st.sta)) * 0.06));
+          e.jg = g; e.jt = t; e.ni++; e._off = null;
+        } else if (note - t > w[2]) { e.cb = 0; e.jg = 0; e.jt = t; }
+      },
+      step(b) {
+        const nt = b.g.nt;
+        for (const e of b.ents) {
+          while (nt[e.ni] != null && b.t - nt[e.ni] > this.win(e)[2]) { e.cb = 0; e.jg = 0; e.jt = b.t; e.ni++; e._off = null; }
+        }
+      },
+      bot(b, e) {
+        const note = b.g.nt[e.ni]; if (note == null) return;
+        if (e._off == null) e._off = chance((1 - e.skill) * 0.18) ? 9 : rnd(-1, 1) * (0.02 + (1 - e.skill) * 0.22);
+        if (b.t >= note + e._off) this.tap(b, e);
+      },
+      over: b => b.ents.every(e => e.ni >= b.g.nt.length),
+      rank: b => b.ents.map(e => ({ i: e.i, score: e.sc * 100 + e.mx, label: `${e.sc}점 · 콤보 ${e.mx}` })),
     },
   };
   const EVENT_IDS = Object.keys(EVENTS);

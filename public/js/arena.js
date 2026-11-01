@@ -280,6 +280,115 @@ window.BugArena = (() => {
     if (g.gs === 'gust') text(c, '휘이잉~!', W / 2, 110, 30, '#1e3a8a', 'center', '#fff');
   };
 
+  // ---------- 조작감 종목 4가지 ----------
+  // 줄 하나의 위아래 폭 (참가 수에 따라)
+  const bandH = () => LANE_Y.length >= 4 ? 40 : LANE_Y.length === 3 ? 52 : 70;
+  R.raft = (c, s, m) => {
+    sky(c, '#bde7ff', '#e6f7ff');
+    c.fillStyle = '#8fd16a'; c.fillRect(0, 110, W, H - 110);
+    const BH = bandH(), ev = E().raft;
+    LANE_Y.forEach((y, li) => {
+      c.fillStyle = '#3ea3dd'; c.beginPath(); c.roundRect(20, y - BH - 10, W - 40, BH * 2 + 20, 14); c.fill();
+      c.strokeStyle = 'rgba(255,255,255,0.45)'; c.lineWidth = 2;
+      for (let k = 0; k < 18; k++) { const x = ((k * 61 + s.t * 120) % (W - 60)) + 30, yy = y - BH + ((k * 37) % (BH * 2)); c.beginPath(); c.moveTo(x, yy); c.quadraticCurveTo(x + 8, yy - 4, x + 16, yy); c.stroke(); }
+      for (let k = 0; k < 6; k++) { c.fillStyle = k % 2 ? '#111' : '#fff'; c.fillRect(X1 - 4, y - BH + k * (BH * 2 / 6), 8, BH * 2 / 6); }
+      (s.g.bs || []).forEach(p => { const x = laneX(p.x, ev.len), yy = y + p.y * BH; c.fillStyle = 'rgba(255,255,255,0.75)'; text(c, '≫', x, yy, 22 * SZ + 6, '#e0f2fe', 'center', '#0369a1'); });
+      (s.g.rk || []).forEach(r => {
+        const x = laneX(r.x, ev.len), yy = y + r.y * BH, rr = BH * 0.36;
+        c.fillStyle = '#6b7280'; c.beginPath(); c.ellipse(x, yy, rr * 1.15, rr, 0, 0, 7); c.fill();
+        c.fillStyle = '#9ca3af'; c.beginPath(); c.ellipse(x - rr * 0.3, yy - rr * 0.3, rr * 0.5, rr * 0.35, 0, 0, 7); c.fill();
+        c.strokeStyle = 'rgba(255,255,255,0.7)'; c.lineWidth = 2; c.beginPath(); c.ellipse(x, yy + rr * 0.6, rr * 1.4, rr * 0.4, 0, 0, Math.PI); c.stroke();
+      });
+    });
+    s.e.forEach((e, i) => {
+      const y = LANE_Y[i] + e.y * BH, x = laneX(e.x, ev.len), en = m.ents[i], bob = Math.sin(s.t * 5 + i) * 2;
+      if (e.boost > 0) { c.strokeStyle = 'rgba(255,255,255,0.9)'; c.lineWidth = 3; for (let k = 0; k < 3; k++) { c.beginPath(); c.moveTo(x - 30, y - 4 + k * 6); c.lineTo(x - 52, y - 4 + k * 6); c.stroke(); } }
+      c.save(); c.translate(x, y + 10 + bob); c.rotate(e.vy * 0.15);
+      c.fillStyle = '#4caf50'; c.beginPath(); c.ellipse(0, 0, 34 * SZ, 10 * SZ, 0, 0, 7); c.fill();
+      c.strokeStyle = '#2e7d32'; c.lineWidth = 2; c.beginPath(); c.moveTo(-30 * SZ, 0); c.lineTo(32 * SZ, 0); c.stroke();
+      c.restore();
+      draw(c, en, x, y - 4 + bob, 40, { phase: s.t * 6, pose: e.fin != null ? 'cheer' : 'balance', rot: e.vy * 0.12, shadow: false, mood: mood(e, e.stun > 0 ? 'dizzy' : e.boost > 0 ? 'happy' : null) });
+      tag(c, x, y - 44 * SZ - 6 + bob, en.name, COLORS[i], i === m.me);
+    });
+  };
+  R.seed = (c, s, m) => {
+    sky(c, '#9fd8ff', '#f0fbff');
+    const BH = bandH(), ev = E().seed;
+    LANE_Y.forEach(y => {
+      c.fillStyle = 'rgba(255,255,255,0.35)'; c.beginPath(); c.roundRect(20, y - BH - 12, W - 40, BH * 2 + 24, 14); c.fill();
+      c.fillStyle = '#7cc04f'; c.fillRect(20, y + BH + 6, W - 40, 6);
+      for (let k = 0; k < 6; k++) { c.fillStyle = k % 2 ? '#111' : '#fff'; c.fillRect(X1 - 4, y - BH + k * (BH * 2 / 6), 8, BH * 2 / 6); }
+    });
+    s.e.forEach((e, i) => {
+      const y0 = LANE_Y[i], gap = ev.gap({ st: { bal: 5 } }) * BH;
+      (s.g.wl || []).forEach(w => {
+        const x = laneX(w.x, ev.len), cy = y0 + w.c * BH, top = y0 - BH - 12, bot = y0 + BH + 12;
+        c.fillStyle = '#5b3a1e';
+        c.fillRect(x - 5, top, 10, cy - gap - top); c.fillRect(x - 5, cy + gap, 10, bot - cy - gap);
+        c.fillStyle = '#2f7d32';
+        for (let yy = top + 6; yy < bot; yy += 11) if (yy < cy - gap - 2 || yy > cy + gap + 2) { c.beginPath(); c.moveTo(x - 5, yy); c.lineTo(x - 13, yy + 4); c.lineTo(x - 5, yy + 7); c.moveTo(x + 5, yy); c.lineTo(x + 13, yy + 4); c.lineTo(x + 5, yy + 7); c.fill(); }
+      });
+      const en = m.ents[i], x = laneX(e.x, ev.len), y = y0 + e.a * BH;
+      // 민들레 솜털 낙하산
+      c.strokeStyle = 'rgba(120,120,120,0.6)'; c.lineWidth = 1;
+      for (let k = -2; k <= 2; k++) { c.beginPath(); c.moveTo(x, y - 14 * SZ); c.lineTo(x + k * 7 * SZ, y - 34 * SZ); c.stroke(); }
+      c.fillStyle = 'rgba(255,255,255,0.95)'; c.beginPath(); c.arc(x, y - 36 * SZ, 15 * SZ, Math.PI, 0); c.fill();
+      c.strokeStyle = '#cbd5e1'; c.stroke();
+      draw(c, en, x, y, 36, { phase: s.t * 5, pose: e.fin != null ? 'cheer' : 'hang', shadow: false, rot: e.va * 0.15, mood: mood(e, e.stun > 0 ? 'dizzy' : null) });
+      tag(c, x - 46 * SZ - 20, y - 6, en.name, COLORS[i], i === m.me);
+    });
+  };
+  R.acorn = (c, s, m) => {
+    sky(c, '#cfe9c3', '#f2fbe9');
+    const n = s.e.length, ev = E().acorn, top = 120, floor = 470;
+    c.fillStyle = '#8fd16a'; c.fillRect(0, floor, W, H - floor);
+    s.e.forEach((e, i) => {
+      const zx = colX(i, n), hw = W / (n + 1) / 2 - 12, en = m.ents[i];
+      c.fillStyle = 'rgba(255,255,255,0.35)'; c.beginPath(); c.roundRect(zx - hw - 8, top - 30, hw * 2 + 16, floor - top + 30, 14); c.fill();
+      c.fillStyle = '#4a7c2f'; for (const [dx, r] of [[-hw * 0.6, 36], [0, 44], [hw * 0.6, 36]]) { c.beginPath(); c.arc(zx + dx, top - 46, r, 0, 7); c.fill(); }
+      (s.g.dr || []).forEach(d => {
+        const p = Math.min(1, (s.t - d.t0) / ev.fall); if (p < 0) return;
+        const x = zx + d.x * hw, y = top + (floor - 40 - top) * p * p;
+        if (d.k === 2) {
+          c.fillStyle = '#65a30d'; c.beginPath(); c.arc(x, y, 11, 0, 7); c.fill();
+          c.strokeStyle = '#3f6212'; c.lineWidth = 2; for (let a = 0; a < 12; a++) { const q = a * Math.PI / 6 + s.t; c.beginPath(); c.moveTo(x + Math.cos(q) * 10, y + Math.sin(q) * 10); c.lineTo(x + Math.cos(q) * 16, y + Math.sin(q) * 16); c.stroke(); }
+        } else {
+          const gold = d.k === 1;
+          if (gold) { c.fillStyle = 'rgba(253,224,71,0.5)'; c.beginPath(); c.arc(x, y, 18, 0, 7); c.fill(); }
+          c.fillStyle = gold ? '#f59e0b' : '#a0622d'; c.beginPath(); c.ellipse(x, y + 3, 8, 10, 0, 0, 7); c.fill();
+          c.fillStyle = gold ? '#b45309' : '#6b4423'; c.beginPath(); c.ellipse(x, y - 5, 10, 5, 0, 0, 7); c.fill();
+          c.fillRect(x - 1, y - 13, 2, 5);
+        }
+      });
+      const x = zx + e.x * hw;
+      c.fillStyle = '#a16207'; c.beginPath(); c.ellipse(x, floor - 52 * SZ, 22 * SZ, 7 * SZ, 0, 0, 7); c.fill();
+      draw(c, en, x, floor - 14, 50, { phase: s.t * 8, pose: 'cheer', flip: e.dir < 0, mood: mood(e, e.stun > 0 ? 'dizzy' : null) });
+      tag(c, zx, floor + 30, `${en.name} 🌰${e.n}`, COLORS[i], i === m.me);
+    });
+  };
+  R.rhythm = (c, s, m) => {
+    const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0b1b3a'); g.addColorStop(1, '#1f3b2a'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.fillStyle = 'rgba(255,255,255,0.7)'; for (let k = 0; k < 40; k++) { c.beginPath(); c.arc((k * 211) % W, (k * 97) % 300 + 60, (k % 3) * 0.6 + 0.6, 0, 7); c.fill(); }
+    const HX = 200, SP = 260, BH = Math.min(36, bandH());
+    const label = ['아쉬워', '좋아', '멋져!', '완벽!'], col = ['#fca5a5', '#bae6fd', '#86efac', '#fde047'];
+    s.e.forEach((e, i) => {
+      const y = LANE_Y[i], en = m.ents[i];
+      c.fillStyle = 'rgba(255,255,255,0.08)'; c.beginPath(); c.roundRect(110, y - BH, W - 130, BH * 2, BH); c.fill();
+      c.strokeStyle = 'rgba(253,224,71,0.9)'; c.lineWidth = 4; c.beginPath(); c.arc(HX, y, BH * 0.7, 0, 7); c.stroke();
+      const nt = s.g.nt || [];
+      for (let k = e.ni; k < nt.length; k++) {
+        const x = HX + (nt[k] - s.t) * SP; if (x > W) break; if (x < HX - 40) continue;
+        const gl = c.createRadialGradient(x, y, 2, x, y, BH * 0.8); gl.addColorStop(0, '#fff7c2'); gl.addColorStop(0.4, 'rgba(250,204,21,0.9)'); gl.addColorStop(1, 'rgba(250,204,21,0)');
+        c.fillStyle = gl; c.beginPath(); c.arc(x, y, BH * 0.8, 0, 7); c.fill();
+      }
+      const fresh = s.t - e.jt < 0.45 && e.jg >= 0;
+      if (fresh && e.jg > 0) { c.fillStyle = 'rgba(253,224,71,0.35)'; c.beginPath(); c.arc(HX, y, BH * (0.75 + (s.t - e.jt) * 0.6), 0, 7); c.fill(); }
+      draw(c, en, 70, y + 14 * SZ, 40, { phase: s.t * 6, pose: fresh && e.jg > 0 ? 'cheer' : 'idle', shadow: false, mood: fresh ? (e.jg > 0 ? 'happy' : 'strain') : undefined });
+      if (fresh) text(c, label[e.jg], HX, y - BH - 8, 20, col[e.jg], 'center', '#0f172a');
+      text(c, `${en.name}  ${e.sc}점${e.cb >= 2 ? `  콤보 ${e.cb}` : ''}`, W - 30, y - BH + 2, 15, i === m.me ? '#fde047' : '#e2e8f0', 'right', '#0f172a');
+    });
+  };
+
   // ---------- 전체 그리기 ----------
   function render(c, s, m) {
     if (!s) return;
