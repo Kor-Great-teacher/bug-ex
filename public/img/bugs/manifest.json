@@ -386,10 +386,145 @@
   }
  },
  "swallowtail": {
-  "card": {
-   "file": "swallowtail_card.webp",
-   "w": 360,
-   "h": 334
+  "attack1": {
+   "file": "swallowtail_attack1.webp",
+   "w": 202,
+   "h": 189
+  },
+  "attack2": {
+   "file": "swallowtail_attack2.webp",
+   "w": 196,
+   "h": 197
+  },
+  "balance1": {
+   "file": "swallowtail_balance1.webp",
+   "w": 164,
+   "h": 183
+  },
+  "balance2": {
+   "file": "swallowtail_balance2.webp",
+   "w": 171,
+   "h": 184
+  },
+  "cheer1": {
+   "file": "swallowtail_cheer1.webp",
+   "w": 156,
+   "h": 192
+  },
+  "cheer2": {
+   "file": "swallowtail_cheer2.webp",
+   "w": 175,
+   "h": 185
+  },
+  "climb1": {
+   "file": "swallowtail_climb1.webp",
+   "w": 179,
+   "h": 193
+  },
+  "climb2": {
+   "file": "swallowtail_climb2.webp",
+   "w": 182,
+   "h": 192
+  },
+  "damage1": {
+   "file": "swallowtail_damage1.webp",
+   "w": 189,
+   "h": 201
+  },
+  "damage2": {
+   "file": "swallowtail_damage2.webp",
+   "w": 184,
+   "h": 199
+  },
+  "defend1": {
+   "file": "swallowtail_defend1.webp",
+   "w": 187,
+   "h": 198
+  },
+  "defend2": {
+   "file": "swallowtail_defend2.webp",
+   "w": 168,
+   "h": 195
+  },
+  "dizzy": {
+   "file": "swallowtail_dizzy.webp",
+   "w": 211,
+   "h": 196
+  },
+  "fly1": {
+   "file": "swallowtail_fly1.webp",
+   "w": 192,
+   "h": 171
+  },
+  "fly2": {
+   "file": "swallowtail_fly2.webp",
+   "w": 183,
+   "h": 171
+  },
+  "hang1": {
+   "file": "swallowtail_hang1.webp",
+   "w": 151,
+   "h": 185
+  },
+  "hang2": {
+   "file": "swallowtail_hang2.webp",
+   "w": 149,
+   "h": 183
+  },
+  "happy": {
+   "file": "swallowtail_happy.webp",
+   "w": 214,
+   "h": 199
+  },
+  "idle1": {
+   "file": "swallowtail_idle1.webp",
+   "w": 183,
+   "h": 199
+  },
+  "idle2": {
+   "file": "swallowtail_idle2.webp",
+   "w": 166,
+   "h": 200
+  },
+  "pull1": {
+   "file": "swallowtail_pull1.webp",
+   "w": 179,
+   "h": 180
+  },
+  "pull2": {
+   "file": "swallowtail_pull2.webp",
+   "w": 179,
+   "h": 176
+  },
+  "push1": {
+   "file": "swallowtail_push1.webp",
+   "w": 184,
+   "h": 178
+  },
+  "push2": {
+   "file": "swallowtail_push2.webp",
+   "w": 175,
+   "h": 175
+  },
+  "run1": {
+   "file": "swallowtail_run1.webp",
+   "w": 183,
+   "h": 180
+  },
+  "run2": {
+   "file": "swallowtail_run2.webp",
+   "w": 181,
+   "h": 182
+  },
+  "stand": {
+   "file": "swallowtail_stand.webp",
+   "w": 218,
+   "h": 202
+  },
+  "strain": {
+   "file": "swallowtail_strain.webp",
+   "w": 207,
+   "h": 202
   }
  }
 }
