@@ -29,7 +29,7 @@
   const TIER_BONUS = [0, 2, 4, 6];
   const TIER_CAP = [4, 7, 10, 12];
   const PROMO_REQ = [6, 14, 24];       // 이 등급에서 다음 등급으로 가려면 필요한 업그레이드 합계
-  const COPY_REQ = [2, 3, 4];          // … 그리고 이 등급에서 모은 같은 곤충 수
+  const COPY_REQ = [4, 3, 2];          // … 그리고 이 등급에서 모은 같은 곤충 수 (일반 4장 → 희귀, 희귀 3장 → 영웅, 영웅 2장 → 전설)
   const MAX_LV = TIER_CAP[TIER_CAP.length - 1];
 
   // 등급이 높을수록 드물고(채집 확률), 캐릭터에 기운 · 반짝이 · 후광이 더 많이 붙어요

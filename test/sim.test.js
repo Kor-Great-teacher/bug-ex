@@ -37,9 +37,13 @@ function tierRules() {
   for (let i = 0; i < 20000; i++) cnt[Data.rollTier()]++;
   assert(cnt[0] > cnt[1] && cnt[1] > cnt[2] && cnt[2] > cnt[3] && cnt[3] > 600, `등급 확률 ${cnt}`);
   // 등급업: 같은 곤충 모은 수 + 업그레이드 합계 두 조건
-  assert.strictEqual(Data.promoInfo('ant', { spd: 4, pow: 2 }, 0, 1).ok, false, '모은 수가 모자라면 안 돼요');
-  assert.strictEqual(Data.promoInfo('ant', { spd: 2 }, 0, 2).ok, false, '업그레이드가 모자라면 안 돼요');
-  assert.strictEqual(Data.promoInfo('ant', { spd: 4, pow: 2 }, 0, 2).ok, true);
+  assert.strictEqual(Data.promoInfo('ant', { spd: 4, pow: 2 }, 0, 3).ok, false, '일반은 4장이 모자라면 안 돼요');
+  assert.strictEqual(Data.promoInfo('ant', { spd: 2 }, 0, 4).ok, false, '업그레이드가 모자라면 안 돼요');
+  assert.strictEqual(Data.promoInfo('ant', { spd: 4, pow: 2 }, 0, 4).ok, true, '일반 4장 → 희귀');
+  assert.strictEqual(Data.promoInfo('ant', { spd: 7, pow: 7 }, 1, 3).ok, true, '희귀 3장 → 영웅');
+  assert.strictEqual(Data.promoInfo('ant', { spd: 7, pow: 7 }, 1, 2).ok, false);
+  assert.strictEqual(Data.promoInfo('ant', { spd: 10, pow: 10, bal: 4 }, 2, 2).ok, true, '영웅 2장 → 전설');
+  assert.strictEqual(Data.promoInfo('ant', { spd: 10, pow: 10, bal: 4 }, 2, 1).ok, false);
   // 서버 검사: 등급은 0~3, 업그레이드는 등급 한계까지
   assert.strictEqual(Data.cleanEntry('ant', {}, 9).tier, 3);
   assert.strictEqual(Data.cleanEntry('ant', { spd: 12 }, 0).lv.spd, 4, '등급 한계를 넘는 업그레이드는 잘라요');
