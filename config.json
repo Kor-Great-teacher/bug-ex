@@ -14,7 +14,7 @@
     "mathLevel": "auto",
     "collectCount": 7,
     "coinCount": 13,
-    "coinPerCorrect": 20,
+    "coinPerCorrect": 10,
     "battleCount": 6,
     "matchWait": 30,
     "labTime": 120,

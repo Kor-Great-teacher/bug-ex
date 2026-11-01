@@ -580,3 +580,22 @@ body { background: #cfe0b9; background-image: none; overscroll-behavior: none; }
 .bug-card .copies { position: absolute; right: 3px; bottom: 3px; min-width: 22px; padding: 0 5px; border-radius: 999px; background: #23331c; color: #fff; font-family: var(--font-display); font-weight: 400; font-size: 11px; line-height: 16px; text-align: center; }
 .bug-card.r-rare .copies { background: #0284c7; } .bug-card.r-hero .copies { background: #7c3aed; } .bug-card.r-legend .copies { background: #d97706; }
 .promo .promo-bar + .promo-bar { margin-top: 2px; }
+
+/* 곤충 키우기: 곤충 수집 퀴즈 · 코인 수집 퀴즈 */
+.grow-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 3px; background: var(--panel); border-radius: 10px; }
+.grow-tabs button { appearance: none; border: 0; background: none; border-radius: 8px; padding: 6px 4px; font-family: var(--font-display); font-size: 13px; color: var(--ink-dim); cursor: pointer; white-space: nowrap; }
+.grow-tabs button[aria-selected="true"] { background: var(--leaf); color: #fff; }
+.grow-tabs button small { font-size: 11px; opacity: 0.85; }
+.grow-box .hint { margin: 0; }
+.grow-box { position: relative; flex: 1; min-height: 0; }
+/* 잡은 곤충 카드는 퀴즈 칸 위에 덮어 보여 줘요 */
+.grow-box #growFb:has(.feedback) { position: absolute; inset: 0; z-index: 3; display: grid; }
+.grow-box #growFb .feedback { margin: 0; padding: 8px; gap: 4px; height: 100%; align-content: center; border-radius: 12px; }
+.grow-box #growFb .feedback h3 { font-size: 17px; }
+.lab-detail .promo { margin-top: auto; }
+.grow-box #growFb .reveal .stage { width: 140px; height: 118px; }
+.grow-box #growFb .reveal img { width: 108px; height: 108px; }
+.grow-box #growFb .reveal .stage::after { width: 92px; height: 92px; }
+.grow-box #growFb .sparkle { font-size: 12px; }
+.grow-box #growFb .fact { display: none; }
+.grow-box #growFb p { font-size: 12px; margin: 0; }
