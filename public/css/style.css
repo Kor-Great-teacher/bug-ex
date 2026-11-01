@@ -602,3 +602,10 @@ body { background: #cfe0b9; background-image: none; overscroll-behavior: none; }
 
 /* 첫 화면 방식: 두 줄로 (혼자 하기 / 곤충 키우기) */
 .gk-row .gk-seg button { white-space: pre-line; line-height: 1.25; text-overflow: clip; }
+
+/* 운동회 작전 시간: 다음 종목 안내 */
+.next-ev { margin: 0; padding: 4px 8px; border-radius: 10px; background: #ecfccb; font-size: 13px; text-align: center; }
+.next-ev b { font-family: var(--font-display); font-weight: 400; font-size: 15px; color: var(--leaf-dark); }
+.next-ev small { color: var(--ink-dim); font-size: 11px; margin-left: 4px; white-space: nowrap; }
+.next-ev.secret { background: #ede9fe; } .next-ev.secret b { color: #6d28d9; }
+.final-top { flex-wrap: wrap; }

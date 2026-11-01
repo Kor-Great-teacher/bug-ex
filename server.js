@@ -234,7 +234,10 @@ function startLab(M) {
   M.phase = 'lab'; M.q = null;
   const sec = M.battleNo === 0 ? M.opts.labTime : M.opts.relabTime;
   for (const p of M.players) p.labReady = false;
-  emitAll(M, 'lab', { ms: sec * 1000, battleNo: M.battleNo, battleCount: M.opts.battleCount, players: M.players.map(p => ({ pid: p.pid, nick: p.nick, bot: p.bot, pts: p.pts })) });
+  // 종목은 연구소가 열릴 때 미리 정해요. 1~3라운드는 공개, 4라운드부터는 비공개
+  M.nextEvent = Events.pickEvent(M.cfg.events, M.lastEvent);
+  const ev = M.battleNo < REVEAL_ROUNDS ? M.nextEvent : null;
+  emitAll(M, 'lab', { ms: sec * 1000, battleNo: M.battleNo, battleCount: M.opts.battleCount, ev, players: M.players.map(p => ({ pid: p.pid, nick: p.nick, bot: p.bot, pts: p.pts })) });
   later(M, sec * 1000 + 1500, () => startBattle(M)); // 시간이 끝나면 마지막으로 고른 곤충으로 자동 출전
 }
 function setPick(socket, msg) {
@@ -245,6 +248,7 @@ function setPick(socket, msg) {
   p.pick = pick;
 }
 // 고른 곤충이 없거나 이미 2번 나갔으면 아직 출전하지 않은 기본 곤충으로 나가요
+const REVEAL_ROUNDS = 3;
 const useKey = e => `${e.type}:${e.tier}`;
 function entryOf(p) {
   if (p.pick && (p.uses[useKey(p.pick)] || 0) < USE_LIMIT) return p.pick;
@@ -271,8 +275,8 @@ function startBattle(M) {
     p.pick = null;
     return { name: p.nick, type: pk.type, lv: pk.lv, tier: pk.tier, bot: p.gone, skill: 0.5 };
   });
-  const eventId = Events.pickEvent(M.cfg.events, M.lastEvent);
-  M.lastEvent = eventId;
+  const eventId = M.nextEvent || Events.pickEvent(M.cfg.events, M.lastEvent);
+  M.lastEvent = eventId; M.nextEvent = null;
   const b = Events.createBattle(eventId, entrants, { countdown: COUNTDOWN });
   const meta = { id: `${M.id}-${M.battleNo}`, ev: eventId, battleNo: M.battleNo, battleCount: M.opts.battleCount, ents: entrants.map((en, i) => ({ name: en.name, type: en.type, tier: Data.tierOf(en.type, en.tier), bot: M.players[i].bot, lv: en.lv })) };
   M.bt = { b, meta, loop: null };

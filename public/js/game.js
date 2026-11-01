@@ -142,7 +142,7 @@
   }
   function updateHud() {
     if (!P) return;
-    const st = { collect: `채집 ${Math.min(P.qIndex + 1, P.qTotal)}/${P.qTotal}`, coin: `코인 퀴즈 ${Math.min(P.qIndex + 1, P.qTotal)}/${P.qTotal}`, lab: '연구소', battle: `대결 ${P.battleNo + 1}/${battleCount()}`, final: '결과', grow: '곤충 키우기' }[P.stage] || '준비';
+    const st = { collect: `채집 ${Math.min(P.qIndex + 1, P.qTotal)}/${P.qTotal}`, coin: `코인 퀴즈 ${Math.min(P.qIndex + 1, P.qTotal)}/${P.qTotal}`, lab: '연구소', battle: `운동회 ${P.battleNo + 1}/${battleCount()}`, final: '결과', grow: '곤충 키우기' }[P.stage] || '준비';
     $('#hudStage').textContent = st;
     $('#hudCoins').textContent = P.coins.toLocaleString();
     $('#hudScore').textContent = P.score.toLocaleString();
@@ -503,10 +503,10 @@
               <div><h2>${esc(ins.name)} <span class="rar ${tierKey(b)}">${tierName(b)}</span></h2><p class="fact">${esc(ins.fact)}</p><p class="hint">능력치 합 <b>${D.powerOf(b.type, b.lv, b.tier)}</b> · 등급 보너스 +${tb} · 업그레이드 한계 ${cap}단계</p></div>
             </div>
             <div class="stat-rows">${rows}</div>
-            ${grow ? promo : '<p class="hint">업그레이드 값 12 → 18 → 24 … · 진한 칸 기본 · 등급 색 칸 등급 보너스 · 빗금 업그레이드 · 세로선 등급 한계</p>'}
+            ${grow || together() ? promo : '<p class="hint">업그레이드 값 12 → 18 → 24 … · 진한 칸 기본 · 등급 색 칸 등급 보너스 · 빗금 업그레이드 · 세로선 등급 한계</p>'}
           </section>
           <section class="panel lab-act">
-            ${grow ? '' : promo}
+            ${grow || together() ? '' : promo}
             ${goBoxHTML(ins)}
             <button type="button" class="btn page-btn" data-goto-page="1">${together() ? '친구 · ' : ''}등급표 · 종목 보기 ▶</button>
           </section>
@@ -518,13 +518,13 @@
             <table class="tier-table"><thead><tr><th>등급</th><th>확률</th><th>보너스</th><th>한계</th><th>다음 등급 조건</th></tr></thead><tbody>${D.TIERS.map((t, i) => `<tr class="${i === b.tier ? 'on' : ''}"><td><span class="rar ${t}">${D.RARITY[t].name}</span></td><td>${D.RARITY[t].weight}%</td><td>+${D.TIER_BONUS[i]}</td><td>${D.TIER_CAP[i]}</td><td>${i < 3 ? `모으기 ×${D.COPY_REQ[i]} · 업 ${D.PROMO_REQ[i]}` : '-'}</td></tr>`).join('')}</tbody></table>
           </section>
           <section class="panel">
-            <h2>대결 종목 (무작위)</h2>
+            <h2>운동회 종목 (1~3라운드 공개 · 4라운드부터 비공개)</h2>
             <ul class="ev-list">${evList}</ul>
           </section>
           <section class="panel">
             <h2>출전 규칙</h2>
-            <p class="hint">대결은 ${battleCount()}차전까지 있어요. 한 곤충은 <b>2번까지</b> 출전할 수 있어서, 여러 곤충을 골고루 키워야 해요. 출전할 곤충이 모자라면 기본 곤충을 받아요.</p>
-            <p class="hint">대결 코인: 1등 60 · 2등 40 · 3등 25 · 4등 15</p>
+            <p class="hint">곤충 운동회는 ${battleCount()}라운드까지 있어요. 한 곤충은 <b>2번까지</b> 출전할 수 있어서, 여러 곤충을 골고루 키워야 해요. 출전할 곤충이 모자라면 기본 곤충을 받아요.</p>
+            <p class="hint">운동회 코인: 1등 60 · 2등 40 · 3등 25 · 4등 15</p>
             <button type="button" class="btn page-btn" data-goto-page="0">◀ 연구소로 돌아가기</button>
           </section>
         </div>
@@ -534,7 +534,7 @@
     document.querySelectorAll('[data-up]').forEach(el => el.addEventListener('click', () => upgrade(el.dataset.up)));
     const gb = $('#goBattle'); if (gb) gb.addEventListener('click', requestBattle);
     const lr = $('#labReady'); if (lr) lr.addEventListener('click', () => { P.labReady = true; sendPick(); Net.socket.emit('lab:ready'); SND('select'); renderLab(); });
-    if (P.mode === 'grow') bindGrow();
+    if (P.mode === 'grow' || together()) bindGrow();
     sendPick();
     if (together()) tickLab();
   }
@@ -543,16 +543,18 @@
     if (together()) {
       const n = P.battleNo + 1;
       const spent = !canEnter(P.sel);
+      const ev = P.nextEv && EV.EVENTS[P.nextEv];
       return `<div class="go-box">
-        <div class="lab-clock">⏱ 연구소 <b id="labLeft">-:--</b> 남음</div>
-        <button type="button" class="btn primary big" id="labReady" ${P.labReady || spent ? 'disabled' : ''}>${spent ? `${esc(ins.name)}은(는) 출전을 2번 마쳤어요` : P.labReady ? `✅ ${esc(ins.name)} 준비 완료! 친구들을 기다려요` : `✅ ${esc(ins.name)}(으)로 ${n}차전 준비 완료`}</button>
-        <p class="hint">시간이 끝나면 고른 곤충으로 자동 출전해요. 모두 준비하면 바로 시작!</p>
-      </div>`;
+        <div class="lab-clock">⏱ 작전 시간 <b id="labLeft">-:--</b></div>
+        <p class="next-ev ${ev ? '' : 'secret'}">${ev ? `${n}라운드 종목: <b>${ev.icon} ${esc(ev.name)}</b> <small>${ev.stats.map(k => D.STATS.find(s => s.k === k).name).join('·')}</small>` : `${n}라운드 종목: <b>❓ 비공개</b> <small>4라운드부터는 깜짝 종목!</small>`}</p>
+        <button type="button" class="btn primary big" id="labReady" ${P.labReady || spent ? 'disabled' : ''}>${spent ? `${esc(ins.name)}은(는) 출전을 2번 마쳤어요` : P.labReady ? `✅ ${esc(ins.name)} 준비 완료!` : `✅ ${esc(ins.name)}(으)로 ${n}라운드 준비 완료`}</button>
+      </div>
+      <div class="grow-box" id="growBox"></div>`;
     }
     const spent = !canEnter(P.sel);
     return `<div class="go-box">
-      <button type="button" class="btn primary big" id="goBattle" ${spent ? 'disabled' : ''}>${spent ? `${esc(ins.name)}은(는) 출전을 2번 마쳤어요` : `⚔️ ${esc(ins.name)}(으)로 ${P.battleNo + 1}차전 나가기`}</button>
-      <p class="hint">AI 곤충 2마리와 겨뤄요 (${P.battleNo + 1}/${settings.battleCount}차전). 종목은 무작위!</p>
+      <button type="button" class="btn primary big" id="goBattle" ${spent ? 'disabled' : ''}>${spent ? `${esc(ins.name)}은(는) 출전을 2번 마쳤어요` : `⚔️ ${esc(ins.name)}(으)로 ${P.battleNo + 1}라운드 나가기`}</button>
+      <p class="hint">AI 곤충 2마리와 겨뤄요 (${P.battleNo + 1}/${settings.battleCount}라운드). 종목은 무작위!</p>
     </div>`;
   }
   function upgrade(k) {
@@ -644,9 +646,9 @@
     s.on('quiz:stage', onStage);
     s.on('lab', onLab);
     s.on('lab:ready', d => { if (!together()) return; P.match.readySet = d.ready; const ul = $('#members'); if (ul) ul.innerHTML = membersHTML(); });
-    s.on('battle:start', meta => { if (!together()) return; hideModal(); clearInterval(labTimer); beginBattle('net', meta); });
+    s.on('battle:start', meta => { if (!together()) return; hideModal(); clearInterval(labTimer); clearInterval(autoTimer); beginBattle('net', meta); });
     s.on('battle:state', snap => onSnap(snap));
-    s.on('match:left', d => { if (!together()) return; const m = P.match.players.find(x => x.pid === d.pid); if (m) m.gone = true; toast(`${d.nick} 님이 나갔어요. 대결은 AI가 대신해요.`, 'warn'); });
+    s.on('match:left', d => { if (!together()) return; const m = P.match.players.find(x => x.pid === d.pid); if (m) m.gone = true; toast(`${d.nick} 님이 나갔어요. 운동회는 AI가 대신해요.`, 'warn'); });
     s.on('match:end', d => { if (!together()) return; hideModal(); BT = null; showFinal(d.standings); });
     s.on('match:abort', d => { if (!P || P.mode !== 'together') return; hideModal(); toast(d.msg, 'bad'); P = null; showStart(); });
     return true;
@@ -744,7 +746,7 @@
     showScreen('quiz');
     $('#scQuiz').innerHTML = `<section class="panel match-intro"><h2>곧 시작해요!</h2>
       <p>${d.players.map(x => `<span class="chip">${x.bot ? '🤖' : '🙂'} ${esc(x.nick)}</span>`).join(' ')}</p>
-      <p class="hint">① 곤충 채집 ${d.opts.collectCount}문제 → ② 코인 퀴즈 ${d.opts.coinCount}문제 → ③ 연구소 → ④ 대결 ${d.opts.battleCount}번</p></section>`;
+      <p class="hint">① 곤충 채집 ${d.opts.collectCount}문제 → ② 코인 퀴즈 ${d.opts.coinCount}문제 → ③ 연구소 → ④ 곤충 운동회 ${d.opts.battleCount}라운드</p></section>`;
     updateHud();
     SND('go');
   }
@@ -753,9 +755,12 @@
     if (modalKind && modalKind !== 'settings' && modalKind !== 'help') hideModal();
     BT = null;
     P.battleNo = d.battleNo; P.labDeadline = performance.now() + d.ms; P.labReady = false; P.match.readySet = [];
+    P.nextEv = d.ev || null;
+    if (P.growQ && P.growQ.done) P.growQ = null;
     goLab();
     const sec = Math.round(d.ms / 1000), span = sec >= 60 && sec % 60 === 0 ? `${sec / 60}분` : sec >= 60 ? `${Math.floor(sec / 60)}분 ${sec % 60}초` : `${sec}초`;
-    toast(d.battleNo === 0 ? `연구소 ${span}! 곤충을 키우고 출전할 곤충을 골라요.` : `${d.battleNo + 1}차전 준비! ${span} 동안 재정비해요.`, 'good');
+    const evName = d.ev && EV.EVENTS[d.ev] ? `${EV.EVENTS[d.ev].icon} ${EV.EVENTS[d.ev].name}` : '❓ 비공개';
+    toast(d.battleNo === 0 ? `작전 시간 ${span}! 1라운드 종목: ${evName}` : `${d.battleNo + 1}라운드 작전 시간 ${span} · 종목: ${evName}`, 'good');
   }
 
   // ---------- 혼자 연습: 대결 ----------
@@ -910,10 +915,10 @@
     setTimeout(() => {
       if (net && !together()) return;
       showModal(`
-        <h2>${ev.icon} ${esc(ev.name)} 결과 (${P.battleNo}/${battleCount()}차전)</h2>
+        <h2>${ev.icon} ${esc(ev.name)} 결과 (${P.battleNo}/${battleCount()}라운드)</h2>
         <ol class="podium">${list}</ol>
         <p class="reward">${mine.rank}등! <i class="coin"></i> +${BATTLE_COINS[k]} · 점수 +${BATTLE_SCORE[k]}</p>
-        ${net ? `<p class="hint pulse">${last ? '잠시 후 최종 순위가 나와요' : `잠시 후 연구소에서 ${P.battleNo + 1}차전을 준비해요`}</p>`
+        ${net ? `<p class="hint pulse">${last ? '잠시 후 최종 순위가 나와요' : `잠시 후 작전 시간! ${P.battleNo + 1}라운드를 준비해요`}</p>`
           : `<div class="row"><button type="button" class="btn primary big" id="afterBattle">${last ? '🏆 최종 결과 보기' : '연구소로 돌아가기 ▶'}</button></div>`}`, 'result');
       const ab = $('#afterBattle');
       if (ab) ab.addEventListener('click', () => { hideModal(); BT = null; if (last) showFinal(); else goLab(); });
@@ -934,19 +939,20 @@
     const table = standings ? `
       <h3>함께 한 친구들 종합 순위</h3>
       <ol class="standings">${standings.map((x, i) => `<li class="${P.match && x.pid === P.match.you ? 'me' : ''}"><span class="medal">${medals[i] || i + 1}</span><span class="st-name">${esc(x.nick)}${x.bot ? ' <em>AI</em>' : ''}</span><span class="st-places">${x.places.slice(0, standings.length).map((n, k) => `${medals[k]}${n}`).join(' ')}</span><b>${x.pts}점</b></li>`).join('')}</ol>
-      <p class="hint">대결 점수: 1등 ${standings.length}점 … 꼴등 1점 (${battleCount()}번 합계)</p>` : '';
+      <p class="hint">운동회 점수: 1등 ${standings.length}점 … 꼴등 1점 (${battleCount()}번 합계)</p>` : '';
     $('#scFinal').innerHTML = `
       <div class="hscroll final-wrap">
         <div class="page">
           <section class="panel final">
             <div class="final-top">
               <h2>오늘의 곤충 리그 결과</h2>
-              <button type="button" class="btn big" id="again">🔄 처음부터 다시 시작</button>
+              <button type="button" class="btn big" id="again">🔄 처음부터 시작하기</button>
+              ${standings ? '<button type="button" class="btn gold big" id="oneMore">🏃 곤충 운동회 한번 더</button>' : ''}
               <button type="button" class="btn primary big" id="toGrow">🌱 곤충 키우기</button>
             </div>
             <div class="final-body">
               <div>
-                ${standings ? table : `<h3>대결 성적</h3><p class="hint">혼자 연습 · AI 곤충과 ${P.history.length}번 겨뤘어요.</p>`}
+                ${standings ? table : `<h3>운동회 성적</h3><p class="hint">혼자 연습 · AI 곤충과 ${P.history.length}번 겨뤘어요.</p>`}
                 <div class="mini-bugs">${P.bugs.map(b => `<img src="${pic(b.type, 64, 'happy', b.tier)}" alt="${esc(D.INSECTS[b.type].name)}" title="${esc(D.INSECTS[b.type].name)}">`).join('')}</div>
                 <p class="hint">곤충 키우기: 이번 운동회 곤충을 모음에 합쳐서, 곤충 수집 · 코인 수집 퀴즈로 계속 키워요. 가장 센 3마리는 다음 운동회에 함께 나가요.</p>
               </div>
@@ -955,7 +961,7 @@
                 <dl class="final-stats">
                   <div><dt>퀴즈 정답</dt><dd>${P.correct} / ${P.total}</dd></div>
                   <div><dt>모은 곤충</dt><dd>${P.bugs.length}마리${legends || heroes ? ` (${[legends ? `전설 ${legends}` : '', heroes ? `영웅 ${heroes}` : ''].filter(Boolean).join(' · ')})` : ''}</dd></div>
-                  <div><dt>대결 성적</dt><dd>🥇${P.places[0]} 🥈${P.places[1]} 🥉${P.places[2]}${P.places[3] ? ` 4️⃣${P.places[3]}` : ''}</dd></div>
+                  <div><dt>운동회 성적</dt><dd>🥇${P.places[0]} 🥈${P.places[1]} 🥉${P.places[2]}${P.places[3] ? ` 4️⃣${P.places[3]}` : ''}</dd></div>
                   <div><dt>남은 코인</dt><dd><i class="coin"></i>${P.coins}</dd></div>
                 </dl>
                 ${P.wrong.length ? `<button type="button" class="btn page-btn" data-goto-page="1">틀린 문제 다시 보기 (${P.wrong.length}) ▶</button>` : '<p class="hint">틀린 문제가 하나도 없어요! 👏</p>'}
@@ -974,6 +980,14 @@
         </section></div>` : ''}
       </div>`;
     $('#again').addEventListener('click', () => { P = null; showStart(); });
+    // 같은 별명 · 같은 입장 코드로 바로 다시 모여요 (곤충은 곤충 키우기 모음의 가장 센 3마리로 새로 시작)
+    const om = $('#oneMore');
+    if (om) om.addEventListener('click', () => {
+      let code = ''; try { code = localStorage.getItem('bugex-room') || ''; } catch (e) { /* 무시 */ }
+      newPlayer({ ...GameKit.state, mode: 'game' }); updateHud();
+      if (!ensureSocket()) return goSolo();
+      joinLobby(code);
+    });
     $('#toGrow').addEventListener('click', () => chooseGarden(P.bugs));
     if (P.match) P.match = null;
   }
@@ -1016,7 +1030,7 @@
       <p class="grow-q">${esc(q.q)}</p>
       ${questionHTML(q)}
       <div id="growFb">${G.html}</div>
-      <div class="row"><button type="button" class="btn" id="growExit">저장하고 처음 화면으로</button></div>`;
+      ${together() ? '' : '<div class="row"><button type="button" class="btn" id="growExit">저장하고 처음 화면으로</button></div>'}`;
     const nextBtn = '<button type="button" class="btn primary" id="growNext">다음 문제 ▶</button>';
     const finish = value => {
       if (G.done) return;
@@ -1034,7 +1048,7 @@
         G.html = `<p class="good-line">정답! <i class="coin"></i> +${settings.coinPerCorrect}</p>${nextBtn}`;
         SND('coin');
       }
-      saveIfGrow(); updateHud(); renderLab();
+      saveIfGrow(); updateHud(); if (P.stage === 'lab') renderLab();
     };
     if (G.done) {
       box.querySelectorAll('.opt').forEach(b => { b.disabled = true; const i = Number(b.dataset.i); if (i === q.answer) b.classList.add('right'); else if (i === G.picked) b.classList.add('wrong'); });
@@ -1048,8 +1062,8 @@
       P.growKind = t.dataset.growKind; P.growQ = null; SND('select'); renderLab();
     }));
     const nx = $('#growNext');
-    if (nx) { const go = () => { P.growQ = null; renderLab(); }; nx.addEventListener('click', go); autoNext(nx, go); }
-    $('#growExit').addEventListener('click', () => { saveIfGrow(); P = null; showStart(); });
+    if (nx) { const go = () => { P.growQ = null; if (P && P.stage === 'lab') renderLab(); }; nx.addEventListener('click', go); autoNext(nx, go); }
+    const ge = $('#growExit'); if (ge) ge.addEventListener('click', () => { saveIfGrow(); P = null; showStart(); });
   }
 
   // ============================================================
@@ -1093,10 +1107,10 @@
           <li><b>곤충 채집</b> — 퀴즈 ${collectCount()}문제. 맞히면 곤충을 잡아요. 어떤 곤충이든 등급은 확률로 정해져요 (일반 55% · 희귀 28% · 영웅 12% · 전설 5%). 같은 곤충을 또 잡으면 모은 수 +1 · 능력치 +1. 하나도 못 맞혀도 기본 곤충은 받아요. 문제를 풀면 3초 뒤 저절로 다음 문제로 넘어가요.</li>
           <li><b>코인 퀴즈</b> — 퀴즈 ${settings.coinCount}문제. 빨리 맞힐수록 코인이 많아요 (4명: 1등 20 · 15 · 10 · 4등 5, 2명: 10 · 5, 틀리면 0).</li>
           <li><b>곤충 연구소</b> — 코인으로 속도·힘·균형·점프·체력을 올려요. <b>같은 곤충을 모은 수</b>(일반→희귀 ×2 · 희귀→영웅 ×3 · 영웅→전설 ×4)와 <b>업그레이드 합계</b>(6 · 14 · 24)를 채우면 저절로 <b>등급업</b>! 등급마다 모든 능력치 +2, 업그레이드 한계도 늘어나요. 곤충 카드 오른쪽 아래 숫자가 모은 수예요.</li>
-          <li><b>곤충 대결</b> — 무작위 종목으로 ${settings.battleCount}차전까지 겨뤄요. <b>한 곤충은 2번까지</b> 출전할 수 있어요. 1등 코인 60 · 2등 40 · 3등 25 · 4등 15. 대결 사이에 연구소에서 재정비해요.</li>
+          <li><b>곤충 운동회</b> — ${settings.battleCount}라운드까지 겨뤄요. 1~3라운드 종목은 작전 시간에 미리 알려 주고, 4라운드부터는 비공개예요. <b>한 곤충은 2번까지</b> 출전할 수 있어요. 1등 코인 60 · 2등 40 · 3등 25 · 4등 15. 라운드 사이 작전 시간에 연구소에서 곤충 수집 · 코인 수집 퀴즈를 풀고 재정비해요. 퀴즈를 풀던 중이어도 시간이 되면 운동회로 넘어가요.</li>
           <li><b>곤충 키우기 (혼자 하기)</b> — 곤충 연구소에서 <b>곤충 수집 퀴즈</b>(맞히면 곤충 채집)와 <b>코인 수집 퀴즈</b>(맞히면 코인 ${settings.coinPerCorrect}개)를 골라 풀며 곤충을 모으고 키워요. 자동으로 저장되고, 가장 센 3마리는 곤충 운동회에 기본 곤충으로 함께 나가요.</li>
         </ol>
-        <h3>대결 종목 10가지</h3>
+        <h3>운동회 종목 10가지</h3>
         <ul>${EV.EVENT_IDS.map(id => { const e = EV.EVENTS[id]; return `<li>${e.icon} <b>${esc(e.name)}</b> — ${esc(e.desc)}</li>`; }).join('')}</ul>
         <h3>함께 하기 (최대 4명)</h3>
         <ul>
@@ -1478,7 +1492,7 @@
       defaultDifficulty: settings.difficulty,
       defaultQuizGoal: settings.collectCount,
       modeLabels: { free: '🌱 혼자 하기\n곤충 키우기', game: '🏃 여럿이 하기\n곤충 운동회' },
-      modeDescriptions: { free: '곤충 수집 퀴즈로 모으고, 코인 수집 퀴즈로 키워요 (자동 저장)', game: '최대 4명 실시간 · 퀴즈 → 연구소 → 무작위 종목 대결' },
+      modeDescriptions: { free: '곤충 수집 퀴즈로 모으고, 코인 수집 퀴즈로 키워요 (자동 저장)', game: '최대 4명 실시간 · 퀴즈 → 작전 시간(연구소) → 곤충 운동회' },
       difficultyDescriptions: { easy: 'AI 곤충이 약해요', normal: 'AI 곤충이 나와 비슷해요', hard: 'AI 곤충이 강해요' },
       waveLabel: '🥇{n}',
     }).then(kit => {
