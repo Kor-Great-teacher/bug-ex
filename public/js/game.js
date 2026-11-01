@@ -1100,6 +1100,8 @@
     renderLab(); updateHud();
     toast(first ? '첫 친구 개미와 함께 시작해요! 곤충 수집 퀴즈로 친구를 더 모아요.' : '곤충 수집 퀴즈로 모으고, 코인 수집 퀴즈로 키워요. 자동으로 저장돼요!', 'good');
   }
+  // 연구소 화면이 열려 있는지: 곤충 키우기(grow) · 운동회 작전 시간(lab)
+  const labOpen = () => !!(P && (P.stage === 'lab' || P.stage === 'grow'));
   function bindGrow() {
     const box = $('#growBox'); if (!box) return;
     const kind = P.growKind || 'collect';
@@ -1133,7 +1135,7 @@
         G.html = `<p class="good-line">정답! <i class="coin"></i> +${settings.coinPerCorrect}</p>${nextBtn}`;
         SND('coin');
       }
-      saveIfGrow(); updateHud(); if (P.stage === 'lab') renderLab();
+      saveIfGrow(); updateHud(); if (labOpen()) renderLab();
     };
     if (G.done) {
       box.querySelectorAll('.opt').forEach(b => { b.disabled = true; const i = Number(b.dataset.i); if (i === q.answer) b.classList.add('right'); else if (i === G.picked) b.classList.add('wrong'); });
@@ -1147,7 +1149,7 @@
       P.growKind = t.dataset.growKind; P.growQ = null; SND('select'); renderLab();
     }));
     const nx = $('#growNext');
-    if (nx) { const go = () => { P.growQ = null; if (P && P.stage === 'lab') renderLab(); }; nx.addEventListener('click', go); autoNext(nx, go); }
+    if (nx) { const go = () => { P.growQ = null; if (labOpen()) renderLab(); }; nx.addEventListener('click', go); autoNext(nx, go); }
     const ge = $('#growExit'); if (ge) ge.addEventListener('click', () => { saveIfGrow(); P = null; showStart(); });
   }
 
@@ -1447,7 +1449,7 @@
       });
     }
 
-    const back = () => { hideModal(); if (fromStart) showStart(); else if (P && P.stage === 'lab') renderLab(); };
+    const back = () => { hideModal(); if (fromStart) showStart(); else if (labOpen()) renderLab(); };
     $('#setCancel').onclick = () => { A.setMusicVolume(before.music); A.setSfxVolume(before.sfx); back(); };
     $('#setForm').addEventListener('submit', e => {
       e.preventDefault();
