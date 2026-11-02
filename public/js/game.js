@@ -238,7 +238,8 @@
   const subjectOf = q => q.subjectLabel || Q.label(q.subject);
   function questionHTML(q) {
     if (q.type === 'short') return `<form class="short-form" id="shortForm"><input id="shortIn" type="text" autocomplete="off" placeholder="정답을 써요" aria-label="정답"><button class="btn primary" type="submit">확인</button></form>`;
-    return `<div class="opts ${q.type === 'ox' ? 'ox' : ''}">${q.options.map((o, i) => `<button type="button" class="opt" data-i="${i}">${q.type === 'ox' ? '' : `<b>${i + 1}</b>`}<span>${esc(o)}</span></button>`).join('')}</div>`;
+    const longOpt = q.type !== 'ox' && (q.options || []).some(o => String(o).length > 10);
+    return `<div class="opts ${q.type === 'ox' ? 'ox' : ''} ${longOpt ? 'long' : ''}">${q.options.map((o, i) => `<button type="button" class="opt" data-i="${i}">${q.type === 'ox' ? '' : `<b>${i + 1}</b>`}<span>${esc(o)}</span></button>`).join('')}</div>`;
   }
   function coinBoardHTML() {
     const board = P.coinBoard;
@@ -607,8 +608,10 @@
       const spent = !canEnter(P.sel);
       const ev = P.nextEv && EV.EVENTS[P.nextEv];
       return `<div class="go-box">
-        <div class="lab-clock">⏱ 작전 시간 <b id="labLeft">-:--</b></div>
-        <p class="next-ev ${ev ? '' : 'secret'}">${ev ? `${n}라운드 종목: <b>${ev.icon} ${esc(ev.name)}</b> <small>${ev.stats.map(k => D.STATS.find(s => s.k === k).name).join('·')}</small>` : `${n}라운드 종목: <b>❓ 비공개</b> <small>4라운드부터는 깜짝 종목!</small>`}</p>
+        <div class="go-row">
+          <div class="lab-clock" title="작전 시간">⏱ <b id="labLeft">-:--</b></div>
+          <p class="next-ev ${ev ? '' : 'secret'}" title="${ev ? `중요 능력: ${ev.stats.map(k => D.STATS.find(s => s.k === k).name).join(' · ')}` : '4라운드부터는 깜짝 종목!'}"><small>${n}라운드</small> <b>${ev ? `${ev.icon} ${esc(ev.name)}` : '❓ 비공개'}</b></p>
+        </div>
         <button type="button" class="btn primary big" id="labReady" ${P.labReady || spent ? 'disabled' : ''}>${spent ? `${esc(ins.name)}: ${whyNot(bug(P.sel))}` : P.labReady ? `✅ ${esc(ins.name)} 준비 완료!` : `✅ ${esc(ins.name)}(으)로 ${n}라운드 준비 완료`}</button>
       </div>
       <div class="grow-box" id="growBox"></div>`;
@@ -1109,12 +1112,11 @@
     const G = P.growQ, q = G.q;
     box.innerHTML = `
       <div class="grow-tabs" role="tablist">
-        <button type="button" role="tab" data-grow-kind="collect" aria-selected="${kind === 'collect'}">🦋 곤충 수집 퀴즈</button>
-        <button type="button" role="tab" data-grow-kind="coin" aria-selected="${kind === 'coin'}">🪙 코인 수집 퀴즈 <small>+${settings.coinPerCorrect}</small></button>
+        <button type="button" role="tab" data-grow-kind="collect" aria-selected="${kind === 'collect'}" data-tip="맞히면 곤충을 잡아요! 어떤 곤충 · 어떤 등급(일반 55% · 희귀 28% · 영웅 12% · 전설 5%)일지는 확률이에요. 같은 곤충 · 같은 등급을 또 잡으면 모은 수 +1 · 능력치 +1">🦋 곤충 수집 퀴즈</button>
+        <button type="button" role="tab" data-grow-kind="coin" aria-selected="${kind === 'coin'}" data-tip="맞히면 코인 ${settings.coinPerCorrect}개를 받아요. 코인으로 속도 · 힘 · 균형 · 점프 · 체력을 올려요.">🪙 코인 수집 퀴즈 <small>+${settings.coinPerCorrect}</small></button>
       </div>
-      <p class="hint">${kind === 'collect' ? '맞히면 곤충을 잡아요 (등급은 확률). 같은 곤충 · 같은 등급이면 모은 수 +1!' : `맞히면 코인 ${settings.coinPerCorrect}개. 코인으로 능력치를 올려요.`}</p>
       <p class="q-subject">${esc(Q.label(q.subject))}</p>
-      <p class="grow-q">${esc(q.q)}</p>
+      <p class="grow-q ${q.q.length > 45 ? 'long' : ''}">${esc(q.q)}</p>
       ${questionHTML(q)}
       <div id="growFb">${G.html}</div>
       ${together() ? '' : '<div class="row"><button type="button" class="btn" id="growExit">저장하고 처음 화면으로</button></div>'}`;
@@ -1197,9 +1199,9 @@
         marks: [[33, 17, 1], [70, 23, 2], [30, 36, 3]],
         points: [n(1, '<b>별명</b> — 🔀 를 누르면 재미있는 별명이 나와요'), n(2, '<b>🌱 혼자 하기</b> = 곤충 키우기 · <b>🏃 여럿이 하기</b> = 곤충 운동회'), n(3, '<b>시작</b> 버튼을 눌러요. 곤충은 두 방식이 <b>같은 모음</b>을 함께 써요')] },
       { ch: 1, title: '곤충 키우기 (혼자 하기)', img: 'grow', who: ['ladybug', 'happy', 0], say: '퀴즈를 풀면서 곤충을 모으고 키우는 곳이야. 자동으로 저장돼!',
-        marks: [[11, 50, 1], [67, 44, 2], [88, 17, 3], [48, 88, 4]],
+        marks: [[11, 50, 1], [62, 42, 2], [88, 17, 3], [48, 88, 4]],
         points: [n(1, '<b>내 곤충 카드</b> — 누르면 자세히 봐요. <span class="g-chip new">NEW 연초록</span> 새 곤충 · <span class="g-chip old">연하늘</span> 저장된 곤충 · <b>×3</b> 모은 수'),
-          n(2, '<b>코인</b>으로 능력치를 +1씩 올려요 (속도 · 힘 · 균형 · 점프 · 체력)'), n(3, `<b>곤충 수집 퀴즈</b>(곤충 채집) · <b>코인 수집 퀴즈</b>(+${S.coinPerCorrect} 코인) 중 골라요`), n(4, '<b>다음 등급</b>까지 얼마나 남았는지 보여 줘요')] },
+          n(2, '<b>코인</b>으로 능력치를 +1씩 올려요 (속도 · 힘 · 균형 · 점프 · 체력)'), n(3, `<b>곤충 수집 퀴즈</b>(곤충 채집) · <b>코인 수집 퀴즈</b>(+${S.coinPerCorrect} 코인) 중 골라요`), n(4, '<b>등급 상태</b> — 다음 등급까지 남은 조건을 보여 줘요'), '<span class="g-dot">💬</span>퀴즈 이름에 <b>마우스를 올리면</b> 설명이 나와요'] },
       { ch: 1, title: '퀴즈를 맞히면 곤충 채집!', img: 'grow_catch', who: ['grasshopper', 'happy', 0], say: '정답이면 곤충을 잡아! 등급은 뽑기처럼 확률로 정해져.',
         marks: [[85, 50, 1]],
         points: [n(1, '어떤 곤충이 나올지, 어떤 <b>등급</b>일지는 확률이에요'), probBar,
@@ -1221,7 +1223,7 @@
         points: [n(1, '정답을 <b>빨리</b> 맞혀요'), n(2, '맞힌 순서대로 코인 순위가 나와요'),
           `<div class="g-coins"><span>🥇 20</span><span>🥈 15</span><span>🥉 10</span><span>4️⃣ 5</span><span class="x">❌ 0</span></div><small class="hint">4명일 때 · 2명이면 1등 10 · 2등 5</small>`] },
       { ch: 2, title: '③ 작전 시간 (곤충 연구소)', img: 'lab', who: ['mantis', undefined, 0], say: '라운드 전에 곤충을 키우고 출전할 곤충을 골라! 퀴즈도 풀 수 있어.',
-        marks: [[8, 38, 1], [61, 47, 2], [74.5, 19, 3], [74.5, 36, 4], [74.5, 45, 5]],
+        marks: [[8, 38, 1], [62, 47, 2], [71.5, 19, 3], [71.5, 26, 4], [71.5, 35, 5]],
         points: [n(1, '출전할 곤충 고르기 — <b>한 곤충은 2번</b>까지, 원래 있던 <b>저장된 곤충은 모두 합쳐 3번</b>까지'), n(2, '코인으로 능력치 올리기'),
           n(3, `남은 시간 · <b>이번 종목</b> (1~3라운드는 미리 공개, 4라운드부터 비공개)`), n(4, '<b>준비 완료</b> — 모두 누르면 바로 시작'), n(5, '시간이 남으면 곤충 · 코인 수집 퀴즈! 시간이 되면 저절로 운동회로 넘어가요')] },
       { ch: 2, title: `④ 곤충 운동회 (${S.battleCount}라운드)`, img: 'battle', who: ['rhino', 'strain', 2], say: '★ 표시가 내 곤충이야! 버튼을 눌러서 응원하자!',
