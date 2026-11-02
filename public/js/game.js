@@ -1167,7 +1167,7 @@
       startLabel: st => st.mode === 'free' ? (growing ? '🌱 곤충 키우기 이어하기' : '🌱 곤충 키우기 시작') : '🏃 곤충 운동회 시작',
       altButton: null,
       links: [
-        { label: '게임 방법', onClick: () => { GameKit.hideStartScreen(); showHelp(true); } },
+        { label: '게임 방법', onClick: () => { GameKit.hideStartScreen(); showHelp(true, 0); } },
         { label: '설정', onClick: () => { GameKit.hideStartScreen(); showSettings(true); } },
       ],
     });
@@ -1184,34 +1184,101 @@
   }
 
   // ---------- 게임 방법 ----------
-  function showHelp(fromStart) {
+  // ---------- 게임 방법: 그림으로 보는 단계별 안내 ----------
+  // 단계마다 실제 게임 화면(스크린샷)에 ①②③ 표시를 붙이고, 곤충 캐릭터가 말풍선으로 설명해요.
+  let guideAt = 0;
+  function guideSlides() {
+    const S = settings, n = (i, t) => `<b class="g-n">${i}</b>${t}`;
+    const tierRow = (t) => `<span class="rar ${D.TIERS[t]}">${D.RARITY[D.TIERS[t]].name}</span>`;
+    const probBar = `<div class="g-prob">${D.TIERS.map((t, i) => `<span class="${t}" style="flex:${D.RARITY[t].weight}">${D.RARITY[t].name} ${D.RARITY[t].weight}%</span>`).join('')}</div>`;
+    const ctlName = { tap: '👆 누르기', lr: '◀ ▶ 조종', hold: '✊ 누르고 있기', timing: '🎯 타이밍' };
+    return [
+      { ch: 0, title: '시작하기', img: 'start', who: ['bee', 'happy', 1], say: '안녕! 별명을 정하고, 어떻게 놀지 골라 봐!',
+        marks: [[33, 17, 1], [70, 23, 2], [30, 36, 3]],
+        points: [n(1, '<b>별명</b> — 🔀 를 누르면 재미있는 별명이 나와요'), n(2, '<b>🌱 혼자 하기</b> = 곤충 키우기 · <b>🏃 여럿이 하기</b> = 곤충 운동회'), n(3, '<b>시작</b> 버튼을 눌러요. 곤충은 두 방식이 <b>같은 모음</b>을 함께 써요')] },
+      { ch: 1, title: '곤충 키우기 (혼자 하기)', img: 'grow', who: ['ladybug', 'happy', 0], say: '퀴즈를 풀면서 곤충을 모으고 키우는 곳이야. 자동으로 저장돼!',
+        marks: [[11, 50, 1], [67, 44, 2], [88, 17, 3], [48, 88, 4]],
+        points: [n(1, '<b>내 곤충 카드</b> — 누르면 자세히 봐요. <span class="g-chip new">NEW 연초록</span> 새 곤충 · <span class="g-chip old">연하늘</span> 저장된 곤충 · <b>×3</b> 모은 수'),
+          n(2, '<b>코인</b>으로 능력치를 +1씩 올려요 (속도 · 힘 · 균형 · 점프 · 체력)'), n(3, `<b>곤충 수집 퀴즈</b>(곤충 채집) · <b>코인 수집 퀴즈</b>(+${S.coinPerCorrect} 코인) 중 골라요`), n(4, '<b>다음 등급</b>까지 얼마나 남았는지 보여 줘요')] },
+      { ch: 1, title: '퀴즈를 맞히면 곤충 채집!', img: 'grow_catch', who: ['grasshopper', 'happy', 0], say: '정답이면 곤충을 잡아! 등급은 뽑기처럼 확률로 정해져.',
+        marks: [[85, 50, 1]],
+        points: [n(1, '어떤 곤충이 나올지, 어떤 <b>등급</b>일지는 확률이에요'), probBar,
+          '<span class="g-dot">✔</span>같은 곤충 · 같은 등급을 또 잡으면 <b>모은 수 +1</b> · 능력치 +1', '<span class="g-dot">⏱</span>답을 고르면 <b>3초 뒤</b> 저절로 다음 문제'] },
+      { ch: 1, title: '등급업: 모으고 키우면 저절로!', who: ['stag', 'happy', 3], say: '같은 곤충을 모으고 업그레이드하면 등급이 올라가. 전설까지 가 보자!',
+        visual: `<div class="g-chain">${[0, 1, 2, 3].map(t => `<div class="g-tier ${D.TIERS[t]}"><img src="${pic('stag', 96, t === 3 ? 'happy' : undefined, t)}" alt="">${tierRow(t)}<small>능력치 +${D.TIER_BONUS[t]} · 한계 ${D.TIER_CAP[t]}</small></div>${t < 3 ? `<div class="g-arrow"><b>×${D.COPY_REQ[t]}</b><span>업 ${D.PROMO_REQ[t]}</span>➜</div>` : ''}`).join('')}</div>`,
+        points: ['<span class="g-dot">1</span><b>같은 곤충 모으기</b>: 일반 4장 → 희귀 · 희귀 3장 → 영웅 · 영웅 2장 → 전설', '<span class="g-dot">2</span><b>업그레이드 합계</b>: 6 · 14 · 24 번', '<span class="g-dot">★</span>두 가지를 채우면 <b>저절로 등급업</b>! 위 등급 카드가 이미 있으면 그 카드에 합쳐져 모은 수가 올라가요'] },
+      { ch: 2, title: '곤충 운동회 입장 (여럿이 하기)', img: 'join', who: ['ant', 'happy', 0], say: '친구랑 같은 코드를 넣으면 한 방에 모여! 비워 두면 아무나 자동 매칭!',
+        marks: [[50, 54, 1], [41, 64, 2], [57, 64, 3]],
+        points: [n(1, '<b>입장 코드</b> — 반 친구들과 같은 코드(예: 3반)를 넣어요'), n(2, '<b>시작하기</b> — 최대 4명이 함께해요'), n(3, '혼자 연습하고 싶으면 곤충 키우기로 가요')] },
+      { ch: 2, title: '대기실', img: 'lobby', who: ['ant', undefined, 0], say: '친구들이 다 모이면 [지금 시작하기]! 빈자리는 AI 곤충이 채워 줘.',
+        marks: [[22, 44, 1], [32, 60, 2], [64, 60, 3]],
+        points: [n(1, '들어온 친구들이 보여요 (2~4명)'), n(2, '<b>기다리기</b> → 모두 <b>지금 시작하기</b>를 누르면 시작'), n(3, `<b>${S.matchWait}초 뒤 AI와 자동 대결</b> — 빈자리를 AI가 채워요`)] },
+      { ch: 2, title: `① 곤충 채집 퀴즈 (${collectCount()}문제)`, img: 'quiz_collect', who: ['butterfly', 'happy', 1], say: '모두 같은 문제를 풀어! 먼저 풀면 친구들을 잠깐 기다려 줘.',
+        marks: [[10, 31, 1], [55, 41, 2], [82, 33, 3]],
+        points: [n(1, '문제를 읽고'), n(2, '답을 골라요 (키보드 1~4도 돼요)'), n(3, '맞히면 곤충을 채집해 여기에 모여요. <b>하나도 못 맞혀도 기본 곤충</b>은 받아요')] },
+      { ch: 2, title: `② 코인 퀴즈 (${S.coinCount}문제)`, img: 'quiz_coin', who: ['bee', 'happy', 2], say: '빨리 맞힐수록 코인이 많아! 코인으로 곤충을 키워.',
+        marks: [[10, 31, 1], [76, 36, 2]],
+        points: [n(1, '정답을 <b>빨리</b> 맞혀요'), n(2, '맞힌 순서대로 코인 순위가 나와요'),
+          `<div class="g-coins"><span>🥇 20</span><span>🥈 15</span><span>🥉 10</span><span>4️⃣ 5</span><span class="x">❌ 0</span></div><small class="hint">4명일 때 · 2명이면 1등 10 · 2등 5</small>`] },
+      { ch: 2, title: '③ 작전 시간 (곤충 연구소)', img: 'lab', who: ['mantis', undefined, 0], say: '라운드 전에 곤충을 키우고 출전할 곤충을 골라! 퀴즈도 풀 수 있어.',
+        marks: [[8, 38, 1], [61, 47, 2], [74.5, 19, 3], [74.5, 36, 4], [74.5, 45, 5]],
+        points: [n(1, '출전할 곤충 고르기 — <b>한 곤충은 2번</b>까지, 원래 있던 <b>저장된 곤충은 모두 합쳐 3번</b>까지'), n(2, '코인으로 능력치 올리기'),
+          n(3, `남은 시간 · <b>이번 종목</b> (1~3라운드는 미리 공개, 4라운드부터 비공개)`), n(4, '<b>준비 완료</b> — 모두 누르면 바로 시작'), n(5, '시간이 남으면 곤충 · 코인 수집 퀴즈! 시간이 되면 저절로 운동회로 넘어가요')] },
+      { ch: 2, title: `④ 곤충 운동회 (${S.battleCount}라운드)`, img: 'battle', who: ['rhino', 'strain', 2], say: '★ 표시가 내 곤충이야! 버튼을 눌러서 응원하자!',
+        marks: [[54, 34, 1], [78, 24, 2], [50, 90, 3]],
+        points: [n(1, '<b>★ 내 이름</b>이 붙은 곤충이 내 곤충'), n(2, '남은 시간'), n(3, '종목마다 다른 <b>버튼</b>을 눌러요 (키보드도 돼요)'),
+          '<div class="g-coins"><span>🥇 60</span><span>🥈 40</span><span>🥉 25</span><span>4️⃣ 15</span></div><small class="hint">라운드마다 받는 코인</small>'] },
+      { ch: 2, title: `운동회 종목 ${EV.EVENT_IDS.length}가지와 조작`, who: ['swallowtail', 'happy', 1], say: '종목마다 버튼 쓰는 법이 달라. 경기 화면 위에 방법이 나와!',
+        visual: `<div class="g-events">${['tap', 'timing', 'lr', 'hold'].map(c => {
+          const ids = EV.EVENT_IDS.filter(id => c === 'timing' ? (EV.EVENTS[id].control === 'timing' || id === 'rhythm') : c === 'tap' ? (EV.EVENTS[id].control === 'tap' && id !== 'rhythm') : EV.EVENTS[id].control === c);
+          const key = { tap: 'Space', timing: 'Space', lr: '← → (↑ ↓)', hold: 'Space 꾹' }[c];
+          return `<div class="g-ctl ${c}"><div class="g-btn">${ctlName[c]}<small>⌨ ${key}</small></div><ul>${ids.map(id => `<li>${EV.EVENTS[id].icon} ${esc(EV.EVENTS[id].name)}</li>`).join('')}</ul></div>`;
+        }).join('')}</div>`,
+        points: ['<span class="g-dot">🎲</span>종목은 라운드마다 무작위! 1~3라운드는 작전 시간에 미리 알려 줘요', '<span class="g-dot">📋</span>경기가 시작되면 화면 위에 <b>하는 방법</b>과 <b>중요 능력</b>이 나와요', '<span class="g-dot">💪</span>중요 능력이 높은 곤충을 내보내면 유리해요', '<span class="g-dot">⌨</span>컴퓨터는 키보드로도 해요: <b>Space</b> · <b>← →</b> · <b>↑ ↓</b>'] },
+      { ch: 3, title: '시상식', img: 'ceremony', who: ['stag', 'happy', 3], say: '최종 순위로 단상에 올라가! 가장 잘한 곤충이 함께 서.',
+        marks: [[27, 61, 1], [56, 19, 2], [74, 28, 3], [80, 91, 4]],
+        points: [n(1, '<b>단상</b> — 1등은 가운데 👑, 선수마다 가장 잘한 곤충'), n(2, '<b>한 번 더</b> · <b>곤충 키우기로 이어하기</b> · <b>처음부터 다시하기</b>'), n(3, '내 순위와 점수'), n(4, '명예의 전당 랭킹 보기'),
+          '<small class="hint">점수: 정답 100 · 새 곤충 50~250 · 업그레이드 10 · 등급업 50~125 · 운동회 1등 300 / 2등 150 / 3등 50 / 4등 20</small>'] },
+    ];
+  }
+  function showHelp(fromStart, at) {
+    const slides = guideSlides(), chapters = ['시작', '곤충 키우기', '곤충 운동회', '시상식'];
+    guideAt = Math.max(0, Math.min(slides.length - 1, at != null ? at : guideAt));
+    const s = slides[guideAt], [wt, wm, wr] = s.who;
     showModal(`
-      <div class="help">
-        <h2>게임 방법</h2>
-        <div class="hcols">
-        <h3>진행 순서</h3>
-        <ol>
-          <li><b>곤충 채집</b> — 퀴즈 ${collectCount()}문제. 맞히면 곤충을 잡아요. 어떤 곤충이든 등급은 확률로 정해져요 (일반 55% · 희귀 28% · 영웅 12% · 전설 5%). 같은 곤충을 또 잡으면 모은 수 +1 · 능력치 +1. 하나도 못 맞혀도 기본 곤충은 받아요. 문제를 풀면 3초 뒤 저절로 다음 문제로 넘어가요.</li>
-          <li><b>코인 퀴즈</b> — 퀴즈 ${settings.coinCount}문제. 빨리 맞힐수록 코인이 많아요 (4명: 1등 20 · 15 · 10 · 4등 5, 2명: 10 · 5, 틀리면 0).</li>
-          <li><b>곤충 연구소</b> — 코인으로 속도·힘·균형·점프·체력을 올려요. <b>같은 곤충을 모은 수</b>(일반 4장 → 희귀 · 희귀 3장 → 영웅 · 영웅 2장 → 전설)와 <b>업그레이드 합계</b>(6 · 14 · 24)를 채우면 저절로 <b>등급업</b>! 등급마다 모든 능력치 +2, 업그레이드 한계도 늘어나요. 곤충 카드 오른쪽 위 숫자가 모은 수예요.</li>
-          <li><b>곤충 운동회</b> — ${settings.battleCount}라운드까지 겨뤄요. 1~3라운드 종목은 작전 시간에 미리 알려 주고, 4라운드부터는 비공개예요. <b>한 곤충은 2번까지</b>, 원래 갖고 있던 저장된 곤충은 모두 합쳐 <b>3번까지</b> 출전할 수 있어요. 1등 코인 60 · 2등 40 · 3등 25 · 4등 15. 라운드 사이 작전 시간에 연구소에서 곤충 수집 · 코인 수집 퀴즈를 풀고 재정비해요. 퀴즈를 풀던 중이어도 시간이 되면 운동회로 넘어가요.</li>
-          <li><b>곤충 키우기 (혼자 하기)</b> — 곤충 연구소에서 <b>곤충 수집 퀴즈</b>(맞히면 곤충 채집)와 <b>코인 수집 퀴즈</b>(맞히면 코인 ${settings.coinPerCorrect}개)를 골라 풀며 곤충을 모으고 키워요. 자동으로 저장되고, 가장 센 3마리는 곤충 운동회에 기본 곤충으로 함께 나가요.</li>
-        </ol>
-        <h3>운동회 종목 ${EV.EVENT_IDS.length}가지</h3>
-        <ul>${EV.EVENT_IDS.map(id => { const e = EV.EVENTS[id]; return `<li>${e.icon} <b>${esc(e.name)}</b> — ${esc(e.desc)}</li>`; }).join('')}</ul>
-        <h3>함께 하기 (최대 4명)</h3>
-        <ul>
-          <li><b>입장 코드</b>를 넣으면 같은 코드의 친구들과 한 방에 모여요. [기다리기]를 누르고, 2명 이상이 모여 모두 [지금 시작하기]를 누르면 시작해요 (2~4명). [${settings.matchWait}초 기다린 후에 AI와 자동 대결]을 누르면 시간이 지나 빈자리를 AI가 채워 시작해요.</li>
-          <li>코드 없이 시작하면 <b>자동 매칭</b>: 4명이 모이거나 ${settings.matchWait}초가 지나면 AI와 함께 시작해요.</li>
-          <li>퀴즈는 모두 같은 문제를 풀어요. 먼저 푼 친구는 모두 풀 때까지 기다리고, 다 풀면 정답이 공개돼요.</li>
-          <li>연구소는 처음 ${Math.round(settings.labTime / 60 * 10) / 10}분, 대결 사이에는 ${settings.relabTime}초. 시간이 끝나면 고른 곤충으로 자동 출전해요.</li>
-        </ul>
-        <h3>점수</h3>
-        <p class="hint">정답 100점 · 새 곤충 일반 50 / 희귀 100 / 영웅 150 / 전설 250 · 업그레이드 10 · 등급업 50~125 · 대결 1등 300 / 2등 150 / 3등 50 / 4등 20</p>
+      <div class="guide">
+        <div class="g-head">
+          <h2>게임 방법</h2>
+          <div class="g-chapters">${chapters.map((c, i) => `<button type="button" data-g-ch="${i}" class="${s.ch === i ? 'on' : ''}">${c}</button>`).join('')}</div>
+          <span class="g-count">${guideAt + 1} / ${slides.length}</span>
         </div>
-        <div class="row"><button type="button" class="btn primary" id="helpClose">알겠어요!</button></div>
-      </div>`, 'help', 'wide');
-    $('#helpClose').addEventListener('click', () => { hideModal(); if (fromStart) showStart(); });
+        <div class="g-slide">
+          <div class="g-left">
+            ${s.img ? `<div class="g-shot"><img src="img/help/${s.img}.webp" alt="${esc(s.title)} 화면">${(s.marks || []).map(([x, y, k]) => `<i class="g-mk" style="left:${x}%;top:${y}%">${k}</i>`).join('')}</div>` : `<div class="g-visual">${s.visual}</div>`}
+          </div>
+          <div class="g-right">
+            <h3><span class="g-step">STEP ${guideAt + 1}</span>${esc(s.title)}</h3>
+            <div class="g-say"><img src="${pic(wt, 72, wm, wr)}" alt=""><p>${s.say}</p></div>
+            <ul class="g-points">${s.points.map(p => `<li>${p}</li>`).join('')}</ul>
+          </div>
+        </div>
+        <div class="g-nav">
+          <button type="button" class="btn" id="gPrev" ${guideAt === 0 ? 'disabled' : ''}>◀ 이전</button>
+          <div class="g-dots">${slides.map((_, i) => `<i class="${i === guideAt ? 'on' : ''}" data-g-go="${i}"></i>`).join('')}</div>
+          ${guideAt < slides.length - 1 ? '<button type="button" class="btn primary" id="gNext">다음 ▶</button>' : '<button type="button" class="btn primary" id="helpClose">알겠어요! 시작하기</button>'}
+        </div>
+        <button type="button" class="g-close" id="gClose" aria-label="닫기">✕</button>
+      </div>`, 'help', 'wide guide-dialog');
+    const go = i => showHelp(fromStart, i);
+    const close = () => { hideModal(); if (fromStart) showStart(); else if (labOpen()) renderLab(); };
+    $('#gPrev').addEventListener('click', () => go(guideAt - 1));
+    const nx = $('#gNext'); if (nx) nx.addEventListener('click', () => go(guideAt + 1));
+    const hc = $('#helpClose'); if (hc) hc.addEventListener('click', () => { guideAt = 0; close(); });
+    $('#gClose').addEventListener('click', close);
+    dialogEl.querySelectorAll('[data-g-go]').forEach(el => el.addEventListener('click', () => go(Number(el.dataset.gGo))));
+    dialogEl.querySelectorAll('[data-g-ch]').forEach(el => el.addEventListener('click', () => go(slides.findIndex(x => x.ch === Number(el.dataset.gCh)))));
+    dialogEl.onkeydown = e => { if (e.key === 'ArrowRight' && guideAt < slides.length - 1) { e.preventDefault(); go(guideAt + 1); } else if (e.key === 'ArrowLeft' && guideAt > 0) { e.preventDefault(); go(guideAt - 1); } else if (e.key === 'Escape') close(); };
+    const f = $('#gNext') || $('#helpClose'); if (f) f.focus({ preventScroll: true });
   }
 
   // ============================================================
@@ -1492,7 +1559,7 @@
   // 함께 하기 진행 중에는 설정 · 도움말 창이 진행 화면을 가리지 않게 막아요
   const busy = () => ['lobby', 'join', 'wait', 'coinrank', 'result', 'lost', 'garden'].includes(modalKind) || together();
   $('#settingsBtn').addEventListener('click', () => { if (busy()) return toast('함께 하기 중에는 설정을 열 수 없어요.', 'warn'); A.init(); showSettings(false); });
-  $('#helpBtn').addEventListener('click', () => { if (busy()) return toast('함께 하기 중에는 도움말을 열 수 없어요.', 'warn'); showHelp(false); });
+  $('#helpBtn').addEventListener('click', () => { if (busy()) return toast('함께 하기 중에는 도움말을 열 수 없어요.', 'warn'); showHelp(false, 0); });
   $('#sfxBtn').addEventListener('click', () => { A.init(); A.setSfx(!A.sfx); refreshIcons(); });
   $('#musicBtn').addEventListener('click', () => { A.init(); A.setMusic(!A.music); refreshIcons(); });
 
