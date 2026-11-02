@@ -1,31 +1,74 @@
 name: Keep Render Alive
 
 # Render 무료 요금제는 15분 동안 접속이 없으면 잠들어요.
-# 수업 시간(한국 시간 월~금 08:30 ~ 15:00)에만 10분마다 깨워 둬요.
-# GitHub 스케줄은 UTC 기준이라 한국 시간(UTC+9)에서 9시간을 빼서 적어요.
-#   한국 08:30 ~ 08:50  = UTC 전날 23:30 ~ 23:50 (전날이니 일~목)
-#   한국 09:00 ~ 14:50  = UTC 00:00 ~ 05:50 (월~금)
-#   한국 15:00          = UTC 06:00 (월~금)
+# 수업 시간(한국 시간 월~금 08:30 ~ 15:00)에는 깨어 있도록 5분마다 서버를 불러요.
+#
+# GitHub 예약 실행(schedule)은 몇 분~수십 분 늦거나 아예 건너뛸 때가 있어서,
+# "10분마다 한 번씩 실행"하면 빈틈이 생겨요. 그래서
+#   - 예약 실행이 시작되면 그 작업이 15:00(한국)까지 계속 살아서 5분마다 부르고,
+#   - 예약은 30분마다 여러 번 걸어 둬서 몇 번 건너뛰어도 하나만 실행되면 돼요.
+#   - 같은 작업이 이미 돌고 있으면 새로 시작된 작업은 기다렸다가 이어받아요 (concurrency).
+# GitHub 스케줄은 UTC 기준(한국 = UTC+9). 붐비는 정각을 피해 17분 · 47분에 걸어요.
+#   UTC 23:17 · 23:47 (일~목) = 한국 08:17 · 08:47 (월~금)
+#   UTC 00:17 ~ 05:47 (월~금) = 한국 09:17 ~ 14:47
 on:
   schedule:
-    - cron: '30,40,50 23 * * 0-4'
-    - cron: '*/10 0-5 * * 1-5'
-    - cron: '0 6 * * 1-5'
-  workflow_dispatch:   # Actions 탭에서 [Run workflow] 로 바로 실행해 볼 수 있어요
+    - cron: '17,47 23 * * 0-4'
+    - cron: '17,47 0-5 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      count:
+        description: '테스트: 몇 번 부를까요? (0 = 수업 시간 동안 계속)'
+        default: '0'
+      interval:
+        description: '테스트: 몇 분마다 부를까요?'
+        default: '10'
 
 env:
   # 저장소 Settings → Secrets and variables → Actions → Variables 에 RENDER_URL 을 만들면 그 주소를 써요
   RENDER_URL: ${{ vars.RENDER_URL || 'https://bug-ex.onrender.com' }}
 
+concurrency:
+  group: keep-render-alive-${{ github.event_name == 'workflow_dispatch' && inputs.count != '0' && 'test' || 'live' }}
+  cancel-in-progress: false
+
 jobs:
   ping:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 355   # GitHub 작업은 최대 6시간
     steps:
-      - name: Send ping request
+      - name: Keep the server awake
+        env:
+          COUNT: ${{ inputs.count || '0' }}
+          INTERVAL: ${{ inputs.interval || '10' }}
         run: |
-          echo "한국 시간: $(TZ=Asia/Seoul date '+%Y-%m-%d (%a) %H:%M')"
+          ping() {
+            local out code t
+            out=$(curl -sS --max-time 90 --retry 3 --retry-delay 15 --retry-all-errors \
+                    -o /dev/null -w "%{http_code} %{time_total}" "${RENDER_URL}/healthz" 2>&1) || true
+            code=${out%% *}; t=${out##* }
+            local state="깨어 있음"
+            if [ "$code" != "200" ]; then state="응답 실패"; elif awk "BEGIN{exit !($t > 10)}"; then state="잠들어 있었음 → 깨움"; fi
+            echo "[$(TZ=Asia/Seoul date '+%m-%d %H:%M:%S')] 응답 ${code} · ${t}초 · ${state}"
+          }
+          kst() { TZ=Asia/Seoul date "$@"; }
           echo "깨우는 주소: ${RENDER_URL}/healthz"
-          # 잠들어 있으면 깨어나는 데 30초~1분 걸려서 넉넉히 기다리고, 실패하면 다시 시도해요
-          curl -fsS --max-time 90 --retry 3 --retry-delay 15 --retry-all-errors \
-            -o /dev/null -w "응답 %{http_code} · %{time_total}초\n" "${RENDER_URL}/healthz"
+          start=$(date +%s)
+          if [ "$COUNT" != "0" ]; then
+            # 테스트 모드: COUNT 번, INTERVAL 분마다
+            for i in $(seq 1 "$COUNT"); do
+              echo "── 테스트 ${i}/${COUNT}"; ping
+              [ "$i" -lt "$COUNT" ] && sleep $((INTERVAL * 60))
+            done
+            exit 0
+          fi
+          # 수업 시간 모드: 한국 시간 15:00 까지(작업 최대 5시간 45분) 5분마다
+          while :; do
+            now=$(kst +%H%M); dow=$(kst +%u)
+            if [ "$dow" -gt 5 ] || [ "$now" -lt 0815 ] || [ "$now" -ge 1500 ]; then
+              echo "수업 시간이 아니에요 (한국 $(kst '+%a %H:%M')). 끝!"; break
+            fi
+            ping
+            [ $(( $(date +%s) - start )) -gt $((345 * 60)) ] && { echo "작업 시간이 다 돼서 다음 예약 실행이 이어받아요."; break; }
+            sleep 300
+          done
