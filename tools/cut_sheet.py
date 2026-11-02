@@ -61,14 +61,39 @@ def key_background(im):
 
 
 def remove_labels(a):
-    """파란 이름표와 그 안의 흰 글자를 지워요."""
+    """파란 이름표(알약 모양)와 그 안의 흰 글자만 지워요.
+    파란 눈동자 · 파란 날개 테두리처럼 캐릭터의 파란 부분은 남겨요:
+    파란 덩어리 중 '가로로 길쭉하고 꽉 찬 알약 모양'만 이름표로 봐요."""
     r, g, b, al = (a[..., i] for i in range(4))
     pill = (b > 90) & (r < 90) & (g < 130) & (b - r > 45) & (al > 150)
-    near = pill.copy()
-    for _ in range(7):
-        near = near | np.roll(near, 1, 0) | np.roll(near, -1, 0) | np.roll(near, 1, 1) | np.roll(near, -1, 1)
-    white = (r > 200) & (g > 200) & (b > 200)
-    a[near & (pill | white | (al < 200)), 3] = 0
+    m = Image.fromarray((pill * 255).astype(np.uint8)).copy()
+    h, w = pill.shape
+    ys, xs = np.where(pill)
+    for y, x in zip(ys[::7], xs[::7]):
+        if m.getpixel((int(x), int(y))) != 255:
+            continue
+        ImageDraw.floodfill(m, (int(x), int(y)), 128)
+        arr = np.array(m)
+        cy, cx = np.where(arr == 128)
+        y0, y1, x0, x1 = cy.min(), cy.max() + 1, cx.min(), cx.max() + 1
+        bh, bw = y1 - y0, x1 - x0
+        fill = len(cy) / float(bh * bw)
+        is_label = 14 <= bh <= 55 and 35 <= bw <= 200 and bw >= 1.6 * bh and fill >= 0.45
+        if is_label:
+            # 진짜 이름표: 안에 흰 글자가 있고, 둘레는 비어 있어요 (캐릭터 몸의 파란 반사광과 구별)
+            box = a[y0:y1, x0:x1]
+            white = ((box[..., 0] > 200) & (box[..., 1] > 200) & (box[..., 2] > 200)).mean()
+            Y0, Y1, X0, X1 = max(0, y0 - 10), min(h, y1 + 10), max(0, x0 - 10), min(w, x1 + 10)
+            ring = np.ones((Y1 - Y0, X1 - X0), bool); ring[y0 - Y0:y1 - Y0, x0 - X0:x1 - X0] = False
+            is_label = white >= 0.015 and (al[Y0:Y1, X0:X1][ring] > 200).mean() < 0.6
+        m.paste(0 if is_label else 64, (0, 0, w, h), Image.fromarray(((arr == 128) * 255).astype(np.uint8)))
+        if is_label:
+            Y0, Y1, X0, X1 = max(0, y0 - 6), min(h, y1 + 6), max(0, x0 - 6), min(w, x1 + 6)
+            sub = a[Y0:Y1, X0:X1]
+            sr, sg, sb, sa = (sub[..., i] for i in range(4))
+            # 이름표 칸 안에서도 파란 알약 · 흰 글자 · 번짐만 지워요 (닿아 있는 캐릭터는 남겨요)
+            kill = ((sb > 90) & (sr < 110) & (sb - sr > 35)) | ((sr > 200) & (sg > 200) & (sb > 200)) | (sa < 200)
+            sub[kill, 3] = 0
 
 
 def segments(colsum, count):
@@ -106,7 +131,9 @@ def keep_body(frame):
     cy, cx = ys.mean(), xs.mean()
     k = int(np.argmin((ys - cy) ** 2 + (xs - cx) ** 2))
     ImageDraw.floodfill(m, (int(xs[k]), int(ys[k])), 128)
-    keep = (np.array(m) == 128) | ((r > 200) & (g > 150) & (b < 140) & (al > 60))
+    star = Image.fromarray((((r > 200) & (g > 150) & (b < 140) & (al > 60)) * 255).astype(np.uint8))
+    star = np.array(star.filter(ImageFilter.MinFilter(5)).filter(ImageFilter.MaxFilter(7))) > 0   # 작은 부스러기는 빼고 별만
+    keep = (np.array(m) == 128) | (star & (al > 60))
     a[~keep, 3] = 0
     ys, xs = np.where(a[..., 3] > 40)
     return Image.fromarray(a.astype(np.uint8), 'RGBA').crop((xs.min(), ys.min(), xs.max() + 1, ys.max() + 1))
