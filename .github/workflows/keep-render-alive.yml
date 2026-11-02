@@ -1,0 +1,31 @@
+name: Keep Render Alive
+
+# Render 무료 요금제는 15분 동안 접속이 없으면 잠들어요.
+# 수업 시간(한국 시간 월~금 08:30 ~ 15:00)에만 10분마다 깨워 둬요.
+# GitHub 스케줄은 UTC 기준이라 한국 시간(UTC+9)에서 9시간을 빼서 적어요.
+#   한국 08:30 ~ 08:50  = UTC 전날 23:30 ~ 23:50 (전날이니 일~목)
+#   한국 09:00 ~ 14:50  = UTC 00:00 ~ 05:50 (월~금)
+#   한국 15:00          = UTC 06:00 (월~금)
+on:
+  schedule:
+    - cron: '30,40,50 23 * * 0-4'
+    - cron: '*/10 0-5 * * 1-5'
+    - cron: '0 6 * * 1-5'
+  workflow_dispatch:   # Actions 탭에서 [Run workflow] 로 바로 실행해 볼 수 있어요
+
+env:
+  # 저장소 Settings → Secrets and variables → Actions → Variables 에 RENDER_URL 을 만들면 그 주소를 써요
+  RENDER_URL: ${{ vars.RENDER_URL || 'https://bug-ex.onrender.com' }}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Send ping request
+        run: |
+          echo "한국 시간: $(TZ=Asia/Seoul date '+%Y-%m-%d (%a) %H:%M')"
+          echo "깨우는 주소: ${RENDER_URL}/healthz"
+          # 잠들어 있으면 깨어나는 데 30초~1분 걸려서 넉넉히 기다리고, 실패하면 다시 시도해요
+          curl -fsS --max-time 90 --retry 3 --retry-delay 15 --retry-all-errors \
+            -o /dev/null -w "응답 %{http_code} · %{time_total}초\n" "${RENDER_URL}/healthz"
