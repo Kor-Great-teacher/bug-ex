@@ -1,16 +1,286 @@
 {
  "ant": {
-  "card": {
-   "file": "ant_card.webp",
-   "w": 262,
-   "h": 349
+  "attack1": {
+   "file": "ant_attack1.webp",
+   "w": 180,
+   "h": 187
+  },
+  "attack2": {
+   "file": "ant_attack2.webp",
+   "w": 188,
+   "h": 201
+  },
+  "balance1": {
+   "file": "ant_balance1.webp",
+   "w": 148,
+   "h": 188
+  },
+  "balance2": {
+   "file": "ant_balance2.webp",
+   "w": 134,
+   "h": 191
+  },
+  "cheer1": {
+   "file": "ant_cheer1.webp",
+   "w": 157,
+   "h": 198
+  },
+  "cheer2": {
+   "file": "ant_cheer2.webp",
+   "w": 153,
+   "h": 197
+  },
+  "climb1": {
+   "file": "ant_climb1.webp",
+   "w": 183,
+   "h": 206
+  },
+  "climb2": {
+   "file": "ant_climb2.webp",
+   "w": 193,
+   "h": 198
+  },
+  "damage1": {
+   "file": "ant_damage1.webp",
+   "w": 169,
+   "h": 203
+  },
+  "damage2": {
+   "file": "ant_damage2.webp",
+   "w": 159,
+   "h": 201
+  },
+  "defend1": {
+   "file": "ant_defend1.webp",
+   "w": 166,
+   "h": 200
+  },
+  "defend2": {
+   "file": "ant_defend2.webp",
+   "w": 171,
+   "h": 198
+  },
+  "dizzy": {
+   "file": "ant_dizzy.webp",
+   "w": 191,
+   "h": 226
+  },
+  "fly1": {
+   "file": "ant_fly1.webp",
+   "w": 196,
+   "h": 182
+  },
+  "fly2": {
+   "file": "ant_fly2.webp",
+   "w": 171,
+   "h": 185
+  },
+  "hang1": {
+   "file": "ant_hang1.webp",
+   "w": 152,
+   "h": 202
+  },
+  "hang2": {
+   "file": "ant_hang2.webp",
+   "w": 164,
+   "h": 201
+  },
+  "happy": {
+   "file": "ant_happy.webp",
+   "w": 169,
+   "h": 226
+  },
+  "idle1": {
+   "file": "ant_idle1.webp",
+   "w": 171,
+   "h": 206
+  },
+  "idle2": {
+   "file": "ant_idle2.webp",
+   "w": 142,
+   "h": 216
+  },
+  "pull1": {
+   "file": "ant_pull1.webp",
+   "w": 143,
+   "h": 193
+  },
+  "pull2": {
+   "file": "ant_pull2.webp",
+   "w": 165,
+   "h": 193
+  },
+  "push1": {
+   "file": "ant_push1.webp",
+   "w": 173,
+   "h": 199
+  },
+  "push2": {
+   "file": "ant_push2.webp",
+   "w": 170,
+   "h": 193
+  },
+  "run1": {
+   "file": "ant_run1.webp",
+   "w": 188,
+   "h": 188
+  },
+  "run2": {
+   "file": "ant_run2.webp",
+   "w": 176,
+   "h": 190
+  },
+  "stand": {
+   "file": "ant_stand.webp",
+   "w": 178,
+   "h": 227
+  },
+  "strain": {
+   "file": "ant_strain.webp",
+   "w": 167,
+   "h": 229
   }
  },
  "bee": {
-  "card": {
-   "file": "bee_card.webp",
-   "w": 307,
-   "h": 344
+  "attack1": {
+   "file": "bee_attack1.webp",
+   "w": 197,
+   "h": 201
+  },
+  "attack2": {
+   "file": "bee_attack2.webp",
+   "w": 189,
+   "h": 206
+  },
+  "balance1": {
+   "file": "bee_balance1.webp",
+   "w": 161,
+   "h": 183
+  },
+  "balance2": {
+   "file": "bee_balance2.webp",
+   "w": 153,
+   "h": 190
+  },
+  "cheer1": {
+   "file": "bee_cheer1.webp",
+   "w": 166,
+   "h": 194
+  },
+  "cheer2": {
+   "file": "bee_cheer2.webp",
+   "w": 167,
+   "h": 196
+  },
+  "climb1": {
+   "file": "bee_climb1.webp",
+   "w": 185,
+   "h": 192
+  },
+  "climb2": {
+   "file": "bee_climb2.webp",
+   "w": 176,
+   "h": 191
+  },
+  "damage1": {
+   "file": "bee_damage1.webp",
+   "w": 175,
+   "h": 192
+  },
+  "damage2": {
+   "file": "bee_damage2.webp",
+   "w": 169,
+   "h": 189
+  },
+  "defend1": {
+   "file": "bee_defend1.webp",
+   "w": 171,
+   "h": 193
+  },
+  "defend2": {
+   "file": "bee_defend2.webp",
+   "w": 169,
+   "h": 193
+  },
+  "dizzy": {
+   "file": "bee_dizzy.webp",
+   "w": 243,
+   "h": 214
+  },
+  "fly1": {
+   "file": "bee_fly1.webp",
+   "w": 188,
+   "h": 177
+  },
+  "fly2": {
+   "file": "bee_fly2.webp",
+   "w": 161,
+   "h": 185
+  },
+  "hang1": {
+   "file": "bee_hang1.webp",
+   "w": 166,
+   "h": 191
+  },
+  "hang2": {
+   "file": "bee_hang2.webp",
+   "w": 163,
+   "h": 190
+  },
+  "happy": {
+   "file": "bee_happy.webp",
+   "w": 212,
+   "h": 218
+  },
+  "idle1": {
+   "file": "bee_idle1.webp",
+   "w": 171,
+   "h": 206
+  },
+  "idle2": {
+   "file": "bee_idle2.webp",
+   "w": 152,
+   "h": 200
+  },
+  "pull1": {
+   "file": "bee_pull1.webp",
+   "w": 167,
+   "h": 178
+  },
+  "pull2": {
+   "file": "bee_pull2.webp",
+   "w": 162,
+   "h": 178
+  },
+  "push1": {
+   "file": "bee_push1.webp",
+   "w": 166,
+   "h": 183
+  },
+  "push2": {
+   "file": "bee_push2.webp",
+   "w": 166,
+   "h": 178
+  },
+  "run1": {
+   "file": "bee_run1.webp",
+   "w": 177,
+   "h": 181
+  },
+  "run2": {
+   "file": "bee_run2.webp",
+   "w": 176,
+   "h": 186
+  },
+  "stand": {
+   "file": "bee_stand.webp",
+   "w": 228,
+   "h": 218
+  },
+  "strain": {
+   "file": "bee_strain.webp",
+   "w": 210,
+   "h": 216
   }
  },
  "butterfly": {
@@ -298,10 +568,145 @@
   }
  },
  "cricket": {
-  "card": {
-   "file": "cricket_card.webp",
-   "w": 321,
-   "h": 348
+  "attack1": {
+   "file": "cricket_attack1.webp",
+   "w": 188,
+   "h": 196
+  },
+  "attack2": {
+   "file": "cricket_attack2.webp",
+   "w": 215,
+   "h": 209
+  },
+  "balance1": {
+   "file": "cricket_balance1.webp",
+   "w": 163,
+   "h": 178
+  },
+  "balance2": {
+   "file": "cricket_balance2.webp",
+   "w": 169,
+   "h": 178
+  },
+  "cheer1": {
+   "file": "cricket_cheer1.webp",
+   "w": 157,
+   "h": 202
+  },
+  "cheer2": {
+   "file": "cricket_cheer2.webp",
+   "w": 153,
+   "h": 196
+  },
+  "climb1": {
+   "file": "cricket_climb1.webp",
+   "w": 180,
+   "h": 190
+  },
+  "climb2": {
+   "file": "cricket_climb2.webp",
+   "w": 190,
+   "h": 191
+  },
+  "damage1": {
+   "file": "cricket_damage1.webp",
+   "w": 193,
+   "h": 194
+  },
+  "damage2": {
+   "file": "cricket_damage2.webp",
+   "w": 170,
+   "h": 195
+  },
+  "defend1": {
+   "file": "cricket_defend1.webp",
+   "w": 184,
+   "h": 195
+  },
+  "defend2": {
+   "file": "cricket_defend2.webp",
+   "w": 180,
+   "h": 198
+  },
+  "dizzy": {
+   "file": "cricket_dizzy.webp",
+   "w": 254,
+   "h": 220
+  },
+  "fly1": {
+   "file": "cricket_fly1.webp",
+   "w": 170,
+   "h": 186
+  },
+  "fly2": {
+   "file": "cricket_fly2.webp",
+   "w": 174,
+   "h": 185
+  },
+  "hang1": {
+   "file": "cricket_hang1.webp",
+   "w": 160,
+   "h": 190
+  },
+  "hang2": {
+   "file": "cricket_hang2.webp",
+   "w": 153,
+   "h": 193
+  },
+  "happy": {
+   "file": "cricket_happy.webp",
+   "w": 218,
+   "h": 219
+  },
+  "idle1": {
+   "file": "cricket_idle1.webp",
+   "w": 173,
+   "h": 201
+  },
+  "idle2": {
+   "file": "cricket_idle2.webp",
+   "w": 173,
+   "h": 196
+  },
+  "pull1": {
+   "file": "cricket_pull1.webp",
+   "w": 156,
+   "h": 179
+  },
+  "pull2": {
+   "file": "cricket_pull2.webp",
+   "w": 171,
+   "h": 181
+  },
+  "push1": {
+   "file": "cricket_push1.webp",
+   "w": 176,
+   "h": 174
+  },
+  "push2": {
+   "file": "cricket_push2.webp",
+   "w": 176,
+   "h": 180
+  },
+  "run1": {
+   "file": "cricket_run1.webp",
+   "w": 188,
+   "h": 181
+  },
+  "run2": {
+   "file": "cricket_run2.webp",
+   "w": 202,
+   "h": 183
+  },
+  "stand": {
+   "file": "cricket_stand.webp",
+   "w": 224,
+   "h": 204
+  },
+  "strain": {
+   "file": "cricket_strain.webp",
+   "w": 221,
+   "h": 220
   }
  },
  "dragonfly": {
@@ -319,10 +724,145 @@
   }
  },
  "firefly": {
-  "card": {
-   "file": "firefly_card.webp",
-   "w": 341,
-   "h": 347
+  "attack1": {
+   "file": "firefly_attack1.webp",
+   "w": 212,
+   "h": 191
+  },
+  "attack2": {
+   "file": "firefly_attack2.webp",
+   "w": 188,
+   "h": 217
+  },
+  "balance1": {
+   "file": "firefly_balance1.webp",
+   "w": 175,
+   "h": 185
+  },
+  "balance2": {
+   "file": "firefly_balance2.webp",
+   "w": 190,
+   "h": 175
+  },
+  "cheer1": {
+   "file": "firefly_cheer1.webp",
+   "w": 166,
+   "h": 186
+  },
+  "cheer2": {
+   "file": "firefly_cheer2.webp",
+   "w": 150,
+   "h": 194
+  },
+  "climb1": {
+   "file": "firefly_climb1.webp",
+   "w": 186,
+   "h": 186
+  },
+  "climb2": {
+   "file": "firefly_climb2.webp",
+   "w": 207,
+   "h": 183
+  },
+  "damage1": {
+   "file": "firefly_damage1.webp",
+   "w": 187,
+   "h": 199
+  },
+  "damage2": {
+   "file": "firefly_damage2.webp",
+   "w": 153,
+   "h": 188
+  },
+  "defend1": {
+   "file": "firefly_defend1.webp",
+   "w": 174,
+   "h": 181
+  },
+  "defend2": {
+   "file": "firefly_defend2.webp",
+   "w": 204,
+   "h": 199
+  },
+  "dizzy": {
+   "file": "firefly_dizzy.webp",
+   "w": 256,
+   "h": 199
+  },
+  "fly1": {
+   "file": "firefly_fly1.webp",
+   "w": 184,
+   "h": 172
+  },
+  "fly2": {
+   "file": "firefly_fly2.webp",
+   "w": 167,
+   "h": 173
+  },
+  "hang1": {
+   "file": "firefly_hang1.webp",
+   "w": 160,
+   "h": 181
+  },
+  "hang2": {
+   "file": "firefly_hang2.webp",
+   "w": 150,
+   "h": 185
+  },
+  "happy": {
+   "file": "firefly_happy.webp",
+   "w": 236,
+   "h": 206
+  },
+  "idle1": {
+   "file": "firefly_idle1.webp",
+   "w": 171,
+   "h": 195
+  },
+  "idle2": {
+   "file": "firefly_idle2.webp",
+   "w": 194,
+   "h": 195
+  },
+  "pull1": {
+   "file": "firefly_pull1.webp",
+   "w": 178,
+   "h": 163
+  },
+  "pull2": {
+   "file": "firefly_pull2.webp",
+   "w": 192,
+   "h": 161
+  },
+  "push1": {
+   "file": "firefly_push1.webp",
+   "w": 190,
+   "h": 176
+  },
+  "push2": {
+   "file": "firefly_push2.webp",
+   "w": 173,
+   "h": 176
+  },
+  "run1": {
+   "file": "firefly_run1.webp",
+   "w": 189,
+   "h": 171
+  },
+  "run2": {
+   "file": "firefly_run2.webp",
+   "w": 206,
+   "h": 181
+  },
+  "stand": {
+   "file": "firefly_stand.webp",
+   "w": 259,
+   "h": 205
+  },
+  "strain": {
+   "file": "firefly_strain.webp",
+   "w": 236,
+   "h": 209
   }
  },
  "grasshopper": {
@@ -333,10 +873,145 @@
   }
  },
  "ladybug": {
-  "card": {
-   "file": "ladybug_card.webp",
-   "w": 286,
-   "h": 346
+  "attack1": {
+   "file": "ladybug_attack1.webp",
+   "w": 198,
+   "h": 199
+  },
+  "attack2": {
+   "file": "ladybug_attack2.webp",
+   "w": 188,
+   "h": 206
+  },
+  "balance1": {
+   "file": "ladybug_balance1.webp",
+   "w": 173,
+   "h": 185
+  },
+  "balance2": {
+   "file": "ladybug_balance2.webp",
+   "w": 158,
+   "h": 184
+  },
+  "cheer1": {
+   "file": "ladybug_cheer1.webp",
+   "w": 155,
+   "h": 200
+  },
+  "cheer2": {
+   "file": "ladybug_cheer2.webp",
+   "w": 148,
+   "h": 197
+  },
+  "climb1": {
+   "file": "ladybug_climb1.webp",
+   "w": 173,
+   "h": 196
+  },
+  "climb2": {
+   "file": "ladybug_climb2.webp",
+   "w": 161,
+   "h": 191
+  },
+  "damage1": {
+   "file": "ladybug_damage1.webp",
+   "w": 179,
+   "h": 201
+  },
+  "damage2": {
+   "file": "ladybug_damage2.webp",
+   "w": 165,
+   "h": 194
+  },
+  "defend1": {
+   "file": "ladybug_defend1.webp",
+   "w": 182,
+   "h": 196
+  },
+  "defend2": {
+   "file": "ladybug_defend2.webp",
+   "w": 174,
+   "h": 191
+  },
+  "dizzy": {
+   "file": "ladybug_dizzy.webp",
+   "w": 234,
+   "h": 214
+  },
+  "fly1": {
+   "file": "ladybug_fly1.webp",
+   "w": 180,
+   "h": 180
+  },
+  "fly2": {
+   "file": "ladybug_fly2.webp",
+   "w": 177,
+   "h": 174
+  },
+  "hang1": {
+   "file": "ladybug_hang1.webp",
+   "w": 183,
+   "h": 195
+  },
+  "hang2": {
+   "file": "ladybug_hang2.webp",
+   "w": 183,
+   "h": 190
+  },
+  "happy": {
+   "file": "ladybug_happy.webp",
+   "w": 217,
+   "h": 216
+  },
+  "idle1": {
+   "file": "ladybug_idle1.webp",
+   "w": 166,
+   "h": 202
+  },
+  "idle2": {
+   "file": "ladybug_idle2.webp",
+   "w": 158,
+   "h": 203
+  },
+  "pull1": {
+   "file": "ladybug_pull1.webp",
+   "w": 168,
+   "h": 173
+  },
+  "pull2": {
+   "file": "ladybug_pull2.webp",
+   "w": 162,
+   "h": 177
+  },
+  "push1": {
+   "file": "ladybug_push1.webp",
+   "w": 170,
+   "h": 177
+  },
+  "push2": {
+   "file": "ladybug_push2.webp",
+   "w": 165,
+   "h": 171
+  },
+  "run1": {
+   "file": "ladybug_run1.webp",
+   "w": 174,
+   "h": 177
+  },
+  "run2": {
+   "file": "ladybug_run2.webp",
+   "w": 164,
+   "h": 177
+  },
+  "stand": {
+   "file": "ladybug_stand.webp",
+   "w": 226,
+   "h": 221
+  },
+  "strain": {
+   "file": "ladybug_strain.webp",
+   "w": 214,
+   "h": 217
   }
  },
  "mantis": {

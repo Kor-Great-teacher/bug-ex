@@ -66,6 +66,7 @@ def remove_labels(a):
     파란 덩어리 중 '가로로 길쭉하고 꽉 찬 알약 모양'만 이름표로 봐요."""
     r, g, b, al = (a[..., i] for i in range(4))
     pill = (b > 90) & (r < 90) & (g < 130) & (b - r > 45) & (al > 150)
+    vivid = (b > 200) & (r < 70) & (g < 120) & (al > 150)   # 이름표는 아주 선명한 파랑 (몸의 파란 반사광은 더 탁해요)
     m = Image.fromarray((pill * 255).astype(np.uint8)).copy()
     h, w = pill.shape
     ys, xs = np.where(pill)
@@ -79,6 +80,7 @@ def remove_labels(a):
         bh, bw = y1 - y0, x1 - x0
         fill = len(cy) / float(bh * bw)
         is_label = 14 <= bh <= 55 and 35 <= bw <= 200 and bw >= 1.6 * bh and fill >= 0.45
+        is_label = is_label and vivid[y0:y1, x0:x1].mean() >= 0.35
         if is_label:
             # 진짜 이름표: 안에 흰 글자가 있고, 둘레는 비어 있어요 (캐릭터 몸의 파란 반사광과 구별)
             box = a[y0:y1, x0:x1]
@@ -89,10 +91,13 @@ def remove_labels(a):
         m.paste(0 if is_label else 64, (0, 0, w, h), Image.fromarray(((arr == 128) * 255).astype(np.uint8)))
         if is_label:
             Y0, Y1, X0, X1 = max(0, y0 - 6), min(h, y1 + 6), max(0, x0 - 6), min(w, x1 + 6)
+            # 알약 안: 파란 알약 · 흰 글자 · 번짐 / 알약 둘레: 흰 글자 조각 · 번짐만 (닿아 있는 캐릭터 몸은 남겨요)
             sub = a[Y0:Y1, X0:X1]
             sr, sg, sb, sa = (sub[..., i] for i in range(4))
-            # 이름표 칸 안에서도 파란 알약 · 흰 글자 · 번짐만 지워요 (닿아 있는 캐릭터는 남겨요)
-            kill = ((sb > 90) & (sr < 110) & (sb - sr > 35)) | ((sr > 200) & (sg > 200) & (sb > 200)) | (sa < 200)
+            inside = np.zeros(sa.shape, bool); inside[y0 - Y0:y1 - Y0, x0 - X0:x1 - X0] = True
+            pillc = (sb > 90) & (sr < 90) & (sg < 130) & (sb - sr > 45)
+            white = (sr > 200) & (sg > 200) & (sb > 200)
+            kill = (inside & (pillc | white | (sa < 200))) | (~inside & (sa < 120))
             sub[kill, 3] = 0
 
 
@@ -126,11 +131,17 @@ def keep_body(frame):
     """캐릭터 몸통과 이어진 부분 + 노란 별만 남기고 나머지(글자 부스러기)는 지워요."""
     a = np.array(frame).astype(np.int32)
     r, g, b, al = (a[..., i] for i in range(4))
-    m = Image.fromarray(((al > 30) * 255).astype(np.uint8), 'L').filter(ImageFilter.MaxFilter(5))
+    # 몸통은 진한 부분(불투명)으로 이어진 덩어리를 찾고, 옅은 빛 번짐은 그 둘레만 남겨요
+    # (옆 칸 자세의 효과 조각이 빛 번짐으로 이어져 딸려 오지 않게)
+    m = Image.fromarray(((al > 215) * 255).astype(np.uint8), 'L').filter(ImageFilter.MaxFilter(3))
     ys, xs = np.where(al > 120)
     cy, cx = ys.mean(), xs.mean()
     k = int(np.argmin((ys - cy) ** 2 + (xs - cx) ** 2))
     ImageDraw.floodfill(m, (int(xs[k]), int(ys[k])), 128)
+    comp = np.array(m) == 128
+    near = np.array(Image.fromarray((comp * 255).astype(np.uint8), 'L').filter(ImageFilter.MaxFilter(21))) > 0
+    # 진한 부분은 몸통과 이어진 것만, 옅은 빛 번짐은 몸통 둘레만
+    m = Image.fromarray(np.where((comp & (al > 215)) | (near & (al <= 215)), 128, 0).astype(np.uint8), 'L')
     star = Image.fromarray((((r > 200) & (g > 150) & (b < 140) & (al > 60)) * 255).astype(np.uint8))
     star = np.array(star.filter(ImageFilter.MinFilter(5)).filter(ImageFilter.MaxFilter(7))) > 0   # 작은 부스러기는 빼고 별만
     keep = (np.array(m) == 128) | (star & (al > 60))
