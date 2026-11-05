@@ -2012,6 +2012,13 @@
    "h": 219
   }
  },
+ "stickinsect": {
+  "card": {
+   "file": "stickinsect_card.webp",
+   "w": 360,
+   "h": 351
+  }
+ },
  "swallowtail": {
   "attack1": {
    "file": "swallowtail_attack1.webp",

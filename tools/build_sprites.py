@@ -6,7 +6,7 @@
   art/bugs/<곤충>_<자세>.png|webp  → 자세 그림 (stand · happy · strain · dizzy · run1 run2 · push1 push2 · pull1 pull2 ·
                                      balance1 balance2 · climb1 climb2 · hang1 hang2 · fly1 fly2 · cheer1 cheer2 ·
                                      attack1 attack2 · damage1 damage2 · defend1 defend2 · idle1 idle2)
-  <곤충>: ant ladybug bee grasshopper cricket butterfly firefly dragonfly dungbeetle mantis cicada rhino stag swallowtail jewelbeetle
+  <곤충>: ant ladybug bee grasshopper cricket butterfly firefly dragonfly dungbeetle mantis cicada rhino stag swallowtail jewelbeetle stickinsect
 그림은 배경이 투명하고 오른쪽을 보고 있어야 해요. 투명한 테두리를 잘라 내고, 긴 쪽을 360px 이하로 줄여 webp 로 저장한 뒤
 public/img/bugs/manifest.json 에 목록을 적어요. 필요한 것: Python 3, Pillow, numpy
 """
@@ -19,7 +19,7 @@ from PIL import Image
 
 SRC, OUT, MAX = 'art/bugs', 'public/img/bugs', 360
 TYPES = {'ant', 'ladybug', 'bee', 'grasshopper', 'cricket', 'butterfly', 'firefly', 'dragonfly',
-         'dungbeetle', 'mantis', 'cicada', 'rhino', 'stag', 'swallowtail', 'jewelbeetle'}
+         'dungbeetle', 'mantis', 'cicada', 'rhino', 'stag', 'swallowtail', 'jewelbeetle', 'stickinsect'}
 
 
 def trim(im):
