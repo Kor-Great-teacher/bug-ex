@@ -526,8 +526,9 @@
           <section class="panel lab-detail">
             <div class="detail-top ${tierKey(b)}">
               <img src="${pic(b.type, 150, 'happy', b.tier)}" alt="">
-              <div><h2>${esc(ins.name)} <span class="rar ${tierKey(b)}">${tierName(b)}</span></h2><p class="fact">${esc(ins.fact)}</p><p class="hint">능력치 합 <b>${D.powerOf(b.type, b.lv, b.tier)}</b> · 등급 보너스 +${tb} · 업그레이드 한계 ${cap}단계</p></div>
+              <div><h2>${esc(ins.name)} <span class="rar ${tierKey(b)}">${tierName(b)}</span></h2>${ins.info ? '' : `<p class="fact">${esc(ins.fact)}</p>`}<p class="hint">능력치 합 <b>${D.powerOf(b.type, b.lv, b.tier)}</b> · 등급 보너스 +${tb} · 업그레이드 한계 ${cap}단계</p></div>
             </div>
+            ${ins.info ? `<p class="bug-info" title="${esc(ins.info)}"><b>📖 곤충 백과</b> ${esc(ins.info)}</p>` : ''}
             <div class="stat-rows">${rows}</div>
             ${grow || together() ? promo : '<p class="hint">업그레이드 값 12 → 18 → 24 … · 진한 칸 기본 · 등급 색 칸 등급 보너스 · 빗금 업그레이드 · 세로선 등급 한계</p>'}
           </section>

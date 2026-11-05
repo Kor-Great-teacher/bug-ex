@@ -811,3 +811,8 @@ body { background: #cfe0b9; background-image: none; overscroll-behavior: none; }
 .go-box .btn.big { padding: 7px 10px; font-size: 14px; }
 .lab-act { gap: 6px; }
 .go-row .next-ev small { font-size: 11px; color: var(--ink-dim); flex: none; }
+/* 연구소: 곤충 백과 설명 (3~4줄, 넘치면 …) */
+.bug-info { margin: 4px 0 2px; padding: 6px 10px; border-radius: 10px; background: #f6faef; border: 1px solid #dfe9cf; font-size: 12px; line-height: 1.5; color: var(--ink);
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; word-break: keep-all; }
+.bug-info b { font-family: var(--font-display); font-weight: 400; color: var(--leaf-dark); margin-right: 2px; }
+.lab-detail .bug-info { flex: none; display: -webkit-box; -webkit-line-clamp: 4; max-height: calc(1.5em * 4 + 14px); }
