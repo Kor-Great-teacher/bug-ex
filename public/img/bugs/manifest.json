@@ -852,10 +852,145 @@
   }
  },
  "dungbeetle": {
-  "card": {
-   "file": "dungbeetle_card.webp",
-   "w": 360,
-   "h": 303
+  "attack1": {
+   "file": "dungbeetle_attack1.webp",
+   "w": 200,
+   "h": 169
+  },
+  "attack2": {
+   "file": "dungbeetle_attack2.webp",
+   "w": 208,
+   "h": 171
+  },
+  "balance1": {
+   "file": "dungbeetle_balance1.webp",
+   "w": 174,
+   "h": 175
+  },
+  "balance2": {
+   "file": "dungbeetle_balance2.webp",
+   "w": 181,
+   "h": 172
+  },
+  "cheer1": {
+   "file": "dungbeetle_cheer1.webp",
+   "w": 153,
+   "h": 192
+  },
+  "cheer2": {
+   "file": "dungbeetle_cheer2.webp",
+   "w": 170,
+   "h": 194
+  },
+  "climb1": {
+   "file": "dungbeetle_climb1.webp",
+   "w": 197,
+   "h": 180
+  },
+  "climb2": {
+   "file": "dungbeetle_climb2.webp",
+   "w": 186,
+   "h": 186
+  },
+  "damage1": {
+   "file": "dungbeetle_damage1.webp",
+   "w": 191,
+   "h": 183
+  },
+  "damage2": {
+   "file": "dungbeetle_damage2.webp",
+   "w": 186,
+   "h": 180
+  },
+  "defend1": {
+   "file": "dungbeetle_defend1.webp",
+   "w": 166,
+   "h": 174
+  },
+  "defend2": {
+   "file": "dungbeetle_defend2.webp",
+   "w": 166,
+   "h": 188
+  },
+  "dizzy": {
+   "file": "dungbeetle_dizzy.webp",
+   "w": 230,
+   "h": 204
+  },
+  "fly1": {
+   "file": "dungbeetle_fly1.webp",
+   "w": 186,
+   "h": 169
+  },
+  "fly2": {
+   "file": "dungbeetle_fly2.webp",
+   "w": 177,
+   "h": 165
+  },
+  "hang1": {
+   "file": "dungbeetle_hang1.webp",
+   "w": 150,
+   "h": 195
+  },
+  "hang2": {
+   "file": "dungbeetle_hang2.webp",
+   "w": 150,
+   "h": 192
+  },
+  "happy": {
+   "file": "dungbeetle_happy.webp",
+   "w": 231,
+   "h": 205
+  },
+  "idle1": {
+   "file": "dungbeetle_idle1.webp",
+   "w": 166,
+   "h": 183
+  },
+  "idle2": {
+   "file": "dungbeetle_idle2.webp",
+   "w": 161,
+   "h": 178
+  },
+  "pull1": {
+   "file": "dungbeetle_pull1.webp",
+   "w": 178,
+   "h": 183
+  },
+  "pull2": {
+   "file": "dungbeetle_pull2.webp",
+   "w": 175,
+   "h": 180
+  },
+  "push1": {
+   "file": "dungbeetle_push1.webp",
+   "w": 197,
+   "h": 178
+  },
+  "push2": {
+   "file": "dungbeetle_push2.webp",
+   "w": 188,
+   "h": 176
+  },
+  "run1": {
+   "file": "dungbeetle_run1.webp",
+   "w": 186,
+   "h": 183
+  },
+  "run2": {
+   "file": "dungbeetle_run2.webp",
+   "w": 192,
+   "h": 187
+  },
+  "stand": {
+   "file": "dungbeetle_stand.webp",
+   "w": 248,
+   "h": 209
+  },
+  "strain": {
+   "file": "dungbeetle_strain.webp",
+   "w": 237,
+   "h": 201
   }
  },
  "firefly": {
