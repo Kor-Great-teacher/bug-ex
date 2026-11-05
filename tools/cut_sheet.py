@@ -60,6 +60,44 @@ def key_background(im):
     return out
 
 
+def key_light_background(im):
+    """밝은 배경(흰색 · 회색 바둑판 무늬처럼 '투명해 보이게' 그려진 배경)을 지워요.
+    가장자리에서 이어진, 밝고 색이 거의 없는(회색빛) 픽셀만 배경으로 봐요."""
+    a = np.array(im.convert('RGB')).astype(np.int32)
+    mx, mn = a.max(2), a.min(2)
+    cand = (mx > 150) & (mx - mn < 60)
+    m = Image.fromarray((cand * 255).astype(np.uint8)).copy()
+    h, w = cand.shape
+    for x in range(0, w, 4):
+        for y in (0, h - 1):
+            if m.getpixel((x, y)) == 255:
+                ImageDraw.floodfill(m, (x, y), 128)
+    for y in range(0, h, 4):
+        for x in (0, w - 1):
+            if m.getpixel((x, y)) == 255:
+                ImageDraw.floodfill(m, (x, y), 128)
+    bg = np.array(m) == 128
+    # 다리 사이처럼 갇힌 바둑판 배경: 회색 칸(~225)과 흰 칸(~250)이 섞인 덩어리만 지워요
+    # (눈의 흰자처럼 흰색만 있는 덩어리는 남겨요)
+    left = cand & ~bg
+    lm = Image.fromarray((left * 255).astype(np.uint8)).copy()
+    ys, xs = np.where(left)
+    for y, x in zip(ys[::3], xs[::3]):
+        if lm.getpixel((int(x), int(y))) != 255:
+            continue
+        ImageDraw.floodfill(lm, (int(x), int(y)), 100)
+        arr = np.array(lm); comp = arr == 100
+        v = mx[comp]
+        gray, white = ((v > 212) & (v < 238)).mean(), (v >= 244).mean()
+        lm.paste(0 if (comp.sum() > 60 and gray > 0.2 and white > 0.2) else 50, (0, 0, w, h), Image.fromarray((comp * 255).astype(np.uint8)))
+        if comp.sum() > 60 and gray > 0.2 and white > 0.2:
+            bg |= comp
+    alpha = Image.fromarray(np.where(bg, 0, 255).astype(np.uint8)).filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(0.7))
+    out = im.convert('RGBA')
+    out.putalpha(alpha)
+    return out
+
+
 def remove_labels(a):
     """파란 이름표(알약 모양)와 그 안의 흰 글자만 지워요.
     파란 눈동자 · 파란 날개 테두리처럼 캐릭터의 파란 부분은 남겨요:
@@ -153,7 +191,8 @@ def keep_body(frame):
 def main(sheet_path, name, out_dir='art/bugs', double=False):
     im = Image.open(sheet_path)
     if im.mode != 'RGBA' or np.array(im.convert('RGBA'))[..., 3].min() == 255:
-        im = key_background(im)
+        corner = np.array(im.convert('RGB'))[:8, :8].mean()
+        im = key_light_background(im) if corner > 160 else key_background(im)
     im = im.convert('RGBA')
     rows = DOUBLE_TOP + ROWS[1:] if double else ROWS
     a = np.array(im).astype(np.int32)

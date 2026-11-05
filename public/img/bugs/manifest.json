@@ -710,10 +710,145 @@
   }
  },
  "dragonfly": {
-  "card": {
-   "file": "dragonfly_card.webp",
-   "w": 360,
-   "h": 307
+  "attack1": {
+   "file": "dragonfly_attack1.webp",
+   "w": 204,
+   "h": 194
+  },
+  "attack2": {
+   "file": "dragonfly_attack2.webp",
+   "w": 189,
+   "h": 166
+  },
+  "balance1": {
+   "file": "dragonfly_balance1.webp",
+   "w": 173,
+   "h": 181
+  },
+  "balance2": {
+   "file": "dragonfly_balance2.webp",
+   "w": 170,
+   "h": 183
+  },
+  "cheer1": {
+   "file": "dragonfly_cheer1.webp",
+   "w": 167,
+   "h": 188
+  },
+  "cheer2": {
+   "file": "dragonfly_cheer2.webp",
+   "w": 176,
+   "h": 200
+  },
+  "climb1": {
+   "file": "dragonfly_climb1.webp",
+   "w": 183,
+   "h": 183
+  },
+  "climb2": {
+   "file": "dragonfly_climb2.webp",
+   "w": 176,
+   "h": 185
+  },
+  "damage1": {
+   "file": "dragonfly_damage1.webp",
+   "w": 183,
+   "h": 190
+  },
+  "damage2": {
+   "file": "dragonfly_damage2.webp",
+   "w": 184,
+   "h": 184
+  },
+  "defend1": {
+   "file": "dragonfly_defend1.webp",
+   "w": 170,
+   "h": 193
+  },
+  "defend2": {
+   "file": "dragonfly_defend2.webp",
+   "w": 171,
+   "h": 192
+  },
+  "dizzy": {
+   "file": "dragonfly_dizzy.webp",
+   "w": 258,
+   "h": 214
+  },
+  "fly1": {
+   "file": "dragonfly_fly1.webp",
+   "w": 184,
+   "h": 161
+  },
+  "fly2": {
+   "file": "dragonfly_fly2.webp",
+   "w": 175,
+   "h": 171
+  },
+  "hang1": {
+   "file": "dragonfly_hang1.webp",
+   "w": 179,
+   "h": 187
+  },
+  "hang2": {
+   "file": "dragonfly_hang2.webp",
+   "w": 178,
+   "h": 196
+  },
+  "happy": {
+   "file": "dragonfly_happy.webp",
+   "w": 229,
+   "h": 211
+  },
+  "idle1": {
+   "file": "dragonfly_idle1.webp",
+   "w": 169,
+   "h": 197
+  },
+  "idle2": {
+   "file": "dragonfly_idle2.webp",
+   "w": 154,
+   "h": 195
+  },
+  "pull1": {
+   "file": "dragonfly_pull1.webp",
+   "w": 172,
+   "h": 173
+  },
+  "pull2": {
+   "file": "dragonfly_pull2.webp",
+   "w": 165,
+   "h": 170
+  },
+  "push1": {
+   "file": "dragonfly_push1.webp",
+   "w": 181,
+   "h": 181
+  },
+  "push2": {
+   "file": "dragonfly_push2.webp",
+   "w": 164,
+   "h": 167
+  },
+  "run1": {
+   "file": "dragonfly_run1.webp",
+   "w": 191,
+   "h": 183
+  },
+  "run2": {
+   "file": "dragonfly_run2.webp",
+   "w": 185,
+   "h": 187
+  },
+  "stand": {
+   "file": "dragonfly_stand.webp",
+   "w": 241,
+   "h": 224
+  },
+  "strain": {
+   "file": "dragonfly_strain.webp",
+   "w": 226,
+   "h": 214
   }
  },
  "dungbeetle": {
@@ -866,10 +1001,145 @@
   }
  },
  "grasshopper": {
-  "card": {
-   "file": "grasshopper_card.webp",
-   "w": 344,
-   "h": 350
+  "attack1": {
+   "file": "grasshopper_attack1.webp",
+   "w": 190,
+   "h": 174
+  },
+  "attack2": {
+   "file": "grasshopper_attack2.webp",
+   "w": 208,
+   "h": 181
+  },
+  "balance1": {
+   "file": "grasshopper_balance1.webp",
+   "w": 143,
+   "h": 182
+  },
+  "balance2": {
+   "file": "grasshopper_balance2.webp",
+   "w": 130,
+   "h": 183
+  },
+  "cheer1": {
+   "file": "grasshopper_cheer1.webp",
+   "w": 141,
+   "h": 182
+  },
+  "cheer2": {
+   "file": "grasshopper_cheer2.webp",
+   "w": 154,
+   "h": 184
+  },
+  "climb1": {
+   "file": "grasshopper_climb1.webp",
+   "w": 171,
+   "h": 180
+  },
+  "climb2": {
+   "file": "grasshopper_climb2.webp",
+   "w": 176,
+   "h": 177
+  },
+  "damage1": {
+   "file": "grasshopper_damage1.webp",
+   "w": 157,
+   "h": 192
+  },
+  "damage2": {
+   "file": "grasshopper_damage2.webp",
+   "w": 149,
+   "h": 182
+  },
+  "defend1": {
+   "file": "grasshopper_defend1.webp",
+   "w": 179,
+   "h": 185
+  },
+  "defend2": {
+   "file": "grasshopper_defend2.webp",
+   "w": 171,
+   "h": 181
+  },
+  "dizzy": {
+   "file": "grasshopper_dizzy.webp",
+   "w": 186,
+   "h": 197
+  },
+  "fly1": {
+   "file": "grasshopper_fly1.webp",
+   "w": 178,
+   "h": 178
+  },
+  "fly2": {
+   "file": "grasshopper_fly2.webp",
+   "w": 176,
+   "h": 176
+  },
+  "hang1": {
+   "file": "grasshopper_hang1.webp",
+   "w": 144,
+   "h": 189
+  },
+  "hang2": {
+   "file": "grasshopper_hang2.webp",
+   "w": 139,
+   "h": 182
+  },
+  "happy": {
+   "file": "grasshopper_happy.webp",
+   "w": 147,
+   "h": 200
+  },
+  "idle1": {
+   "file": "grasshopper_idle1.webp",
+   "w": 146,
+   "h": 189
+  },
+  "idle2": {
+   "file": "grasshopper_idle2.webp",
+   "w": 145,
+   "h": 188
+  },
+  "pull1": {
+   "file": "grasshopper_pull1.webp",
+   "w": 152,
+   "h": 174
+  },
+  "pull2": {
+   "file": "grasshopper_pull2.webp",
+   "w": 165,
+   "h": 174
+  },
+  "push1": {
+   "file": "grasshopper_push1.webp",
+   "w": 173,
+   "h": 175
+  },
+  "push2": {
+   "file": "grasshopper_push2.webp",
+   "w": 165,
+   "h": 165
+  },
+  "run1": {
+   "file": "grasshopper_run1.webp",
+   "w": 167,
+   "h": 173
+  },
+  "run2": {
+   "file": "grasshopper_run2.webp",
+   "w": 172,
+   "h": 175
+  },
+  "stand": {
+   "file": "grasshopper_stand.webp",
+   "w": 185,
+   "h": 208
+  },
+  "strain": {
+   "file": "grasshopper_strain.webp",
+   "w": 166,
+   "h": 198
   }
  },
  "ladybug": {
