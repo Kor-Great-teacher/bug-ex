@@ -1681,7 +1681,7 @@
   // 그림은 Render 서버 대신 무료 CDN(jsDelivr, GitHub 저장소의 그림)에서 받아 서버 대역폭을 아껴요
   // (?cdn=0 이면 끔 · CDN이 안 되면 그림마다 저절로 이 서버에서 받아요)
   const CDN = 'https://cdn.jsdelivr.net/gh/Kor-Great-teacher/bug-ex@ccr-cde7aa6c-pkqlr0/public/';
-  const useCdn = /\.onrender\.com$/.test(location.hostname) && new URLSearchParams(location.search).get('cdn') !== '0';
+  const useCdn = /\.(onrender\.com|fly\.dev)$/.test(location.hostname) && new URLSearchParams(location.search).get('cdn') !== '0';
   if (useCdn) ART.assetBase = CDN;
   window.__bugexAsset = p => (useCdn ? CDN + p : p);
   loadGlobalConfig().then(() => {

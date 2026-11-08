@@ -73,9 +73,9 @@
      · Socket.IO 는 기다리지 않고 따로 불러와요 (잠든 서버가 깨어나는 동안 화면이 멈추지 않게) -->
 <script>
   (function () {
-    var DEFAULT_SERVER = 'https://bug-ex.onrender.com';
+    var DEFAULT_SERVER = 'https://bug-ex.fly.dev';
     var h = location.hostname, q = new URLSearchParams(location.search).get('server');
-    var same = /\.onrender\.com$/.test(h) || h === 'localhost' || /^127\./.test(h) || /^192\.168\./.test(h) || location.protocol === 'file:';
+    var same = /\.(onrender\.com|fly\.dev)$/.test(h) || h === 'localhost' || /^127\./.test(h) || /^192\.168\./.test(h) || location.protocol === 'file:';
     // 오늘 요일(한국 시간)의 서버: servers.json 의 mon~sun, 비어 있으면 default
     var today = function () {
       try { return new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'Asia/Seoul' }).format(new Date()).toLowerCase().slice(0, 3); }
