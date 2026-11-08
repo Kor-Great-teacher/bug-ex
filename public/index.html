@@ -69,27 +69,43 @@
 <!-- 실시간 대결 서버 연결
      · Render 에서 열면: 같은 서버에 연결해요
      · Vercel · Cloudflare Pages · GitHub Pages 처럼 그림 · 화면만 올린 곳에서 열면: 아래 Render 서버에 연결해요
-       (주소 끝 ?server=https://... 로 바꿀 수 있어요)
+       요일마다 다른 서버를 쓰려면 public/servers.json 에 적어요 (주소 끝 ?server=https://... 가 가장 우선)
      · Socket.IO 는 기다리지 않고 따로 불러와요 (잠든 서버가 깨어나는 동안 화면이 멈추지 않게) -->
 <script>
   (function () {
     var DEFAULT_SERVER = 'https://bug-ex.onrender.com';
     var h = location.hostname, q = new URLSearchParams(location.search).get('server');
-    var same = /\.onrender\.com$/.test(h) || h === 'localhost' || /^127\./.test(h) || /^192\.168\./.test(h);
-    var server = q || (same ? '' : (location.protocol === 'file:' ? '' : DEFAULT_SERVER));
-    window.BUGEX_SERVER = server;
-    window.__ioReady = new Promise(function (done) {
-      var tryLoad = function (src, next) {
-        var sc = document.createElement('script'); sc.src = src; sc.async = true;
-        sc.onload = function () { done(typeof window.io === 'function'); };
-        sc.onerror = function () { if (next) next(); else { window.io = undefined; done(false); } };
-        document.head.appendChild(sc);
-      };
-      // 다른 곳에서 열었으면 서버를 미리 깨워 두고(잠들어 있으면 30초~1분), Socket.IO 는 CDN에서 받아요
-      if (server) {
-        try { fetch(server + '/healthz', { mode: 'no-cors', cache: 'no-store' }).catch(function () {}); } catch (e) { /* 무시 */ }
-        tryLoad('https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.min.js', function () { tryLoad(server + '/socket.io/socket.io.js'); });
-      } else tryLoad('socket.io/socket.io.js');
+    var same = /\.onrender\.com$/.test(h) || h === 'localhost' || /^127\./.test(h) || /^192\.168\./.test(h) || location.protocol === 'file:';
+    // 오늘 요일(한국 시간)의 서버: servers.json 의 mon~sun, 비어 있으면 default
+    var today = function () {
+      try { return new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'Asia/Seoul' }).format(new Date()).toLowerCase().slice(0, 3); }
+      catch (e) { return ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][new Date().getDay()]; }
+    };
+    var pickServer = function () {
+      if (q) return Promise.resolve(q);
+      if (same) return Promise.resolve('');
+      var timeout = new Promise(function (r) { setTimeout(function () { r(null); }, 2500); });
+      var get = fetch('servers.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+      return Promise.race([get, timeout]).then(function (j) {
+        var u = j && (j[today()] || j['default']);
+        return String(u || DEFAULT_SERVER).replace(/\/+$/, '');
+      });
+    };
+    window.__ioReady = pickServer().then(function (server) {
+      window.BUGEX_SERVER = server;
+      return new Promise(function (done) {
+        var tryLoad = function (src, next) {
+          var sc = document.createElement('script'); sc.src = src; sc.async = true;
+          sc.onload = function () { done(typeof window.io === 'function'); };
+          sc.onerror = function () { if (next) next(); else { window.io = undefined; done(false); } };
+          document.head.appendChild(sc);
+        };
+        // 다른 곳에서 열었으면 서버를 미리 깨워 두고(잠들어 있으면 30초~1분), Socket.IO 는 CDN에서 받아요
+        if (server) {
+          try { fetch(server + '/healthz', { mode: 'no-cors', cache: 'no-store' }).catch(function () {}); } catch (e) { /* 무시 */ }
+          tryLoad('https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.min.js', function () { tryLoad(server + '/socket.io/socket.io.js'); });
+        } else tryLoad('socket.io/socket.io.js');
+      });
     });
   })();
 </script>

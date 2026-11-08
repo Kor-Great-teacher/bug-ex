@@ -180,6 +180,13 @@ Render 무료 요금제는 대역폭이 월 5GB예요. 화면 · 그림(대부�
    - 서버 주소가 다르면 `public/index.html` 의 `DEFAULT_SERVER` 를 바꾸거나 주소 끝에 `?server=https://...` 를 붙여요.
    - Render 서버가 잠들어 있으면 [여럿이 하기]에서 "서버를 깨우는 중…" 창이 30초~1분 떠요. 페이지를 열 때 미리 깨우기 시작해요.
 3. Render 주소로 열어도 지금처럼 그대로 돼요 (그림은 jsDelivr CDN에서 받아요).
+4. **요일마다 다른 실시간 서버**: `public/servers.json` 에 요일별 주소를 적어요 (한국 시간 기준, 비우면 `default`).
+   ```json
+   { "default": "https://bug-ex.onrender.com", "mon": "", "tue": "https://다른서버.onrender.com", "wed": "", "thu": "", "fri": "", "sat": "", "sun": "" }
+   ```
+   - 학생 화면은 그날 요일의 서버에 연결하고, GitHub Actions 서버 깨우기도 그날 서버만 깨워요.
+   - 같은 반 학생은 같은 날 같은 서버에 모여야 함께 대결할 수 있어요 (요일은 학생 기기와 상관없이 한국 시간으로 정해요).
+   - 주소 끝 `?server=...` 가 있으면 그게 가장 우선이에요.
 
 
 

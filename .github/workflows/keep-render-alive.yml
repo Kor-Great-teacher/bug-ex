@@ -25,8 +25,9 @@ on:
         default: '10'
 
 env:
-  # 저장소 Settings → Secrets and variables → Actions → Variables 에 RENDER_URL 을 만들면 그 주소를 써요
-  RENDER_URL: ${{ vars.RENDER_URL || 'https://bug-ex.onrender.com' }}
+  # 깨울 서버: 저장소 Variables 의 RENDER_URL 이 있으면 그 주소,
+  # 없으면 public/servers.json 의 오늘 요일(한국 시간) 주소 → default
+  RENDER_URL_OVERRIDE: ${{ vars.RENDER_URL }}
 
 concurrency:
   group: keep-render-alive-${{ github.event_name == 'workflow_dispatch' && inputs.count != '0' && 'test' || 'live' }}
@@ -37,6 +38,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 355   # GitHub 작업은 최대 6시간
     steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: public/servers.json
+          sparse-checkout-cone-mode: false
+      - name: Pick today's server
+        run: |
+          if [ -n "$RENDER_URL_OVERRIDE" ]; then url="$RENDER_URL_OVERRIDE"; else
+            day=$(TZ=Asia/Seoul date +%a | tr 'A-Z' 'a-z')
+            url=$(python3 -c "import json,sys; j=json.load(open('public/servers.json')); print((j.get('$day') or j.get('default') or 'https://bug-ex.onrender.com').rstrip('/'))" 2>/dev/null || echo 'https://bug-ex.onrender.com')
+          fi
+          echo "오늘($(TZ=Asia/Seoul date '+%a'))의 서버: $url"
+          echo "RENDER_URL=$url" >> "$GITHUB_ENV"
       - name: Keep the server awake
         env:
           COUNT: ${{ inputs.count || '0' }}
