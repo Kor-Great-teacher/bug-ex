@@ -454,18 +454,37 @@ window.BugArt = (() => {
   //  자세 그림(run1 run2 …)이 있으면 번갈아 보여 주고, 그림이 한 장뿐이면 통통 · 기울기 · 흔들기로 움직여요
   // ============================================================
   const SPR = { ready: false, data: {} };   // 종류 → { 자세: { img, w, h } }
-  function load(base = 'img/bugs/') {
-    const one = (type, pose, f) => new Promise(res => {
+  // 그림 불러오기 (대역폭 아끼기)
+  //  - 처음에는 곤충마다 카드용 그림(card · stand · happy)만 받아요
+  //  - 자세 그림은 그 곤충이 경기에 나올 때 받아요 (ensure)
+  //  - BugArt.assetBase 가 있으면(CDN) 거기서 받고, 실패하면 이 서버에서 받아요
+  const LOCAL = 'img/bugs/';
+  let MAN = {};
+  const FULL = {};
+  const BOOT = ['card', 'stand', 'happy'];
+  function loadOne(type, pose, f) {
+    return new Promise(res => {
       const img = new Image();
+      const local = LOCAL + f.file + (f.v ? `?v=${f.v}` : '');
+      const remote = api.assetBase ? api.assetBase + 'img/bugs/' + f.file + (f.v ? `?v=${f.v}` : '') : null;
       img.onload = () => { (SPR.data[type] = SPR.data[type] || {})[pose] = { img, w: f.w, h: f.h }; res(); };
-      img.onerror = () => res();
-      img.src = base + f.file;
+      img.onerror = () => { if (remote && img.src.indexOf(api.assetBase) === 0) { img.src = local; } else res(); };
+      img.src = remote || local;
     });
-    return fetch(base + 'manifest.json', { cache: 'no-cache' })
+  }
+  function load() {
+    return fetch(LOCAL + 'manifest.json', { cache: 'no-cache' })
       .then(r => (r.ok ? r.json() : {}))
-      .then(man => Promise.all(Object.entries(man).flatMap(([type, poses]) => Object.entries(poses).map(([pose, f]) => one(type, pose, f)))))
+      .then(man => { MAN = man; return Promise.all(Object.entries(man).flatMap(([type, poses]) => Object.entries(poses).filter(([pose]) => BOOT.includes(pose)).map(([pose, f]) => loadOne(type, pose, f)))); })
       .catch(() => {})
       .then(() => { SPR.ready = true; for (const k in cache) delete cache[k]; });
+  }
+  // 이 곤충들의 자세 그림을 모두 받아 둬요 (이미 받았으면 그대로)
+  function ensure(types) {
+    return Promise.all([].concat(types).filter(t => MAN[t] && !FULL[t]).map(t => {
+      FULL[t] = Promise.all(Object.entries(MAN[t]).filter(([pose]) => !BOOT.includes(pose)).map(([pose, f]) => loadOne(t, pose, f)));
+      return FULL[t];
+    }));
   }
   const hasSprite = type => !!SPR.data[type];
   const POSE_FRAMES = {
@@ -529,12 +548,13 @@ window.BugArt = (() => {
   }
   function drawSprite(c, type, x, y, size, o) {
     const fr = SPR.data[type]; if (!fr) return false;
+    if (!o.card && !FULL[type]) ensure(type);
     const ph = o.phase || 0, mood = o.mood, t = o.time != null ? o.time : 0;
     const rar = o.deco === false ? 'common' : o.rarity || rarityOf(type);
     const pose = o.pose || (o.fly ? 'fly' : 'stand');
     const name = pickFrame(fr, pose, mood, ph, t, o.card), f = fr[name];
     const base = o.card ? f : fr.stand || fr.card;
-    const multi = Object.keys(fr).length > 2;           // 자세 그림이 따로 있어요
+    const multi = !!(fr.run1 || fr.idle1);              // 자세 그림이 따로 있어요
     const k = size * 0.95 / Math.max(base.h, base.w * 0.8), u = size / 62;
     // 움직임
     let bob = 0, rot = 0, sx = 1, sy = 1, shake = 0;
@@ -676,5 +696,6 @@ window.BugArt = (() => {
     return (cache[key] = cv.toDataURL());
   }
 
-  return { draw, portrait, load, hasSprite, SPEC };
+  const api = { draw, portrait, load, ensure, hasSprite, SPEC, assetBase: null };
+  return api;
 })();

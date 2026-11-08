@@ -852,6 +852,7 @@
   const arenaCanvas = $('#arena'), actx = arenaCanvas.getContext('2d');
   const BTN_LABEL = { sprint: '달려! 👟', sumo: '돌진! 💥', highjump: '점프! ⬆️', dung: '굴려! 🟤', nectar: '슝~ 빨리! 💨', tug: '영차! 💪', climb: '올라가! 🧗', hurdles: '점프! 🦘', rhythm: '반짝! ✨' };
   function beginBattle(mode, meta, localBattle) {
+    ART.ensure(meta.ents.map(e => e.type));   // 나온 곤충들의 자세 그림만 받아요
     P.stage = 'battle'; P.lastEvent = meta.ev;
     if (P.sel) { P.uses[P.sel] = usesOf(P.sel) + 1; if (bug(P.sel) && bug(P.sel).garden) P.oldUses = (P.oldUses || 0) + 1; }   // 지금 고른 곤충 카드가 한 번 출전했어요
     BT = { mode, meta, me: meta.me, b: localBattle || null, prev: null, cur: null, curAt: 0, ended: false, lastCount: null, lastT: -99, prevMine: null };
@@ -904,6 +905,8 @@
   }
   function onSnap(snap) {
     if (!BT || BT.mode !== 'net' || BT.ended) return;
+    // 바뀌지 않는 경기장 정보가 빠져 오면 앞에서 받은 값을 이어 써요
+    if (BT.cur && BT.cur.g) for (const k in BT.cur.g) if (!(k in snap.g)) snap.g[k] = BT.cur.g[k];
     BT.prev = BT.cur; BT.cur = snap; BT.curAt = performance.now();
     handleFx(snap);
   }
@@ -921,7 +924,7 @@
   function viewSnap(now) {
     const cur = BT.cur; if (!cur) return null;
     if (BT.mode === 'local' || !BT.prev) return cur;
-    const k = Math.max(0, Math.min(1, (now - BT.curAt) / 50));
+    const k = Math.max(0, Math.min(1, (now - BT.curAt) / 100));   // 서버는 1초에 10번 보내요
     const prev = BT.prev;
     const v = { ...cur, t: prev.t + (cur.t - prev.t) * k, g: lerpObj(prev.g, cur.g, k), e: cur.e.map((e, i) => lerpObj(prev.e[i], e, k)) };
     // 높이 뛰기 막대는 내 화면 시간으로 계속 움직여요 (누른 순간 본 위치가 그대로 기록돼요)
@@ -1257,7 +1260,7 @@
         </div>
         <div class="g-slide">
           <div class="g-left">
-            ${s.img ? `<div class="g-shot"><img src="img/help/${s.img}.webp" alt="${esc(s.title)} 화면">${(s.marks || []).map(([x, y, k]) => `<i class="g-mk" style="left:${x}%;top:${y}%">${k}</i>`).join('')}</div>` : `<div class="g-visual">${s.visual}</div>`}
+            ${s.img ? `<div class="g-shot"><img src="${window.__bugexAsset(`img/help/${s.img}.webp`)}" onerror="if(!this.dataset.l){this.dataset.l=1;this.src='img/help/${s.img}.webp'}" alt="${esc(s.title)} 화면">${(s.marks || []).map(([x, y, k]) => `<i class="g-mk" style="left:${x}%;top:${y}%">${k}</i>`).join('')}</div>` : `<div class="g-visual">${s.visual}</div>`}
           </div>
           <div class="g-right">
             <h3><span class="g-step">STEP ${guideAt + 1}</span>${esc(s.title)}</h3>
@@ -1665,6 +1668,12 @@
   }
   // 테스트·디버그용 손잡이
   window.__bugex = { get P() { return P; }, get BT() { return BT; }, get settings() { return settings; }, Net, startLocalBattle, goLab, showFinal, answer, enterGrow, get curQ() { return curQ; } };
+  // 그림은 Render 서버 대신 무료 CDN(jsDelivr, GitHub 저장소의 그림)에서 받아 서버 대역폭을 아껴요
+  // (?cdn=0 이면 끔 · CDN이 안 되면 그림마다 저절로 이 서버에서 받아요)
+  const CDN = 'https://cdn.jsdelivr.net/gh/Kor-Great-teacher/bug-ex@ccr-cde7aa6c-pkqlr0/public/';
+  const useCdn = /\.onrender\.com$/.test(location.hostname) && new URLSearchParams(location.search).get('cdn') !== '0';
+  if (useCdn) ART.assetBase = CDN;
+  window.__bugexAsset = p => (useCdn ? CDN + p : p);
   loadGlobalConfig().then(() => {
     startKit();
     // 글꼴과 캐릭터 그림을 기다렸다가 시작해요 (그림이 늦어도 4초 뒤에는 시작)

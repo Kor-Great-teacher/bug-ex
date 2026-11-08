@@ -410,7 +410,7 @@
 
     // 11. 나뭇잎 배 급류 타기 — ▲ ▼ 로 배를 몰아 바위를 피하고 물살(≫)을 타요
     raft: {
-      name: '나뭇잎 배 급류 타기', icon: '🍃', control: 'lr', stats: ['spd', 'bal'], limit: 30, len: 100,
+      name: '나뭇잎 배 급류 타기', icon: '🍃', fixed: ['rk', 'bs'], control: 'lr', stats: ['spd', 'bal'], limit: 30, len: 100,
       lrLabels: [['▲ 위로', '배를 위로'], ['▼ 아래로', '배를 아래로']], keys: '↑ ↓',
       desc: '나뭇잎 배는 저절로 떠내려가요. ▲ ▼ 로 배를 몰아 바위를 피하고, 물살(≫)을 타면 빨라져요!',
       init(b) {
@@ -454,7 +454,7 @@
 
     // 12. 민들레 씨앗 비행 — 누르고 있으면 위로, 떼면 아래로. 가시덤불 틈을 지나가요
     seed: {
-      name: '민들레 씨앗 비행', icon: '🪂', control: 'hold', stats: ['jmp', 'bal'], limit: 30, len: 100,
+      name: '민들레 씨앗 비행', icon: '🪂', fixed: ['wl'], control: 'hold', stats: ['jmp', 'bal'], limit: 30, len: 100,
       holdLabel: ['🌬️ 날아올라!', '누르고 있으면 위로 · 떼면 아래로'],
       desc: '누르고 있으면 올라가고, 떼면 내려가요. 높이 날수록 빨라요! 가시덤불 틈으로 쏙쏙 지나가세요.',
       init(b) {
@@ -547,7 +547,7 @@
 
     // 14. 반딧불이 리듬 놀이 — 빛이 동그라미에 닿는 순간 반짝!
     rhythm: {
-      name: '반딧불이 리듬 놀이', icon: '🎵', control: 'tap', stats: ['bal', 'sta'], limit: 27,
+      name: '반딧불이 리듬 놀이', icon: '🎵', fixed: ['nt'], control: 'tap', stats: ['bal', 'sta'], limit: 27,
       desc: '날아오는 반딧불 빛이 동그라미에 닿을 때 눌러요. 연속으로 맞히면 콤보 점수가 쑥쑥! 마구 누르면 끊겨요.',
       init(b) {
         const nt = [];
@@ -637,8 +637,12 @@
     for (const k in o) if (k[0] !== '_' && k !== 'st' && k !== 'skill' && k !== 'name' && k !== 'type') r[k] = slim(o[k]);
     return r;
   }
-  function snap(b) {
-    const s = { t: round(b.t), done: b.done, g: slim(b.g), e: slim(b.ents), fx: b.fx };
+  // opt.full === false 면 바뀌지 않는 경기장 정보(fixed)는 빼요 — 받는 쪽이 앞에서 받은 값을 이어 써요
+  function snap(b, opt) {
+    const fixed = (opt && opt.full === false && EVENTS[b.ev].fixed) || [];
+    const g = {};
+    for (const k in b.g) if (!fixed.includes(k)) g[k] = b.g[k];
+    const s = { t: round(b.t), done: b.done, g: slim(g), e: slim(b.ents), fx: b.fx };
     b.fx = [];
     if (b.done) s.results = b.results;
     return s;

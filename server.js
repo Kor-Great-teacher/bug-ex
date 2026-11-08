@@ -9,6 +9,7 @@ const fs = require('fs');
 const http = require('http');
 const express = require('express');
 const { Server } = require('socket.io');
+const compression = require('compression');
 const Data = require('./public/js/insects-data.js');
 const Events = require('./public/js/events.js');
 
@@ -44,10 +45,20 @@ const app = express();
 app.disable('x-powered-by');
 app.get('/healthz', (req, res) => res.send('ok'));
 app.get('/config.json', (req, res) => { res.set('Cache-Control', 'no-store'); res.sendFile(CONFIG_FILE); });
-app.use(express.static(path.join(__dirname, 'public'), { maxAge: '5m' }));
+// 대역폭 아끼기: 글자 파일(js · css · html · json)은 압축해서 보내고,
+// 그림은 주소에 ?v=버전 이 붙어 있어 브라우저가 오래(1년) 기억해 다시 받지 않아요.
+app.use(compression());
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '10m',
+  setHeaders(res, file) {
+    if (/[\\/]img[\\/]/.test(file)) res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    if (/manifest\.json$/.test(file)) res.set('Cache-Control', 'no-cache');
+  },
+}));
 
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' }, pingInterval: 10000, pingTimeout: 15000 });
+// perMessageDeflate: 실시간 대결 상태를 압축해서 보내요 (보통 4~6배 작아져요)
+const io = new Server(server, { cors: { origin: '*' }, pingInterval: 25000, pingTimeout: 20000, perMessageDeflate: { threshold: 256 } });
 
 // ============================================================
 //  경기(match)
@@ -287,7 +298,10 @@ function startBattle(M) {
   M.players.forEach((p, i) => { const s = !p.bot && !p.gone && sockOf(p); if (s) s.emit('battle:start', { ...meta, me: i }); });
   M.bt.loop = setInterval(() => {
     Events.step(b, TICK);
-    emitAll(M, 'battle:state', Events.snap(b));
+    // 계산은 1초에 20번, 보내기는 1초에 10번 (화면은 그 사이를 부드럽게 이어 그려요)
+    // 바뀌지 않는 경기장 정보(바위 · 덤불 · 리듬 박자)는 처음과 가끔만 보내요
+    const n = (M.bt.sent = (M.bt.sent || 0) + 1);
+    if (n % 2 === 0 || b.done || n < 4) emitAll(M, 'battle:state', Events.snap(b, { full: n < 6 || n % 60 === 0 }));
     if (b.done) endBattle(M);
   }, TICK * 1000);
 }

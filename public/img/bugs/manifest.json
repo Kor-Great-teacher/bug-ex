@@ -3,2162 +3,2588 @@
   "attack1": {
    "file": "ant_attack1.webp",
    "w": 180,
-   "h": 187
+   "h": 187,
+   "v": "0fe203a3"
   },
   "attack2": {
    "file": "ant_attack2.webp",
    "w": 188,
-   "h": 201
+   "h": 201,
+   "v": "18005e78"
   },
   "balance1": {
    "file": "ant_balance1.webp",
    "w": 148,
-   "h": 188
+   "h": 188,
+   "v": "b51e66f8"
   },
   "balance2": {
    "file": "ant_balance2.webp",
    "w": 134,
-   "h": 191
+   "h": 191,
+   "v": "8fd5686b"
   },
   "cheer1": {
    "file": "ant_cheer1.webp",
    "w": 157,
-   "h": 198
+   "h": 198,
+   "v": "ac45a4a4"
   },
   "cheer2": {
    "file": "ant_cheer2.webp",
    "w": 153,
-   "h": 197
+   "h": 197,
+   "v": "91438605"
   },
   "climb1": {
    "file": "ant_climb1.webp",
    "w": 183,
-   "h": 206
+   "h": 206,
+   "v": "f72bec86"
   },
   "climb2": {
    "file": "ant_climb2.webp",
    "w": 193,
-   "h": 198
+   "h": 198,
+   "v": "c2921532"
   },
   "damage1": {
    "file": "ant_damage1.webp",
    "w": 169,
-   "h": 203
+   "h": 203,
+   "v": "637deae4"
   },
   "damage2": {
    "file": "ant_damage2.webp",
    "w": 159,
-   "h": 201
+   "h": 201,
+   "v": "d449a15a"
   },
   "defend1": {
    "file": "ant_defend1.webp",
    "w": 166,
-   "h": 200
+   "h": 200,
+   "v": "fc5951fb"
   },
   "defend2": {
    "file": "ant_defend2.webp",
    "w": 171,
-   "h": 198
+   "h": 198,
+   "v": "9cc0fde8"
   },
   "dizzy": {
    "file": "ant_dizzy.webp",
    "w": 191,
-   "h": 226
+   "h": 226,
+   "v": "3be918f0"
   },
   "fly1": {
    "file": "ant_fly1.webp",
    "w": 196,
-   "h": 182
+   "h": 182,
+   "v": "41a044d3"
   },
   "fly2": {
    "file": "ant_fly2.webp",
    "w": 171,
-   "h": 185
+   "h": 185,
+   "v": "98b38f87"
   },
   "hang1": {
    "file": "ant_hang1.webp",
    "w": 152,
-   "h": 202
+   "h": 202,
+   "v": "1f78ee30"
   },
   "hang2": {
    "file": "ant_hang2.webp",
    "w": 164,
-   "h": 201
+   "h": 201,
+   "v": "bcca140c"
   },
   "happy": {
    "file": "ant_happy.webp",
    "w": 169,
-   "h": 226
+   "h": 226,
+   "v": "07acacc4"
   },
   "idle1": {
    "file": "ant_idle1.webp",
    "w": 171,
-   "h": 206
+   "h": 206,
+   "v": "c0caa5ce"
   },
   "idle2": {
    "file": "ant_idle2.webp",
    "w": 142,
-   "h": 216
+   "h": 216,
+   "v": "ecafa062"
   },
   "pull1": {
    "file": "ant_pull1.webp",
    "w": 143,
-   "h": 193
+   "h": 193,
+   "v": "068b3fc1"
   },
   "pull2": {
    "file": "ant_pull2.webp",
    "w": 165,
-   "h": 193
+   "h": 193,
+   "v": "e5e6305f"
   },
   "push1": {
    "file": "ant_push1.webp",
    "w": 173,
-   "h": 199
+   "h": 199,
+   "v": "a6e80862"
   },
   "push2": {
    "file": "ant_push2.webp",
    "w": 170,
-   "h": 193
+   "h": 193,
+   "v": "44201f1c"
   },
   "run1": {
    "file": "ant_run1.webp",
    "w": 188,
-   "h": 188
+   "h": 188,
+   "v": "a3de1a04"
   },
   "run2": {
    "file": "ant_run2.webp",
    "w": 176,
-   "h": 190
+   "h": 190,
+   "v": "51655018"
   },
   "stand": {
    "file": "ant_stand.webp",
    "w": 178,
-   "h": 227
+   "h": 227,
+   "v": "e45e0513"
   },
   "strain": {
    "file": "ant_strain.webp",
    "w": 167,
-   "h": 229
+   "h": 229,
+   "v": "0514303a"
   }
  },
  "bee": {
   "attack1": {
    "file": "bee_attack1.webp",
    "w": 197,
-   "h": 201
+   "h": 201,
+   "v": "ab4add41"
   },
   "attack2": {
    "file": "bee_attack2.webp",
    "w": 189,
-   "h": 206
+   "h": 206,
+   "v": "238edf4d"
   },
   "balance1": {
    "file": "bee_balance1.webp",
    "w": 161,
-   "h": 183
+   "h": 183,
+   "v": "0d083398"
   },
   "balance2": {
    "file": "bee_balance2.webp",
    "w": 153,
-   "h": 190
+   "h": 190,
+   "v": "fd8fa285"
   },
   "cheer1": {
    "file": "bee_cheer1.webp",
    "w": 166,
-   "h": 194
+   "h": 194,
+   "v": "44e204c9"
   },
   "cheer2": {
    "file": "bee_cheer2.webp",
    "w": 167,
-   "h": 196
+   "h": 196,
+   "v": "9f04c190"
   },
   "climb1": {
    "file": "bee_climb1.webp",
    "w": 185,
-   "h": 192
+   "h": 192,
+   "v": "b72568ad"
   },
   "climb2": {
    "file": "bee_climb2.webp",
    "w": 176,
-   "h": 191
+   "h": 191,
+   "v": "4bdc82d2"
   },
   "damage1": {
    "file": "bee_damage1.webp",
    "w": 175,
-   "h": 192
+   "h": 192,
+   "v": "decaa4ad"
   },
   "damage2": {
    "file": "bee_damage2.webp",
    "w": 169,
-   "h": 189
+   "h": 189,
+   "v": "ed611912"
   },
   "defend1": {
    "file": "bee_defend1.webp",
    "w": 171,
-   "h": 193
+   "h": 193,
+   "v": "18f64066"
   },
   "defend2": {
    "file": "bee_defend2.webp",
    "w": 169,
-   "h": 193
+   "h": 193,
+   "v": "436e493e"
   },
   "dizzy": {
    "file": "bee_dizzy.webp",
    "w": 243,
-   "h": 214
+   "h": 214,
+   "v": "bb8cd56f"
   },
   "fly1": {
    "file": "bee_fly1.webp",
    "w": 188,
-   "h": 177
+   "h": 177,
+   "v": "c7421068"
   },
   "fly2": {
    "file": "bee_fly2.webp",
    "w": 161,
-   "h": 185
+   "h": 185,
+   "v": "a6cc4320"
   },
   "hang1": {
    "file": "bee_hang1.webp",
    "w": 166,
-   "h": 191
+   "h": 191,
+   "v": "daa04d33"
   },
   "hang2": {
    "file": "bee_hang2.webp",
    "w": 163,
-   "h": 190
+   "h": 190,
+   "v": "4ea99404"
   },
   "happy": {
    "file": "bee_happy.webp",
    "w": 212,
-   "h": 218
+   "h": 218,
+   "v": "d1c430dc"
   },
   "idle1": {
    "file": "bee_idle1.webp",
    "w": 171,
-   "h": 206
+   "h": 206,
+   "v": "28a059c0"
   },
   "idle2": {
    "file": "bee_idle2.webp",
    "w": 152,
-   "h": 200
+   "h": 200,
+   "v": "8cbbe55b"
   },
   "pull1": {
    "file": "bee_pull1.webp",
    "w": 167,
-   "h": 178
+   "h": 178,
+   "v": "941fccdd"
   },
   "pull2": {
    "file": "bee_pull2.webp",
    "w": 162,
-   "h": 178
+   "h": 178,
+   "v": "a6e63ac3"
   },
   "push1": {
    "file": "bee_push1.webp",
    "w": 166,
-   "h": 183
+   "h": 183,
+   "v": "65964365"
   },
   "push2": {
    "file": "bee_push2.webp",
    "w": 166,
-   "h": 178
+   "h": 178,
+   "v": "d425aa03"
   },
   "run1": {
    "file": "bee_run1.webp",
    "w": 177,
-   "h": 181
+   "h": 181,
+   "v": "e2f0fb61"
   },
   "run2": {
    "file": "bee_run2.webp",
    "w": 176,
-   "h": 186
+   "h": 186,
+   "v": "4d29d3c9"
   },
   "stand": {
    "file": "bee_stand.webp",
    "w": 228,
-   "h": 218
+   "h": 218,
+   "v": "ca93a7f1"
   },
   "strain": {
    "file": "bee_strain.webp",
    "w": 210,
-   "h": 216
+   "h": 216,
+   "v": "3b16d36c"
   }
  },
  "butterfly": {
   "attack1": {
    "file": "butterfly_attack1.webp",
    "w": 200,
-   "h": 196
+   "h": 196,
+   "v": "43db977a"
   },
   "attack2": {
    "file": "butterfly_attack2.webp",
    "w": 198,
-   "h": 208
+   "h": 208,
+   "v": "42d568d4"
   },
   "balance1": {
    "file": "butterfly_balance1.webp",
    "w": 168,
-   "h": 174
+   "h": 174,
+   "v": "80a620a9"
   },
   "balance2": {
    "file": "butterfly_balance2.webp",
    "w": 167,
-   "h": 172
+   "h": 172,
+   "v": "cc6398e4"
   },
   "cheer1": {
    "file": "butterfly_cheer1.webp",
    "w": 175,
-   "h": 187
+   "h": 187,
+   "v": "21aa5aec"
   },
   "cheer2": {
    "file": "butterfly_cheer2.webp",
    "w": 169,
-   "h": 190
+   "h": 190,
+   "v": "86a10915"
   },
   "climb1": {
    "file": "butterfly_climb1.webp",
    "w": 178,
-   "h": 181
+   "h": 181,
+   "v": "a5c7ad17"
   },
   "climb2": {
    "file": "butterfly_climb2.webp",
    "w": 168,
-   "h": 183
+   "h": 183,
+   "v": "7b718154"
   },
   "damage1": {
    "file": "butterfly_damage1.webp",
    "w": 178,
-   "h": 197
+   "h": 197,
+   "v": "b4d41677"
   },
   "damage2": {
    "file": "butterfly_damage2.webp",
    "w": 176,
-   "h": 196
+   "h": 196,
+   "v": "09e08a5d"
   },
   "defend1": {
    "file": "butterfly_defend1.webp",
    "w": 176,
-   "h": 199
+   "h": 199,
+   "v": "94039c1f"
   },
   "defend2": {
    "file": "butterfly_defend2.webp",
    "w": 167,
-   "h": 195
+   "h": 195,
+   "v": "5e2e2ccc"
   },
   "dizzy": {
    "file": "butterfly_dizzy.webp",
    "w": 237,
-   "h": 222
+   "h": 222,
+   "v": "a4daeff7"
   },
   "fly1": {
    "file": "butterfly_fly1.webp",
    "w": 200,
-   "h": 168
+   "h": 168,
+   "v": "bf5e6f42"
   },
   "fly2": {
    "file": "butterfly_fly2.webp",
    "w": 163,
-   "h": 166
+   "h": 166,
+   "v": "5fd2a5d0"
   },
   "hang1": {
    "file": "butterfly_hang1.webp",
    "w": 170,
-   "h": 186
+   "h": 186,
+   "v": "1fb01bd2"
   },
   "hang2": {
    "file": "butterfly_hang2.webp",
    "w": 159,
-   "h": 187
+   "h": 187,
+   "v": "0be9eab7"
   },
   "happy": {
    "file": "butterfly_happy.webp",
    "w": 233,
-   "h": 222
+   "h": 222,
+   "v": "91f8523a"
   },
   "idle1": {
    "file": "butterfly_idle1.webp",
    "w": 177,
-   "h": 202
+   "h": 202,
+   "v": "6d9a58fa"
   },
   "idle2": {
    "file": "butterfly_idle2.webp",
    "w": 155,
-   "h": 196
+   "h": 196,
+   "v": "95d0ae93"
   },
   "pull1": {
    "file": "butterfly_pull1.webp",
    "w": 159,
-   "h": 170
+   "h": 170,
+   "v": "4bab7f50"
   },
   "pull2": {
    "file": "butterfly_pull2.webp",
    "w": 155,
-   "h": 167
+   "h": 167,
+   "v": "38f9c658"
   },
   "push1": {
    "file": "butterfly_push1.webp",
    "w": 175,
-   "h": 173
+   "h": 173,
+   "v": "4c7c6ba1"
   },
   "push2": {
    "file": "butterfly_push2.webp",
    "w": 162,
-   "h": 170
+   "h": 170,
+   "v": "a507a6a3"
   },
   "run1": {
    "file": "butterfly_run1.webp",
    "w": 176,
-   "h": 174
+   "h": 174,
+   "v": "2e954ee1"
   },
   "run2": {
    "file": "butterfly_run2.webp",
    "w": 166,
-   "h": 174
+   "h": 174,
+   "v": "ecfd42fb"
   },
   "stand": {
    "file": "butterfly_stand.webp",
    "w": 231,
-   "h": 226
+   "h": 226,
+   "v": "470ed3e0"
   },
   "strain": {
    "file": "butterfly_strain.webp",
    "w": 218,
-   "h": 227
+   "h": 227,
+   "v": "bbff1f07"
   }
  },
  "cicada": {
   "attack1": {
    "file": "cicada_attack1.webp",
    "w": 224,
-   "h": 200
+   "h": 200,
+   "v": "4fe8770d"
   },
   "attack2": {
    "file": "cicada_attack2.webp",
    "w": 213,
-   "h": 205
+   "h": 205,
+   "v": "45f955d5"
   },
   "balance1": {
    "file": "cicada_balance1.webp",
    "w": 167,
-   "h": 164
+   "h": 164,
+   "v": "08f64f68"
   },
   "balance2": {
    "file": "cicada_balance2.webp",
    "w": 166,
-   "h": 160
+   "h": 160,
+   "v": "fa3c54a4"
   },
   "cheer1": {
    "file": "cicada_cheer1.webp",
    "w": 153,
-   "h": 178
+   "h": 178,
+   "v": "d4a0e3f1"
   },
   "cheer2": {
    "file": "cicada_cheer2.webp",
    "w": 160,
-   "h": 170
+   "h": 170,
+   "v": "fd790a10"
   },
   "climb1": {
    "file": "cicada_climb1.webp",
    "w": 201,
-   "h": 182
+   "h": 182,
+   "v": "b424c710"
   },
   "climb2": {
    "file": "cicada_climb2.webp",
    "w": 190,
-   "h": 186
+   "h": 186,
+   "v": "ad3111a5"
   },
   "damage1": {
    "file": "cicada_damage1.webp",
    "w": 158,
-   "h": 207
+   "h": 207,
+   "v": "d073fdc6"
   },
   "damage2": {
    "file": "cicada_damage2.webp",
    "w": 184,
-   "h": 185
+   "h": 185,
+   "v": "11232caf"
   },
   "defend1": {
    "file": "cicada_defend1.webp",
    "w": 177,
-   "h": 189
+   "h": 189,
+   "v": "d00ccfd5"
   },
   "defend2": {
    "file": "cicada_defend2.webp",
    "w": 176,
-   "h": 183
+   "h": 183,
+   "v": "b2597ec4"
   },
   "dizzy": {
    "file": "cicada_dizzy.webp",
    "w": 255,
-   "h": 219
+   "h": 219,
+   "v": "e2dc60d0"
   },
   "fly1": {
    "file": "cicada_fly1.webp",
    "w": 188,
-   "h": 168
+   "h": 168,
+   "v": "b2c55786"
   },
   "fly2": {
    "file": "cicada_fly2.webp",
    "w": 182,
-   "h": 160
+   "h": 160,
+   "v": "8ef64a81"
   },
   "hang1": {
    "file": "cicada_hang1.webp",
    "w": 159,
-   "h": 185
+   "h": 185,
+   "v": "9db3150e"
   },
   "hang2": {
    "file": "cicada_hang2.webp",
    "w": 133,
-   "h": 184
+   "h": 184,
+   "v": "ca3b2927"
   },
   "happy": {
    "file": "cicada_happy.webp",
    "w": 227,
-   "h": 225
+   "h": 225,
+   "v": "0002e335"
   },
   "idle1": {
    "file": "cicada_idle1.webp",
    "w": 180,
-   "h": 197
+   "h": 197,
+   "v": "21bca0e6"
   },
   "idle2": {
    "file": "cicada_idle2.webp",
    "w": 182,
-   "h": 195
+   "h": 195,
+   "v": "995a5f3c"
   },
   "pull1": {
    "file": "cicada_pull1.webp",
    "w": 179,
-   "h": 173
+   "h": 173,
+   "v": "139ca824"
   },
   "pull2": {
    "file": "cicada_pull2.webp",
    "w": 171,
-   "h": 166
+   "h": 166,
+   "v": "03b114b7"
   },
   "push1": {
    "file": "cicada_push1.webp",
    "w": 193,
-   "h": 167
+   "h": 167,
+   "v": "fe9071fc"
   },
   "push2": {
    "file": "cicada_push2.webp",
    "w": 184,
-   "h": 174
+   "h": 174,
+   "v": "7ac65fa0"
   },
   "run1": {
    "file": "cicada_run1.webp",
    "w": 189,
-   "h": 174
+   "h": 174,
+   "v": "5a3caebd"
   },
   "run2": {
    "file": "cicada_run2.webp",
    "w": 193,
-   "h": 175
+   "h": 175,
+   "v": "26813585"
   },
   "stand": {
    "file": "cicada_stand.webp",
    "w": 240,
-   "h": 230
+   "h": 230,
+   "v": "2f86b0b2"
   },
   "strain": {
    "file": "cicada_strain.webp",
    "w": 222,
-   "h": 222
+   "h": 222,
+   "v": "3095fa23"
   }
  },
  "cricket": {
   "attack1": {
    "file": "cricket_attack1.webp",
    "w": 188,
-   "h": 196
+   "h": 196,
+   "v": "e5e09f21"
   },
   "attack2": {
    "file": "cricket_attack2.webp",
    "w": 215,
-   "h": 209
+   "h": 209,
+   "v": "c2cdde38"
   },
   "balance1": {
    "file": "cricket_balance1.webp",
    "w": 163,
-   "h": 178
+   "h": 178,
+   "v": "c201c796"
   },
   "balance2": {
    "file": "cricket_balance2.webp",
    "w": 169,
-   "h": 178
+   "h": 178,
+   "v": "1e96f06e"
   },
   "cheer1": {
    "file": "cricket_cheer1.webp",
    "w": 157,
-   "h": 202
+   "h": 202,
+   "v": "7bf46f34"
   },
   "cheer2": {
    "file": "cricket_cheer2.webp",
    "w": 153,
-   "h": 196
+   "h": 196,
+   "v": "0cdaf5a7"
   },
   "climb1": {
    "file": "cricket_climb1.webp",
    "w": 180,
-   "h": 190
+   "h": 190,
+   "v": "473dfdb2"
   },
   "climb2": {
    "file": "cricket_climb2.webp",
    "w": 190,
-   "h": 191
+   "h": 191,
+   "v": "2d170fc6"
   },
   "damage1": {
    "file": "cricket_damage1.webp",
    "w": 193,
-   "h": 194
+   "h": 194,
+   "v": "d0857f98"
   },
   "damage2": {
    "file": "cricket_damage2.webp",
    "w": 170,
-   "h": 195
+   "h": 195,
+   "v": "0bbc314f"
   },
   "defend1": {
    "file": "cricket_defend1.webp",
    "w": 184,
-   "h": 195
+   "h": 195,
+   "v": "4c8c7d8d"
   },
   "defend2": {
    "file": "cricket_defend2.webp",
    "w": 180,
-   "h": 198
+   "h": 198,
+   "v": "80a076df"
   },
   "dizzy": {
    "file": "cricket_dizzy.webp",
    "w": 254,
-   "h": 220
+   "h": 220,
+   "v": "131acb91"
   },
   "fly1": {
    "file": "cricket_fly1.webp",
    "w": 170,
-   "h": 186
+   "h": 186,
+   "v": "77304a52"
   },
   "fly2": {
    "file": "cricket_fly2.webp",
    "w": 174,
-   "h": 185
+   "h": 185,
+   "v": "a726792e"
   },
   "hang1": {
    "file": "cricket_hang1.webp",
    "w": 160,
-   "h": 190
+   "h": 190,
+   "v": "a8336b3f"
   },
   "hang2": {
    "file": "cricket_hang2.webp",
    "w": 153,
-   "h": 193
+   "h": 193,
+   "v": "19c70558"
   },
   "happy": {
    "file": "cricket_happy.webp",
    "w": 218,
-   "h": 219
+   "h": 219,
+   "v": "07996cae"
   },
   "idle1": {
    "file": "cricket_idle1.webp",
    "w": 173,
-   "h": 201
+   "h": 201,
+   "v": "54cab8bf"
   },
   "idle2": {
    "file": "cricket_idle2.webp",
    "w": 173,
-   "h": 196
+   "h": 196,
+   "v": "d2b1c6c7"
   },
   "pull1": {
    "file": "cricket_pull1.webp",
    "w": 156,
-   "h": 179
+   "h": 179,
+   "v": "c47c6449"
   },
   "pull2": {
    "file": "cricket_pull2.webp",
    "w": 171,
-   "h": 181
+   "h": 181,
+   "v": "9c15dffb"
   },
   "push1": {
    "file": "cricket_push1.webp",
    "w": 176,
-   "h": 174
+   "h": 174,
+   "v": "049d885e"
   },
   "push2": {
    "file": "cricket_push2.webp",
    "w": 176,
-   "h": 180
+   "h": 180,
+   "v": "d7044a1d"
   },
   "run1": {
    "file": "cricket_run1.webp",
    "w": 188,
-   "h": 181
+   "h": 181,
+   "v": "c3674636"
   },
   "run2": {
    "file": "cricket_run2.webp",
    "w": 202,
-   "h": 183
+   "h": 183,
+   "v": "852da955"
   },
   "stand": {
    "file": "cricket_stand.webp",
    "w": 224,
-   "h": 204
+   "h": 204,
+   "v": "80ca134d"
   },
   "strain": {
    "file": "cricket_strain.webp",
    "w": 221,
-   "h": 220
+   "h": 220,
+   "v": "c2af3d27"
   }
  },
  "dragonfly": {
   "attack1": {
    "file": "dragonfly_attack1.webp",
    "w": 204,
-   "h": 194
+   "h": 194,
+   "v": "2091fc9e"
   },
   "attack2": {
    "file": "dragonfly_attack2.webp",
    "w": 189,
-   "h": 166
+   "h": 166,
+   "v": "c7596183"
   },
   "balance1": {
    "file": "dragonfly_balance1.webp",
    "w": 173,
-   "h": 181
+   "h": 181,
+   "v": "61204bc1"
   },
   "balance2": {
    "file": "dragonfly_balance2.webp",
    "w": 170,
-   "h": 183
+   "h": 183,
+   "v": "a52950ec"
   },
   "cheer1": {
    "file": "dragonfly_cheer1.webp",
    "w": 167,
-   "h": 188
+   "h": 188,
+   "v": "1b72771d"
   },
   "cheer2": {
    "file": "dragonfly_cheer2.webp",
    "w": 176,
-   "h": 200
+   "h": 200,
+   "v": "986863bc"
   },
   "climb1": {
    "file": "dragonfly_climb1.webp",
    "w": 183,
-   "h": 183
+   "h": 183,
+   "v": "1dd9693c"
   },
   "climb2": {
    "file": "dragonfly_climb2.webp",
    "w": 176,
-   "h": 185
+   "h": 185,
+   "v": "9008720d"
   },
   "damage1": {
    "file": "dragonfly_damage1.webp",
    "w": 183,
-   "h": 190
+   "h": 190,
+   "v": "11fe5c67"
   },
   "damage2": {
    "file": "dragonfly_damage2.webp",
    "w": 184,
-   "h": 184
+   "h": 184,
+   "v": "2356a2b4"
   },
   "defend1": {
    "file": "dragonfly_defend1.webp",
    "w": 170,
-   "h": 193
+   "h": 193,
+   "v": "a85ce0e4"
   },
   "defend2": {
    "file": "dragonfly_defend2.webp",
    "w": 171,
-   "h": 192
+   "h": 192,
+   "v": "774ff5c0"
   },
   "dizzy": {
    "file": "dragonfly_dizzy.webp",
    "w": 258,
-   "h": 214
+   "h": 214,
+   "v": "395e1593"
   },
   "fly1": {
    "file": "dragonfly_fly1.webp",
    "w": 184,
-   "h": 161
+   "h": 161,
+   "v": "67bf4c1c"
   },
   "fly2": {
    "file": "dragonfly_fly2.webp",
    "w": 175,
-   "h": 171
+   "h": 171,
+   "v": "f5b1727a"
   },
   "hang1": {
    "file": "dragonfly_hang1.webp",
    "w": 179,
-   "h": 187
+   "h": 187,
+   "v": "0516d56d"
   },
   "hang2": {
    "file": "dragonfly_hang2.webp",
    "w": 178,
-   "h": 196
+   "h": 196,
+   "v": "ed5c366c"
   },
   "happy": {
    "file": "dragonfly_happy.webp",
    "w": 229,
-   "h": 211
+   "h": 211,
+   "v": "34812bfa"
   },
   "idle1": {
    "file": "dragonfly_idle1.webp",
    "w": 169,
-   "h": 197
+   "h": 197,
+   "v": "3e10d57f"
   },
   "idle2": {
    "file": "dragonfly_idle2.webp",
    "w": 154,
-   "h": 195
+   "h": 195,
+   "v": "eb7f8a43"
   },
   "pull1": {
    "file": "dragonfly_pull1.webp",
    "w": 172,
-   "h": 173
+   "h": 173,
+   "v": "68066a65"
   },
   "pull2": {
    "file": "dragonfly_pull2.webp",
    "w": 165,
-   "h": 170
+   "h": 170,
+   "v": "4f8ccfe3"
   },
   "push1": {
    "file": "dragonfly_push1.webp",
    "w": 181,
-   "h": 181
+   "h": 181,
+   "v": "8c54e876"
   },
   "push2": {
    "file": "dragonfly_push2.webp",
    "w": 164,
-   "h": 167
+   "h": 167,
+   "v": "592c9a4e"
   },
   "run1": {
    "file": "dragonfly_run1.webp",
    "w": 191,
-   "h": 183
+   "h": 183,
+   "v": "18fdba43"
   },
   "run2": {
    "file": "dragonfly_run2.webp",
    "w": 185,
-   "h": 187
+   "h": 187,
+   "v": "fba291d9"
   },
   "stand": {
    "file": "dragonfly_stand.webp",
    "w": 241,
-   "h": 224
+   "h": 224,
+   "v": "35839734"
   },
   "strain": {
    "file": "dragonfly_strain.webp",
    "w": 226,
-   "h": 214
+   "h": 214,
+   "v": "d5beee8f"
   }
  },
  "dungbeetle": {
   "attack1": {
    "file": "dungbeetle_attack1.webp",
    "w": 200,
-   "h": 169
+   "h": 169,
+   "v": "66df8090"
   },
   "attack2": {
    "file": "dungbeetle_attack2.webp",
    "w": 208,
-   "h": 171
+   "h": 171,
+   "v": "1b3d72c2"
   },
   "balance1": {
    "file": "dungbeetle_balance1.webp",
    "w": 174,
-   "h": 175
+   "h": 175,
+   "v": "f3e1e082"
   },
   "balance2": {
    "file": "dungbeetle_balance2.webp",
    "w": 181,
-   "h": 172
+   "h": 172,
+   "v": "9d6c6133"
   },
   "cheer1": {
    "file": "dungbeetle_cheer1.webp",
    "w": 153,
-   "h": 192
+   "h": 192,
+   "v": "32263382"
   },
   "cheer2": {
    "file": "dungbeetle_cheer2.webp",
    "w": 170,
-   "h": 194
+   "h": 194,
+   "v": "051933e1"
   },
   "climb1": {
    "file": "dungbeetle_climb1.webp",
    "w": 197,
-   "h": 180
+   "h": 180,
+   "v": "6ac9a7e8"
   },
   "climb2": {
    "file": "dungbeetle_climb2.webp",
    "w": 186,
-   "h": 186
+   "h": 186,
+   "v": "f3f92c47"
   },
   "damage1": {
    "file": "dungbeetle_damage1.webp",
    "w": 191,
-   "h": 183
+   "h": 183,
+   "v": "6db38ce8"
   },
   "damage2": {
    "file": "dungbeetle_damage2.webp",
    "w": 186,
-   "h": 180
+   "h": 180,
+   "v": "4af59b33"
   },
   "defend1": {
    "file": "dungbeetle_defend1.webp",
    "w": 166,
-   "h": 174
+   "h": 174,
+   "v": "9c4b2cb5"
   },
   "defend2": {
    "file": "dungbeetle_defend2.webp",
    "w": 166,
-   "h": 188
+   "h": 188,
+   "v": "3d5991b5"
   },
   "dizzy": {
    "file": "dungbeetle_dizzy.webp",
    "w": 230,
-   "h": 204
+   "h": 204,
+   "v": "98177e1c"
   },
   "fly1": {
    "file": "dungbeetle_fly1.webp",
    "w": 186,
-   "h": 169
+   "h": 169,
+   "v": "479271fb"
   },
   "fly2": {
    "file": "dungbeetle_fly2.webp",
    "w": 177,
-   "h": 165
+   "h": 165,
+   "v": "74338688"
   },
   "hang1": {
    "file": "dungbeetle_hang1.webp",
    "w": 150,
-   "h": 195
+   "h": 195,
+   "v": "644229af"
   },
   "hang2": {
    "file": "dungbeetle_hang2.webp",
    "w": 150,
-   "h": 192
+   "h": 192,
+   "v": "cce1ae5b"
   },
   "happy": {
    "file": "dungbeetle_happy.webp",
    "w": 231,
-   "h": 205
+   "h": 205,
+   "v": "959d61e0"
   },
   "idle1": {
    "file": "dungbeetle_idle1.webp",
    "w": 166,
-   "h": 183
+   "h": 183,
+   "v": "f80bfd6c"
   },
   "idle2": {
    "file": "dungbeetle_idle2.webp",
    "w": 161,
-   "h": 178
+   "h": 178,
+   "v": "a41ed7d7"
   },
   "pull1": {
    "file": "dungbeetle_pull1.webp",
    "w": 178,
-   "h": 183
+   "h": 183,
+   "v": "8bb71fd3"
   },
   "pull2": {
    "file": "dungbeetle_pull2.webp",
    "w": 175,
-   "h": 180
+   "h": 180,
+   "v": "ffcd202d"
   },
   "push1": {
    "file": "dungbeetle_push1.webp",
    "w": 197,
-   "h": 178
+   "h": 178,
+   "v": "3418c038"
   },
   "push2": {
    "file": "dungbeetle_push2.webp",
    "w": 188,
-   "h": 176
+   "h": 176,
+   "v": "268be800"
   },
   "run1": {
    "file": "dungbeetle_run1.webp",
    "w": 186,
-   "h": 183
+   "h": 183,
+   "v": "1e72fd15"
   },
   "run2": {
    "file": "dungbeetle_run2.webp",
    "w": 192,
-   "h": 187
+   "h": 187,
+   "v": "562108a6"
   },
   "stand": {
    "file": "dungbeetle_stand.webp",
    "w": 248,
-   "h": 209
+   "h": 209,
+   "v": "771ba2de"
   },
   "strain": {
    "file": "dungbeetle_strain.webp",
    "w": 237,
-   "h": 201
+   "h": 201,
+   "v": "b220fcdc"
   }
  },
  "firefly": {
   "attack1": {
    "file": "firefly_attack1.webp",
    "w": 212,
-   "h": 191
+   "h": 191,
+   "v": "f87d9fc5"
   },
   "attack2": {
    "file": "firefly_attack2.webp",
    "w": 188,
-   "h": 217
+   "h": 217,
+   "v": "60dbdcb1"
   },
   "balance1": {
    "file": "firefly_balance1.webp",
    "w": 175,
-   "h": 185
+   "h": 185,
+   "v": "c093660b"
   },
   "balance2": {
    "file": "firefly_balance2.webp",
    "w": 190,
-   "h": 175
+   "h": 175,
+   "v": "cd181744"
   },
   "cheer1": {
    "file": "firefly_cheer1.webp",
    "w": 166,
-   "h": 186
+   "h": 186,
+   "v": "88dc2473"
   },
   "cheer2": {
    "file": "firefly_cheer2.webp",
    "w": 150,
-   "h": 194
+   "h": 194,
+   "v": "005d3cf9"
   },
   "climb1": {
    "file": "firefly_climb1.webp",
    "w": 186,
-   "h": 186
+   "h": 186,
+   "v": "9377c383"
   },
   "climb2": {
    "file": "firefly_climb2.webp",
    "w": 207,
-   "h": 183
+   "h": 183,
+   "v": "753ba99e"
   },
   "damage1": {
    "file": "firefly_damage1.webp",
    "w": 187,
-   "h": 199
+   "h": 199,
+   "v": "46bb3aaa"
   },
   "damage2": {
    "file": "firefly_damage2.webp",
    "w": 153,
-   "h": 188
+   "h": 188,
+   "v": "737d551b"
   },
   "defend1": {
    "file": "firefly_defend1.webp",
    "w": 174,
-   "h": 181
+   "h": 181,
+   "v": "871cf0d1"
   },
   "defend2": {
    "file": "firefly_defend2.webp",
    "w": 204,
-   "h": 199
+   "h": 199,
+   "v": "7452c646"
   },
   "dizzy": {
    "file": "firefly_dizzy.webp",
    "w": 256,
-   "h": 199
+   "h": 199,
+   "v": "53a05a04"
   },
   "fly1": {
    "file": "firefly_fly1.webp",
    "w": 184,
-   "h": 172
+   "h": 172,
+   "v": "546b0f53"
   },
   "fly2": {
    "file": "firefly_fly2.webp",
    "w": 167,
-   "h": 173
+   "h": 173,
+   "v": "3f6769f3"
   },
   "hang1": {
    "file": "firefly_hang1.webp",
    "w": 160,
-   "h": 181
+   "h": 181,
+   "v": "255d036e"
   },
   "hang2": {
    "file": "firefly_hang2.webp",
    "w": 150,
-   "h": 185
+   "h": 185,
+   "v": "2fcaa8a7"
   },
   "happy": {
    "file": "firefly_happy.webp",
    "w": 236,
-   "h": 206
+   "h": 206,
+   "v": "a797189e"
   },
   "idle1": {
    "file": "firefly_idle1.webp",
    "w": 171,
-   "h": 195
+   "h": 195,
+   "v": "efbfb2ec"
   },
   "idle2": {
    "file": "firefly_idle2.webp",
    "w": 194,
-   "h": 195
+   "h": 195,
+   "v": "c77dcbe0"
   },
   "pull1": {
    "file": "firefly_pull1.webp",
    "w": 178,
-   "h": 163
+   "h": 163,
+   "v": "54db0ef4"
   },
   "pull2": {
    "file": "firefly_pull2.webp",
    "w": 192,
-   "h": 161
+   "h": 161,
+   "v": "2a87da72"
   },
   "push1": {
    "file": "firefly_push1.webp",
    "w": 190,
-   "h": 176
+   "h": 176,
+   "v": "31644f24"
   },
   "push2": {
    "file": "firefly_push2.webp",
    "w": 173,
-   "h": 176
+   "h": 176,
+   "v": "628a320c"
   },
   "run1": {
    "file": "firefly_run1.webp",
    "w": 189,
-   "h": 171
+   "h": 171,
+   "v": "75b35b8d"
   },
   "run2": {
    "file": "firefly_run2.webp",
    "w": 206,
-   "h": 181
+   "h": 181,
+   "v": "cb5cd80a"
   },
   "stand": {
    "file": "firefly_stand.webp",
    "w": 259,
-   "h": 205
+   "h": 205,
+   "v": "3cbb07bb"
   },
   "strain": {
    "file": "firefly_strain.webp",
    "w": 236,
-   "h": 209
+   "h": 209,
+   "v": "b3673bfe"
   }
  },
  "grasshopper": {
   "attack1": {
    "file": "grasshopper_attack1.webp",
    "w": 190,
-   "h": 174
+   "h": 174,
+   "v": "b749da21"
   },
   "attack2": {
    "file": "grasshopper_attack2.webp",
    "w": 208,
-   "h": 181
+   "h": 181,
+   "v": "e6c66729"
   },
   "balance1": {
    "file": "grasshopper_balance1.webp",
    "w": 143,
-   "h": 182
+   "h": 182,
+   "v": "b88a7144"
   },
   "balance2": {
    "file": "grasshopper_balance2.webp",
    "w": 130,
-   "h": 183
+   "h": 183,
+   "v": "ec3a7d5c"
   },
   "cheer1": {
    "file": "grasshopper_cheer1.webp",
    "w": 141,
-   "h": 182
+   "h": 182,
+   "v": "5140bda0"
   },
   "cheer2": {
    "file": "grasshopper_cheer2.webp",
    "w": 154,
-   "h": 184
+   "h": 184,
+   "v": "1cfc2726"
   },
   "climb1": {
    "file": "grasshopper_climb1.webp",
    "w": 171,
-   "h": 180
+   "h": 180,
+   "v": "67a5e5fb"
   },
   "climb2": {
    "file": "grasshopper_climb2.webp",
    "w": 176,
-   "h": 177
+   "h": 177,
+   "v": "162a0d2b"
   },
   "damage1": {
    "file": "grasshopper_damage1.webp",
    "w": 157,
-   "h": 192
+   "h": 192,
+   "v": "44f07bd8"
   },
   "damage2": {
    "file": "grasshopper_damage2.webp",
    "w": 149,
-   "h": 182
+   "h": 182,
+   "v": "a3975052"
   },
   "defend1": {
    "file": "grasshopper_defend1.webp",
    "w": 179,
-   "h": 185
+   "h": 185,
+   "v": "be451a23"
   },
   "defend2": {
    "file": "grasshopper_defend2.webp",
    "w": 171,
-   "h": 181
+   "h": 181,
+   "v": "e41ffe24"
   },
   "dizzy": {
    "file": "grasshopper_dizzy.webp",
    "w": 186,
-   "h": 197
+   "h": 197,
+   "v": "e0a9d046"
   },
   "fly1": {
    "file": "grasshopper_fly1.webp",
    "w": 178,
-   "h": 178
+   "h": 178,
+   "v": "3a853308"
   },
   "fly2": {
    "file": "grasshopper_fly2.webp",
    "w": 176,
-   "h": 176
+   "h": 176,
+   "v": "39c5f969"
   },
   "hang1": {
    "file": "grasshopper_hang1.webp",
    "w": 144,
-   "h": 189
+   "h": 189,
+   "v": "75ac2978"
   },
   "hang2": {
    "file": "grasshopper_hang2.webp",
    "w": 139,
-   "h": 182
+   "h": 182,
+   "v": "a3089c75"
   },
   "happy": {
    "file": "grasshopper_happy.webp",
    "w": 147,
-   "h": 200
+   "h": 200,
+   "v": "4b14a68d"
   },
   "idle1": {
    "file": "grasshopper_idle1.webp",
    "w": 146,
-   "h": 189
+   "h": 189,
+   "v": "df31b8bf"
   },
   "idle2": {
    "file": "grasshopper_idle2.webp",
    "w": 145,
-   "h": 188
+   "h": 188,
+   "v": "cc76671b"
   },
   "pull1": {
    "file": "grasshopper_pull1.webp",
    "w": 152,
-   "h": 174
+   "h": 174,
+   "v": "2abef661"
   },
   "pull2": {
    "file": "grasshopper_pull2.webp",
    "w": 165,
-   "h": 174
+   "h": 174,
+   "v": "413f526f"
   },
   "push1": {
    "file": "grasshopper_push1.webp",
    "w": 173,
-   "h": 175
+   "h": 175,
+   "v": "0b07066c"
   },
   "push2": {
    "file": "grasshopper_push2.webp",
    "w": 165,
-   "h": 165
+   "h": 165,
+   "v": "6780657f"
   },
   "run1": {
    "file": "grasshopper_run1.webp",
    "w": 167,
-   "h": 173
+   "h": 173,
+   "v": "5168796c"
   },
   "run2": {
    "file": "grasshopper_run2.webp",
    "w": 172,
-   "h": 175
+   "h": 175,
+   "v": "6216a1ce"
   },
   "stand": {
    "file": "grasshopper_stand.webp",
    "w": 185,
-   "h": 208
+   "h": 208,
+   "v": "8315f8b5"
   },
   "strain": {
    "file": "grasshopper_strain.webp",
    "w": 166,
-   "h": 198
+   "h": 198,
+   "v": "b6203b45"
   }
  },
  "jewelbeetle": {
   "attack1": {
    "file": "jewelbeetle_attack1.webp",
    "w": 203,
-   "h": 166
+   "h": 166,
+   "v": "87558072"
   },
   "attack2": {
    "file": "jewelbeetle_attack2.webp",
    "w": 217,
-   "h": 184
+   "h": 184,
+   "v": "73dd7d68"
   },
   "balance1": {
    "file": "jewelbeetle_balance1.webp",
    "w": 156,
-   "h": 187
+   "h": 187,
+   "v": "2c3b14f0"
   },
   "balance2": {
    "file": "jewelbeetle_balance2.webp",
    "w": 147,
-   "h": 186
+   "h": 186,
+   "v": "94a88356"
   },
   "cheer1": {
    "file": "jewelbeetle_cheer1.webp",
    "w": 169,
-   "h": 194
+   "h": 194,
+   "v": "ede0ac5d"
   },
   "cheer2": {
    "file": "jewelbeetle_cheer2.webp",
    "w": 139,
-   "h": 189
+   "h": 189,
+   "v": "bce0eae1"
   },
   "climb1": {
    "file": "jewelbeetle_climb1.webp",
    "w": 190,
-   "h": 194
+   "h": 194,
+   "v": "64b24d13"
   },
   "climb2": {
    "file": "jewelbeetle_climb2.webp",
    "w": 162,
-   "h": 195
+   "h": 195,
+   "v": "fa48164d"
   },
   "damage1": {
    "file": "jewelbeetle_damage1.webp",
    "w": 166,
-   "h": 186
+   "h": 186,
+   "v": "306311ae"
   },
   "damage2": {
    "file": "jewelbeetle_damage2.webp",
    "w": 176,
-   "h": 190
+   "h": 190,
+   "v": "1ca8fc0e"
   },
   "defend1": {
    "file": "jewelbeetle_defend1.webp",
    "w": 158,
-   "h": 194
+   "h": 194,
+   "v": "b6f4ddb5"
   },
   "defend2": {
    "file": "jewelbeetle_defend2.webp",
    "w": 160,
-   "h": 198
+   "h": 198,
+   "v": "30fbde2b"
   },
   "dizzy": {
    "file": "jewelbeetle_dizzy.webp",
    "w": 206,
-   "h": 198
+   "h": 198,
+   "v": "18d2d26a"
   },
   "fly1": {
    "file": "jewelbeetle_fly1.webp",
    "w": 182,
-   "h": 175
+   "h": 175,
+   "v": "9ef7b96f"
   },
   "fly2": {
    "file": "jewelbeetle_fly2.webp",
    "w": 180,
-   "h": 198
+   "h": 198,
+   "v": "feab6683"
   },
   "hang1": {
    "file": "jewelbeetle_hang1.webp",
    "w": 133,
-   "h": 213
+   "h": 213,
+   "v": "db576806"
   },
   "hang2": {
    "file": "jewelbeetle_hang2.webp",
    "w": 135,
-   "h": 214
+   "h": 214,
+   "v": "4aa0e06d"
   },
   "happy": {
    "file": "jewelbeetle_happy.webp",
    "w": 183,
-   "h": 202
+   "h": 202,
+   "v": "24c4a060"
   },
   "idle1": {
    "file": "jewelbeetle_idle1.webp",
    "w": 150,
-   "h": 191
+   "h": 191,
+   "v": "77b0df41"
   },
   "idle2": {
    "file": "jewelbeetle_idle2.webp",
    "w": 143,
-   "h": 193
+   "h": 193,
+   "v": "ee917cb6"
   },
   "pull1": {
    "file": "jewelbeetle_pull1.webp",
    "w": 170,
-   "h": 177
+   "h": 177,
+   "v": "4d5303a9"
   },
   "pull2": {
    "file": "jewelbeetle_pull2.webp",
    "w": 177,
-   "h": 184
+   "h": 184,
+   "v": "b743692a"
   },
   "push1": {
    "file": "jewelbeetle_push1.webp",
    "w": 186,
-   "h": 174
+   "h": 174,
+   "v": "6dc8a4a6"
   },
   "push2": {
    "file": "jewelbeetle_push2.webp",
    "w": 184,
-   "h": 178
+   "h": 178,
+   "v": "b583a084"
   },
   "run1": {
    "file": "jewelbeetle_run1.webp",
    "w": 205,
-   "h": 171
+   "h": 171,
+   "v": "4fb0dd1e"
   },
   "run2": {
    "file": "jewelbeetle_run2.webp",
    "w": 195,
-   "h": 169
+   "h": 169,
+   "v": "9d7f7fd4"
   },
   "stand": {
    "file": "jewelbeetle_stand.webp",
    "w": 197,
-   "h": 196
+   "h": 196,
+   "v": "258347e6"
   },
   "strain": {
    "file": "jewelbeetle_strain.webp",
    "w": 198,
-   "h": 194
+   "h": 194,
+   "v": "9a265f14"
   }
  },
  "ladybug": {
   "attack1": {
    "file": "ladybug_attack1.webp",
    "w": 198,
-   "h": 199
+   "h": 199,
+   "v": "87cc6b92"
   },
   "attack2": {
    "file": "ladybug_attack2.webp",
    "w": 188,
-   "h": 206
+   "h": 206,
+   "v": "23b40110"
   },
   "balance1": {
    "file": "ladybug_balance1.webp",
    "w": 173,
-   "h": 185
+   "h": 185,
+   "v": "076fceb7"
   },
   "balance2": {
    "file": "ladybug_balance2.webp",
    "w": 158,
-   "h": 184
+   "h": 184,
+   "v": "f21b5f6a"
   },
   "cheer1": {
    "file": "ladybug_cheer1.webp",
    "w": 155,
-   "h": 200
+   "h": 200,
+   "v": "2910524d"
   },
   "cheer2": {
    "file": "ladybug_cheer2.webp",
    "w": 148,
-   "h": 197
+   "h": 197,
+   "v": "d2159197"
   },
   "climb1": {
    "file": "ladybug_climb1.webp",
    "w": 173,
-   "h": 196
+   "h": 196,
+   "v": "46ec7ce2"
   },
   "climb2": {
    "file": "ladybug_climb2.webp",
    "w": 161,
-   "h": 191
+   "h": 191,
+   "v": "a387a63b"
   },
   "damage1": {
    "file": "ladybug_damage1.webp",
    "w": 179,
-   "h": 201
+   "h": 201,
+   "v": "0d37a63f"
   },
   "damage2": {
    "file": "ladybug_damage2.webp",
    "w": 165,
-   "h": 194
+   "h": 194,
+   "v": "b8f060e9"
   },
   "defend1": {
    "file": "ladybug_defend1.webp",
    "w": 182,
-   "h": 196
+   "h": 196,
+   "v": "a42eb786"
   },
   "defend2": {
    "file": "ladybug_defend2.webp",
    "w": 174,
-   "h": 191
+   "h": 191,
+   "v": "1b9a99b7"
   },
   "dizzy": {
    "file": "ladybug_dizzy.webp",
    "w": 234,
-   "h": 214
+   "h": 214,
+   "v": "9c3e541f"
   },
   "fly1": {
    "file": "ladybug_fly1.webp",
    "w": 180,
-   "h": 180
+   "h": 180,
+   "v": "b30dad73"
   },
   "fly2": {
    "file": "ladybug_fly2.webp",
    "w": 177,
-   "h": 174
+   "h": 174,
+   "v": "6a931ae9"
   },
   "hang1": {
    "file": "ladybug_hang1.webp",
    "w": 183,
-   "h": 195
+   "h": 195,
+   "v": "6f1292a4"
   },
   "hang2": {
    "file": "ladybug_hang2.webp",
    "w": 183,
-   "h": 190
+   "h": 190,
+   "v": "f85f77f6"
   },
   "happy": {
    "file": "ladybug_happy.webp",
    "w": 217,
-   "h": 216
+   "h": 216,
+   "v": "96076173"
   },
   "idle1": {
    "file": "ladybug_idle1.webp",
    "w": 166,
-   "h": 202
+   "h": 202,
+   "v": "e3cba113"
   },
   "idle2": {
    "file": "ladybug_idle2.webp",
    "w": 158,
-   "h": 203
+   "h": 203,
+   "v": "68f1ea4c"
   },
   "pull1": {
    "file": "ladybug_pull1.webp",
    "w": 168,
-   "h": 173
+   "h": 173,
+   "v": "e0a3ad50"
   },
   "pull2": {
    "file": "ladybug_pull2.webp",
    "w": 162,
-   "h": 177
+   "h": 177,
+   "v": "b98e3ca2"
   },
   "push1": {
    "file": "ladybug_push1.webp",
    "w": 170,
-   "h": 177
+   "h": 177,
+   "v": "31641d6e"
   },
   "push2": {
    "file": "ladybug_push2.webp",
    "w": 165,
-   "h": 171
+   "h": 171,
+   "v": "c39a954c"
   },
   "run1": {
    "file": "ladybug_run1.webp",
    "w": 174,
-   "h": 177
+   "h": 177,
+   "v": "e665aa96"
   },
   "run2": {
    "file": "ladybug_run2.webp",
    "w": 164,
-   "h": 177
+   "h": 177,
+   "v": "e42b2bb0"
   },
   "stand": {
    "file": "ladybug_stand.webp",
    "w": 226,
-   "h": 221
+   "h": 221,
+   "v": "ed62961b"
   },
   "strain": {
    "file": "ladybug_strain.webp",
    "w": 214,
-   "h": 217
+   "h": 217,
+   "v": "8684528c"
   }
  },
  "mantis": {
   "attack1": {
    "file": "mantis_attack1.webp",
    "w": 183,
-   "h": 149
+   "h": 149,
+   "v": "2fd78d6e"
   },
   "attack2": {
    "file": "mantis_attack2.webp",
    "w": 147,
-   "h": 141
+   "h": 141,
+   "v": "996d2c21"
   },
   "balance1": {
    "file": "mantis_balance1.webp",
    "w": 147,
-   "h": 144
+   "h": 144,
+   "v": "2d9788ad"
   },
   "balance2": {
    "file": "mantis_balance2.webp",
    "w": 135,
-   "h": 156
+   "h": 156,
+   "v": "3a7e5866"
   },
   "cheer1": {
    "file": "mantis_cheer1.webp",
    "w": 151,
-   "h": 162
+   "h": 162,
+   "v": "e6228c7e"
   },
   "cheer2": {
    "file": "mantis_cheer2.webp",
    "w": 134,
-   "h": 169
+   "h": 169,
+   "v": "e6e4149a"
   },
   "climb1": {
    "file": "mantis_climb1.webp",
    "w": 161,
-   "h": 167
+   "h": 167,
+   "v": "06c7c83c"
   },
   "climb2": {
    "file": "mantis_climb2.webp",
    "w": 142,
-   "h": 140
+   "h": 140,
+   "v": "b07f9df3"
   },
   "damage1": {
    "file": "mantis_damage1.webp",
    "w": 144,
-   "h": 141
+   "h": 141,
+   "v": "d2fb4f2d"
   },
   "damage2": {
    "file": "mantis_damage2.webp",
    "w": 136,
-   "h": 142
+   "h": 142,
+   "v": "a620b2bb"
   },
   "defend1": {
    "file": "mantis_defend1.webp",
    "w": 148,
-   "h": 146
+   "h": 146,
+   "v": "67cc9896"
   },
   "defend2": {
    "file": "mantis_defend2.webp",
    "w": 121,
-   "h": 154
+   "h": 154,
+   "v": "346635d4"
   },
   "dizzy": {
    "file": "mantis_dizzy.webp",
    "w": 170,
-   "h": 185
+   "h": 185,
+   "v": "f42d67f8"
   },
   "dizzy1": {
    "file": "mantis_dizzy1.webp",
    "w": 187,
-   "h": 192
+   "h": 192,
+   "v": "b247ef4c"
   },
   "fly1": {
    "file": "mantis_fly1.webp",
    "w": 175,
-   "h": 153
+   "h": 153,
+   "v": "ba6f6fed"
   },
   "fly2": {
    "file": "mantis_fly2.webp",
    "w": 143,
-   "h": 147
+   "h": 147,
+   "v": "114f577e"
   },
   "hang1": {
    "file": "mantis_hang1.webp",
    "w": 132,
-   "h": 165
+   "h": 165,
+   "v": "3771e56f"
   },
   "hang2": {
    "file": "mantis_hang2.webp",
    "w": 108,
-   "h": 156
+   "h": 156,
+   "v": "010d65ae"
   },
   "happy": {
    "file": "mantis_happy.webp",
    "w": 179,
-   "h": 193
+   "h": 193,
+   "v": "7bd57c9b"
   },
   "happy2": {
    "file": "mantis_happy2.webp",
    "w": 202,
-   "h": 177
+   "h": 177,
+   "v": "6f5a2cee"
   },
   "idle1": {
    "file": "mantis_idle1.webp",
    "w": 142,
-   "h": 152
+   "h": 152,
+   "v": "a2b44997"
   },
   "idle2": {
    "file": "mantis_idle2.webp",
    "w": 104,
-   "h": 150
+   "h": 150,
+   "v": "0c1f1fb5"
   },
   "pull1": {
    "file": "mantis_pull1.webp",
    "w": 143,
-   "h": 138
+   "h": 138,
+   "v": "c9bb9df9"
   },
   "pull2": {
    "file": "mantis_pull2.webp",
    "w": 130,
-   "h": 145
+   "h": 145,
+   "v": "8f6c1d74"
   },
   "push1": {
    "file": "mantis_push1.webp",
    "w": 158,
-   "h": 145
+   "h": 145,
+   "v": "2162ef3a"
   },
   "push2": {
    "file": "mantis_push2.webp",
    "w": 158,
-   "h": 150
+   "h": 150,
+   "v": "ea3daef1"
   },
   "run1": {
    "file": "mantis_run1.webp",
    "w": 156,
-   "h": 139
+   "h": 139,
+   "v": "3170cdf5"
   },
   "run2": {
    "file": "mantis_run2.webp",
    "w": 150,
-   "h": 136
+   "h": 136,
+   "v": "ac55ad85"
   },
   "stand": {
    "file": "mantis_stand.webp",
    "w": 220,
-   "h": 195
+   "h": 195,
+   "v": "d39ede56"
   },
   "stand2": {
    "file": "mantis_stand2.webp",
    "w": 201,
-   "h": 175
+   "h": 175,
+   "v": "a3d7f87a"
   },
   "strain": {
    "file": "mantis_strain.webp",
    "w": 207,
-   "h": 194
+   "h": 194,
+   "v": "fc4e1f62"
   },
   "strain2": {
    "file": "mantis_strain2.webp",
    "w": 192,
-   "h": 180
+   "h": 180,
+   "v": "8bc5c6a6"
   }
  },
  "rhino": {
   "attack1": {
    "file": "rhino_attack1.webp",
    "w": 192,
-   "h": 174
+   "h": 174,
+   "v": "18131fdc"
   },
   "attack2": {
    "file": "rhino_attack2.webp",
    "w": 230,
-   "h": 200
+   "h": 200,
+   "v": "ed1a83ff"
   },
   "balance1": {
    "file": "rhino_balance1.webp",
    "w": 160,
-   "h": 175
+   "h": 175,
+   "v": "5ddcf77a"
   },
   "balance2": {
    "file": "rhino_balance2.webp",
    "w": 155,
-   "h": 175
+   "h": 175,
+   "v": "b1bc2da3"
   },
   "cheer1": {
    "file": "rhino_cheer1.webp",
    "w": 146,
-   "h": 187
+   "h": 187,
+   "v": "986e00c4"
   },
   "cheer2": {
    "file": "rhino_cheer2.webp",
    "w": 173,
-   "h": 180
+   "h": 180,
+   "v": "252c4d62"
   },
   "climb1": {
    "file": "rhino_climb1.webp",
    "w": 189,
-   "h": 182
+   "h": 182,
+   "v": "86c4036e"
   },
   "climb2": {
    "file": "rhino_climb2.webp",
    "w": 184,
-   "h": 198
+   "h": 198,
+   "v": "b7facfd0"
   },
   "damage1": {
    "file": "rhino_damage1.webp",
    "w": 184,
-   "h": 177
+   "h": 177,
+   "v": "7e4834d4"
   },
   "damage2": {
    "file": "rhino_damage2.webp",
    "w": 168,
-   "h": 180
+   "h": 180,
+   "v": "8d362393"
   },
   "defend1": {
    "file": "rhino_defend1.webp",
    "w": 176,
-   "h": 179
+   "h": 179,
+   "v": "d92cbb1b"
   },
   "defend2": {
    "file": "rhino_defend2.webp",
    "w": 170,
-   "h": 170
+   "h": 170,
+   "v": "1c962762"
   },
   "dizzy": {
    "file": "rhino_dizzy.webp",
    "w": 213,
-   "h": 203
+   "h": 203,
+   "v": "696c9624"
   },
   "fly1": {
    "file": "rhino_fly1.webp",
    "w": 193,
-   "h": 173
+   "h": 173,
+   "v": "e82a566d"
   },
   "fly2": {
    "file": "rhino_fly2.webp",
    "w": 173,
-   "h": 179
+   "h": 179,
+   "v": "131455c7"
   },
   "hang1": {
    "file": "rhino_hang1.webp",
    "w": 172,
-   "h": 189
+   "h": 189,
+   "v": "12bf61b2"
   },
   "hang2": {
    "file": "rhino_hang2.webp",
    "w": 162,
-   "h": 191
+   "h": 191,
+   "v": "0970d725"
   },
   "happy": {
    "file": "rhino_happy.webp",
    "w": 224,
-   "h": 190
+   "h": 190,
+   "v": "e77bc958"
   },
   "idle1": {
    "file": "rhino_idle1.webp",
    "w": 179,
-   "h": 181
+   "h": 181,
+   "v": "0a81d232"
   },
   "idle2": {
    "file": "rhino_idle2.webp",
    "w": 164,
-   "h": 182
+   "h": 182,
+   "v": "81fd7319"
   },
   "pull1": {
    "file": "rhino_pull1.webp",
    "w": 173,
-   "h": 152
+   "h": 152,
+   "v": "d00f4427"
   },
   "pull2": {
    "file": "rhino_pull2.webp",
    "w": 164,
-   "h": 156
+   "h": 156,
+   "v": "b6e320dd"
   },
   "push1": {
    "file": "rhino_push1.webp",
    "w": 188,
-   "h": 170
+   "h": 170,
+   "v": "d7025f40"
   },
   "push2": {
    "file": "rhino_push2.webp",
    "w": 173,
-   "h": 158
+   "h": 158,
+   "v": "52dd7f2f"
   },
   "run1": {
    "file": "rhino_run1.webp",
    "w": 195,
-   "h": 175
+   "h": 175,
+   "v": "2f431ae6"
   },
   "run2": {
    "file": "rhino_run2.webp",
    "w": 188,
-   "h": 168
+   "h": 168,
+   "v": "5bedbcc4"
   },
   "stand": {
    "file": "rhino_stand.webp",
    "w": 249,
-   "h": 200
+   "h": 200,
+   "v": "129fa052"
   },
   "strain": {
    "file": "rhino_strain.webp",
    "w": 210,
-   "h": 192
+   "h": 192,
+   "v": "4bd6d79b"
   }
  },
  "stag": {
   "card": {
    "file": "stag_card.webp",
    "w": 323,
-   "h": 339
+   "h": 339,
+   "v": "b4361c72"
   },
   "attack1": {
    "file": "stag_attack1.webp",
    "w": 187,
-   "h": 160
+   "h": 160,
+   "v": "8a85c955"
   },
   "attack2": {
    "file": "stag_attack2.webp",
    "w": 162,
-   "h": 199
+   "h": 199,
+   "v": "f3a75371"
   },
   "balance1": {
    "file": "stag_balance1.webp",
    "w": 156,
-   "h": 179
+   "h": 179,
+   "v": "7559b0f2"
   },
   "balance2": {
    "file": "stag_balance2.webp",
    "w": 145,
-   "h": 176
+   "h": 176,
+   "v": "ef9f0134"
   },
   "cheer1": {
    "file": "stag_cheer1.webp",
    "w": 151,
-   "h": 182
+   "h": 182,
+   "v": "83185155"
   },
   "cheer2": {
    "file": "stag_cheer2.webp",
    "w": 149,
-   "h": 182
+   "h": 182,
+   "v": "34610388"
   },
   "climb1": {
    "file": "stag_climb1.webp",
    "w": 152,
-   "h": 189
+   "h": 189,
+   "v": "ca1dd572"
   },
   "climb2": {
    "file": "stag_climb2.webp",
    "w": 136,
-   "h": 191
+   "h": 191,
+   "v": "661cc14c"
   },
   "damage1": {
    "file": "stag_damage1.webp",
    "w": 165,
-   "h": 174
+   "h": 174,
+   "v": "817bfa21"
   },
   "damage2": {
    "file": "stag_damage2.webp",
    "w": 173,
-   "h": 182
+   "h": 182,
+   "v": "a7660c44"
   },
   "defend1": {
    "file": "stag_defend1.webp",
    "w": 172,
-   "h": 180
+   "h": 180,
+   "v": "5f700968"
   },
   "defend2": {
    "file": "stag_defend2.webp",
    "w": 148,
-   "h": 177
+   "h": 177,
+   "v": "aafa5ed3"
   },
   "dizzy": {
    "file": "stag_dizzy.webp",
    "w": 208,
-   "h": 224
+   "h": 224,
+   "v": "fed1c048"
   },
   "fly1": {
    "file": "stag_fly1.webp",
    "w": 171,
-   "h": 156
+   "h": 156,
+   "v": "d7d2a4bb"
   },
   "fly2": {
    "file": "stag_fly2.webp",
    "w": 145,
-   "h": 155
+   "h": 155,
+   "v": "333cbed2"
   },
   "hang1": {
    "file": "stag_hang1.webp",
    "w": 127,
-   "h": 164
+   "h": 164,
+   "v": "757c16c6"
   },
   "hang2": {
    "file": "stag_hang2.webp",
    "w": 132,
-   "h": 172
+   "h": 172,
+   "v": "ce4a8e90"
   },
   "happy": {
    "file": "stag_happy.webp",
    "w": 186,
-   "h": 226
+   "h": 226,
+   "v": "43cc4f89"
   },
   "idle1": {
    "file": "stag_idle1.webp",
    "w": 152,
-   "h": 188
+   "h": 188,
+   "v": "4aed6902"
   },
   "idle2": {
    "file": "stag_idle2.webp",
    "w": 147,
-   "h": 181
+   "h": 181,
+   "v": "6888b27c"
   },
   "pull1": {
    "file": "stag_pull1.webp",
    "w": 157,
-   "h": 166
+   "h": 166,
+   "v": "5d5eca91"
   },
   "pull2": {
    "file": "stag_pull2.webp",
    "w": 123,
-   "h": 167
+   "h": 167,
+   "v": "8c7fae1c"
   },
   "push1": {
    "file": "stag_push1.webp",
    "w": 157,
-   "h": 175
+   "h": 175,
+   "v": "1ff61085"
   },
   "push2": {
    "file": "stag_push2.webp",
    "w": 151,
-   "h": 167
+   "h": 167,
+   "v": "31c3de7f"
   },
   "run1": {
    "file": "stag_run1.webp",
    "w": 170,
-   "h": 173
+   "h": 173,
+   "v": "2dbb34fe"
   },
   "run2": {
    "file": "stag_run2.webp",
    "w": 145,
-   "h": 174
+   "h": 174,
+   "v": "1d86ba70"
   },
   "stand": {
    "file": "stag_stand.webp",
    "w": 216,
-   "h": 212
+   "h": 212,
+   "v": "7125e51a"
   },
   "strain": {
    "file": "stag_strain.webp",
    "w": 194,
-   "h": 219
+   "h": 219,
+   "v": "35f373da"
   }
  },
  "stickinsect": {
   "card": {
    "file": "stickinsect_card.webp",
    "w": 360,
-   "h": 351
+   "h": 351,
+   "v": "49e29537"
   }
  },
  "swallowtail": {
   "attack1": {
    "file": "swallowtail_attack1.webp",
    "w": 203,
-   "h": 190
+   "h": 190,
+   "v": "6ef349d5"
   },
   "attack2": {
    "file": "swallowtail_attack2.webp",
    "w": 196,
-   "h": 202
+   "h": 202,
+   "v": "8419b98a"
   },
   "balance1": {
    "file": "swallowtail_balance1.webp",
    "w": 164,
-   "h": 183
+   "h": 183,
+   "v": "326a4242"
   },
   "balance2": {
    "file": "swallowtail_balance2.webp",
    "w": 171,
-   "h": 184
+   "h": 184,
+   "v": "0d7ebb45"
   },
   "cheer1": {
    "file": "swallowtail_cheer1.webp",
    "w": 157,
-   "h": 192
+   "h": 192,
+   "v": "70764f09"
   },
   "cheer2": {
    "file": "swallowtail_cheer2.webp",
    "w": 175,
-   "h": 185
+   "h": 185,
+   "v": "42a7ac55"
   },
   "climb1": {
    "file": "swallowtail_climb1.webp",
    "w": 180,
-   "h": 192
+   "h": 192,
+   "v": "34a9577d"
   },
   "climb2": {
    "file": "swallowtail_climb2.webp",
    "w": 183,
-   "h": 195
+   "h": 195,
+   "v": "e38905c9"
   },
   "damage1": {
    "file": "swallowtail_damage1.webp",
    "w": 190,
-   "h": 201
+   "h": 201,
+   "v": "356f6b44"
   },
   "damage2": {
    "file": "swallowtail_damage2.webp",
    "w": 184,
-   "h": 200
+   "h": 200,
+   "v": "f7f18438"
   },
   "defend1": {
    "file": "swallowtail_defend1.webp",
    "w": 188,
-   "h": 199
+   "h": 199,
+   "v": "de06b9e2"
   },
   "defend2": {
    "file": "swallowtail_defend2.webp",
    "w": 169,
-   "h": 196
+   "h": 196,
+   "v": "48867e59"
   },
   "dizzy": {
    "file": "swallowtail_dizzy.webp",
    "w": 212,
-   "h": 199
+   "h": 199,
+   "v": "4b886cdf"
   },
   "fly1": {
    "file": "swallowtail_fly1.webp",
    "w": 193,
-   "h": 172
+   "h": 172,
+   "v": "eec6ce5b"
   },
   "fly2": {
    "file": "swallowtail_fly2.webp",
    "w": 183,
-   "h": 172
+   "h": 172,
+   "v": "d58e9269"
   },
   "hang1": {
    "file": "swallowtail_hang1.webp",
    "w": 152,
-   "h": 185
+   "h": 185,
+   "v": "e5e0a986"
   },
   "hang2": {
    "file": "swallowtail_hang2.webp",
    "w": 149,
-   "h": 183
+   "h": 183,
+   "v": "fcea398f"
   },
   "happy": {
    "file": "swallowtail_happy.webp",
    "w": 215,
-   "h": 201
+   "h": 201,
+   "v": "3daf6573"
   },
   "idle1": {
    "file": "swallowtail_idle1.webp",
    "w": 183,
-   "h": 200
+   "h": 200,
+   "v": "cccb2316"
   },
   "idle2": {
    "file": "swallowtail_idle2.webp",
    "w": 166,
-   "h": 200
+   "h": 200,
+   "v": "be70d174"
   },
   "pull1": {
    "file": "swallowtail_pull1.webp",
    "w": 180,
-   "h": 181
+   "h": 181,
+   "v": "d7ce412a"
   },
   "pull2": {
    "file": "swallowtail_pull2.webp",
    "w": 179,
-   "h": 177
+   "h": 177,
+   "v": "966edaad"
   },
   "push1": {
    "file": "swallowtail_push1.webp",
    "w": 184,
-   "h": 179
+   "h": 179,
+   "v": "d295ebfc"
   },
   "push2": {
    "file": "swallowtail_push2.webp",
    "w": 176,
-   "h": 175
+   "h": 175,
+   "v": "deb86073"
   },
   "run1": {
    "file": "swallowtail_run1.webp",
    "w": 184,
-   "h": 180
+   "h": 180,
+   "v": "741fb3e8"
   },
   "run2": {
    "file": "swallowtail_run2.webp",
    "w": 182,
-   "h": 182
+   "h": 182,
+   "v": "9fe39a66"
   },
   "stand": {
    "file": "swallowtail_stand.webp",
    "w": 219,
-   "h": 202
+   "h": 202,
+   "v": "743ed556"
   },
   "strain": {
    "file": "swallowtail_strain.webp",
    "w": 208,
-   "h": 202
+   "h": 202,
+   "v": "971f6701"
   }
  }
 }

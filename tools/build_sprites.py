@@ -10,6 +10,7 @@
 그림은 배경이 투명하고 오른쪽을 보고 있어야 해요. 투명한 테두리를 잘라 내고, 긴 쪽을 360px 이하로 줄여 webp 로 저장한 뒤
 public/img/bugs/manifest.json 에 목록을 적어요. 필요한 것: Python 3, Pillow, numpy
 """
+import hashlib
 import json
 import os
 import re
@@ -40,7 +41,9 @@ def main():
         im.thumbnail((MAX, MAX), Image.LANCZOS)
         name = f'{kind}_{pose}.webp'
         im.save(os.path.join(OUT, name), 'WEBP', quality=88, method=6)
-        manifest.setdefault(kind, {})[pose] = {'file': name, 'w': im.width, 'h': im.height}
+        with open(os.path.join(OUT, name), 'rb') as fp:
+            v = hashlib.sha1(fp.read()).hexdigest()[:8]   # 그림이 바뀌면 주소(?v=)도 바뀌어 브라우저가 새로 받아요
+        manifest.setdefault(kind, {})[pose] = {'file': name, 'w': im.width, 'h': im.height, 'v': v}
         print(name, im.size)
     with open(os.path.join(OUT, 'manifest.json'), 'w', encoding='utf-8') as fp:
         json.dump(manifest, fp, ensure_ascii=False, indent=1)
