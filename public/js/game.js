@@ -1476,7 +1476,7 @@
 
         ${adminUnlocked ? `
         <section class="set-page hcols" data-page="admin" hidden>
-          <p class="hint">게임 관리자·교사용 설정이에요. 아래 <b>저장</b> 버튼은 <b>이 브라우저에만</b> 적용돼요. 모든 학생에게 적용하려면 맨 아래 <b>전역 설정</b>을 쓰세요. 실시간 대결의 <b>종목·기다리는 시간·AI 세기</b>는 서버가 전역 설정(config.json)을 따라요.</p>
+          <p class="hint">게임 관리자·교사용 설정이에요. 아래 <b>저장</b>을 누르면 GitHub의 전역 설정(config.json)에 저장되어 <b>모든 브라우저 · 모든 학생</b>에게 적용돼요 (GitHub 토큰이 한 번 필요해요). 실시간 대결의 <b>종목·기다리는 시간·AI 세기</b>는 서버가 전역 설정(config.json)을 따라요.</p>
           <p class="ti-status ${globalConfig ? 'ok' : ''}">${globalConfig ? '전역 설정(config.json)을 불러왔어요. 모든 학생에게 같은 값이 적용돼요.' : '전역 설정(config.json)을 읽지 못해 기본값을 쓰고 있어요. 서버(Render) 주소로 열었을 때 읽혀요.'}</p>
           ${local.admin ? '<p class="ti-status bad">이 브라우저에는 관리자 설정이 따로 저장돼 있어서 전역 설정보다 먼저 적용돼요. <button type="button" class="btn" id="admReset">지우고 전역 설정 따르기</button></p>' : ''}
           <fieldset><legend>게임 환경</legend><div class="grid2">
@@ -1652,14 +1652,34 @@
 
     const back = () => { hideModal(); if (fromStart) showStart(); else if (labOpen()) renderLab(); };
     $('#setCancel').onclick = () => { A.setMusicVolume(before.music); A.setSfxVolume(before.sfx); back(); };
-    $('#setForm').addEventListener('submit', e => {
+    $('#setForm').addEventListener('submit', async e => {
       e.preventDefault();
       if (adminUnlocked) {
+        // 관리자 설정 [저장] = 모든 브라우저(모든 학생)에 적용: GitHub 의 config.json 에 저장해요
         const v = readAdminForm();
         if (!v) return;
-        Object.assign(settings, v);
-        local.admin = pickAdmin(settings); // 이 브라우저에만 저장 (전역 설정보다 먼저 적용)
-        applyNow(settings);
+        const msg = $('#setMsg'), tokenEl = $('#ghToken');
+        const token = (tokenEl && tokenEl.value.trim()) || loadToken();
+        if (!token) {
+          show('admin');
+          msg.textContent = '모든 브라우저에 적용하려면 관리자 설정 맨 아래에 GitHub 토큰을 한 번 넣어 주세요 (이 브라우저가 기억해요).';
+          if (tokenEl) { tokenEl.scrollIntoView({ block: 'center' }); tokenEl.focus(); }
+          SND('deny'); return;
+        }
+        keepToken(token, $('#ghRemember') ? $('#ghRemember').checked || !!loadToken() : true);
+        const btns = document.querySelectorAll('#setForm button'); btns.forEach(b => { b.disabled = true; });
+        msg.textContent = '모든 학생에게 적용되도록 GitHub(config.json)에 저장하는 중…';
+        try {
+          await pushConfig(token, configJson(v));
+          globalConfig = clone(v); local.admin = null;   // 이 브라우저도 전역 설정을 그대로 따라요
+          settings = buildSettings(); applyNow(settings);
+          toast('저장했어요! 2~5분 뒤(다시 배포 후) 모든 학생에게 적용돼요. 열려 있는 화면은 새로 고침하면 적용돼요.', 'good');
+          SND('upgrade');
+        } catch (err) {
+          btns.forEach(b => { b.disabled = false; });
+          msg.textContent = `모든 학생에게 저장하지 못했어요: ${err.message && !/fetch/i.test(err.message) ? err.message : '인터넷 연결을 확인해 주세요.'} (아무것도 바뀌지 않았어요)`;
+          SND('deny'); return;
+        }
         if (v.subjects.custom && !Q.parseCustom(settings.custom).length) toast('선생님 문제가 비어 있어서 다른 과목에서 출제해요.', 'warn');
       }
       settings.difficulty = $('#setDiff').value;
@@ -1667,7 +1687,7 @@
       saveSettings();
       back();
       updateHud();
-      if (!fromStart) toast('설정을 저장했어요.', 'good');
+      if (!fromStart && !adminUnlocked) toast('설정을 저장했어요.', 'good');
     });
   }
 
