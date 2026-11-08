@@ -66,8 +66,33 @@
 </div>
 </div>
 
-<!-- 실시간 대결 서버(Render)에서 열면 Socket.IO 가 읽혀요. 그냥 파일로 열면 '혼자 연습'만 돼요. -->
-<script src="socket.io/socket.io.js" onerror="window.io = undefined"></script>
+<!-- 실시간 대결 서버 연결
+     · Render 에서 열면: 같은 서버에 연결해요
+     · Vercel · Cloudflare Pages · GitHub Pages 처럼 그림 · 화면만 올린 곳에서 열면: 아래 Render 서버에 연결해요
+       (주소 끝 ?server=https://... 로 바꿀 수 있어요)
+     · Socket.IO 는 기다리지 않고 따로 불러와요 (잠든 서버가 깨어나는 동안 화면이 멈추지 않게) -->
+<script>
+  (function () {
+    var DEFAULT_SERVER = 'https://bug-ex.onrender.com';
+    var h = location.hostname, q = new URLSearchParams(location.search).get('server');
+    var same = /\.onrender\.com$/.test(h) || h === 'localhost' || /^127\./.test(h) || /^192\.168\./.test(h);
+    var server = q || (same ? '' : (location.protocol === 'file:' ? '' : DEFAULT_SERVER));
+    window.BUGEX_SERVER = server;
+    window.__ioReady = new Promise(function (done) {
+      var tryLoad = function (src, next) {
+        var sc = document.createElement('script'); sc.src = src; sc.async = true;
+        sc.onload = function () { done(typeof window.io === 'function'); };
+        sc.onerror = function () { if (next) next(); else { window.io = undefined; done(false); } };
+        document.head.appendChild(sc);
+      };
+      // 다른 곳에서 열었으면 서버를 미리 깨워 두고(잠들어 있으면 30초~1분), Socket.IO 는 CDN에서 받아요
+      if (server) {
+        try { fetch(server + '/healthz', { mode: 'no-cors', cache: 'no-store' }).catch(function () {}); } catch (e) { /* 무시 */ }
+        tryLoad('https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.min.js', function () { tryLoad(server + '/socket.io/socket.io.js'); });
+      } else tryLoad('socket.io/socket.io.js');
+    });
+  })();
+</script>
 <script src="js/gamekit.js"></script>
 <script src="js/insects-data.js"></script>
 <script src="js/events.js"></script>

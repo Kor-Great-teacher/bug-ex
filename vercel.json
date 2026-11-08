@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cp config.json public/config.json",
+  "installCommand": "echo 'no install: Vercel only serves the static page (the live server runs on Render)'",
+  "outputDirectory": "public",
+  "headers": [
+    { "source": "/img/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] },
+    { "source": "/img/bugs/manifest.json", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
+    { "source": "/config.json", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }
+  ]
+}

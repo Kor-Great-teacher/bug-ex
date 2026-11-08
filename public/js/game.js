@@ -678,7 +678,16 @@
   //  함께 하기 (Socket.IO): 대기실 → 퀴즈 → 연구소 → 대결 … 서버가 진행해요
   // ============================================================
   const Net = { socket: null, connected: false, pid: null, lobby: null, pendingJoin: null, waitChosen: false, aiAt: 0, progress: null };
-  function serverUrl() { const p = new URLSearchParams(location.search); return p.get('server') || ''; }
+  function serverUrl() { return window.BUGEX_SERVER || ''; }
+  // 실시간 서버 준비: Socket.IO 를 다 불러오면 연결해요. 다른 곳(Vercel 등)에서 연 경우 잠든 서버가 깨어날 때까지 기다려요.
+  async function connectServer() {
+    if (ensureSocket()) return true;
+    if (!window.__ioReady) return false;
+    showModal(`<h2>🏃 운동회 서버를 깨우는 중…</h2><p class="hint pulse">잠들어 있던 서버가 깨어나는 데 30초~1분쯤 걸릴 수 있어요.</p>`, 'wait');
+    const ok = await Promise.race([window.__ioReady, new Promise(r => setTimeout(() => r(false), 75000))]);
+    if (modalKind === 'wait') hideModal();
+    return ok && ensureSocket();
+  }
   function ensureSocket() {
     if (Net.socket) return true;
     if (typeof window.io !== 'function') return false;
@@ -736,8 +745,10 @@
       e.preventDefault();
       const code = $('#roomIn').value.replace(/[^0-9A-Za-z가-힣]/g, '').slice(0, 12);
       try { localStorage.setItem('bugex-room', code); } catch (err) { /* 무시 */ }
-      if (!ensureSocket()) { toast('실시간 서버에 연결할 수 없어 AI 곤충들과 운동회를 해요.', 'warn'); return goSolo(); }
-      joinLobby(code);
+      connectServer().then(ok => {
+        if (!ok) { toast('실시간 서버에 연결할 수 없어 AI 곤충들과 운동회를 해요.', 'warn'); return goSolo(); }
+        joinLobby(code);
+      });
     });
     $('#roomSolo').addEventListener('click', () => { hideModal(); P = null; enterGrow(); });
   }
@@ -1084,8 +1095,7 @@
     $('#oneMore').addEventListener('click', () => {
       let code = ''; try { code = localStorage.getItem('bugex-room') || ''; } catch (e) { /* 무시 */ }
       newPlayer({ ...GameKit.state, mode: 'game' }); updateHud();
-      if (!ensureSocket()) return goSolo();
-      joinLobby(code);
+      connectServer().then(ok => (ok ? joinLobby(code) : goSolo()));
     });
     $('#toGrow').addEventListener('click', () => chooseGarden());
     if (P.match) P.match = null;
