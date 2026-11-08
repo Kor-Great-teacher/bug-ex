@@ -16,7 +16,7 @@
     "coinCount": 8,
     "coinPerCorrect": 10,
     "battleCount": 6,
-    "matchWait": 30,
+    "matchWait": 20,
     "labTime": 120,
     "relabTime": 60,
     "events": {
