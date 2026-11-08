@@ -195,6 +195,27 @@ Render 무료 요금제는 대역폭이 월 5GB예요. 화면 · 그림(대부�
 - 등급업(같은 곤충 모으기 + 업그레이드), 채집 등급 확률, 코인 순위, 종목별 조작 방법은 그림으로 보여 줘요.
 - 스크린샷은 `public/img/help/*.webp` (640×360). 화면이 바뀌면 다시 찍어 바꿔 주세요.
 
+## 서브 실시간 서버: Fly.io (선택)
+
+저장소의 `Dockerfile` · `fly.toml` 로 실시간 대결 서버를 Fly.io 에도 올릴 수 있어요. 화면은 Vercel, 실시간은 요일마다 Render / Fly.io 로 나눌 때 써요.
+
+1. [fly.io](https://fly.io) 가입 (카드 등록이 필요할 수 있어요) → 컴퓨터에 `flyctl` 설치
+   - Mac: `brew install flyctl` · Windows(PowerShell): `iwr https://fly.io/install.ps1 -useb | iex`
+2. 저장소를 내려받은 폴더에서
+   ```
+   fly auth login
+   fly launch --no-deploy --copy-config --name bug-ex-sub-원하는이름 --region nrt
+   fly deploy --ha=false
+   fly scale count 1
+   ```
+   - **서버는 꼭 1대**(`--ha=false`, `fly scale count 1`)여야 해요. 2대면 친구들이 서로 다른 서버로 나뉘어 같은 방에 못 모여요.
+3. 주소 `https://bug-ex-sub-원하는이름.fly.dev/healthz` 를 열어 `ok` 가 나오면 성공
+4. `public/servers.json` 에 쓰고 싶은 요일 칸에 그 주소를 적고 커밋 → Vercel 이 다시 배포하면 그날부터 적용
+
+- 아무도 쓰지 않으면 서버가 멈추고(`auto_stop_machines`), 접속하면 몇 초 안에 다시 켜져요.
+- GitHub Actions 깨우기도 servers.json 을 읽어서 그날 서버(Fly.io 포함)를 깨워요.
+- 코드를 고친 뒤에는 `fly deploy` 로 다시 올려요 (Render 처럼 저절로 올라가지 않아요).
+
 ## 설정 · 관리자 설정
 
 오른쪽 위 **설정** 버튼(시작 화면에서는 '설정' 링크)을 누르면 설정 창이 열려요.
