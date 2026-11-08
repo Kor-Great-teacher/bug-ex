@@ -13,7 +13,7 @@
     "timeLimit": 20,
     "mathLevel": "auto",
     "collectCount": 7,
-    "coinCount": 13,
+    "coinCount": 8,
     "coinPerCorrect": 10,
     "battleCount": 6,
     "matchWait": 30,
@@ -29,7 +29,11 @@
       "tug": true,
       "climb": true,
       "hurdles": true,
-      "grass": true
+      "grass": true,
+      "raft": true,
+      "seed": true,
+      "acorn": true,
+      "rhythm": true
     },
     "custom": ""
   }
