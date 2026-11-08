@@ -1,0 +1,23 @@
+# Fly.io 실시간 대결 서버 설정
+#   app 이름은 Fly.io 전체에서 하나뿐이어야 해요. 처음 올릴 때 바꿔 주세요 (예: bug-ex-sub-3ban)
+#   주소는 https://<app 이름>.fly.dev 가 돼요 → public/servers.json 에 적어요
+app = "bug-ex-sub"
+primary_region = "nrt"   # 도쿄 (한국과 가장 가까워요)
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"    # 아무도 안 쓰면 멈춰서 비용을 아껴요
+  auto_start_machines = true     # 접속하면 저절로 다시 켜져요 (몇 초)
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    path = "/healthz"
+    timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

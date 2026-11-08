@@ -1,0 +1,10 @@
+node_modules
+art
+test
+tools
+.git
+.github
+*.md
+render.yaml
+vercel.json
+fly.toml
