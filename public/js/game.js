@@ -426,7 +426,7 @@
         : `<div class="feedback bad"><h3>${me.answered ? '아쉬워요!' : '시간이 다 됐어요'} 곤충이 도망갔어요 💨</h3><p>정답: <b>${esc(r.answerText)}</b></p>${expl}${nextNote}</div>`;
       if (!me.ok) SND('escape');
     } else {
-      P.coins += me.coins; P.coinBoard = r.results;
+      P.coins += me.coins; P.qcSeen = (P.qcSeen || 0) + me.coins; P.coinBoard = r.results;
       SND(me.ok ? 'coin' : 'wrong');
       const N = r.results.length, medal = ['🥇', '🥈', '🥉', '4️⃣'];
       const rows = r.results.slice().sort((a, b) => b.total - a.total).map(x => `
@@ -695,18 +695,21 @@
     Net.socket = s;
     s.on('connect', () => {
       Net.connected = true; updateHud();
-      if (Net.pendingJoin) s.emit('lobby:join', Net.pendingJoin);
+      // 경기 중에 잠깐 끊겼다가 다시 붙었으면: 같은 자리로 돌아가요
+      if (together() && Net.mid && Net.key) s.emit('match:rejoin', { mid: Net.mid, pid: P.match.you, key: Net.key });
+      else if (Net.pendingJoin) s.emit('lobby:join', Net.pendingJoin);
       if (modalKind === 'lobby') renderLobby();
     });
-    s.on('disconnect', () => {
+    s.on('disconnect', reason => {
       Net.connected = false; updateHud();
-      if (together()) {
-        P.match = null; BT = null; clearInterval(qTimer); clearInterval(labTimer);
-        showModal(`<h2>연결이 끊겼어요</h2><p>서버와 연결이 끊겨 이번 경기를 이어 갈 수 없어요. 처음 화면에서 다시 시작해 주세요.</p><div class="row"><button type="button" class="btn primary" id="lostBack">처음 화면으로</button></div>`, 'lost');
-        $('#lostBack').addEventListener('click', () => { hideModal(); P = null; showStart(); });
-      } else if (modalKind === 'lobby') renderLobby();
+      if (reason === 'io server disconnect') s.connect();   // 서버가 끊었어도 다시 붙어 봐요
+      if (together()) showReconnecting();
+      else if (modalKind === 'lobby') renderLobby();
     });
-    s.on('lobby:joined', d => { Net.pid = d.pid; });
+    s.on('match:resume', onResume);
+    s.on('match:rejoin:fail', () => { if (together()) showLost(); });
+    s.on('match:back', d => { if (!together() || d.pid === P.match.you) return; const m = P.match.players.find(x => x.pid === d.pid); if (m) m.gone = false; toast(`${d.nick} 님이 다시 들어왔어요!`, 'good'); });
+    s.on('lobby:joined', d => { Net.pid = d.pid; Net.mid = d.mid; });
     s.on('lobby', info => {
       Net.lobby = info;
       Net.aiAt = info.aiLeft ? performance.now() + info.aiLeft * 1000 : 0;
@@ -723,11 +726,61 @@
     s.on('lab:ready', d => { if (!together()) return; P.match.readySet = d.ready; const ul = $('#members'); if (ul) ul.innerHTML = membersHTML(); });
     s.on('battle:start', meta => { if (!together()) return; hideModal(); clearInterval(labTimer); clearInterval(autoTimer); beginBattle('net', meta); });
     s.on('battle:state', snap => onSnap(snap));
-    s.on('match:left', d => { if (!together()) return; const m = P.match.players.find(x => x.pid === d.pid); if (m) m.gone = true; toast(`${d.nick} 님이 나갔어요. 운동회는 AI가 대신해요.`, 'warn'); });
+    s.on('match:left', d => { if (!together()) return; const m = P.match.players.find(x => x.pid === d.pid); if (m) m.gone = true; toast(`${d.nick} 님의 연결이 끊겼어요. 다시 들어올 때까지 AI가 대신해요.`, 'warn'); });
     s.on('match:end', d => { if (!together()) return; hideModal(); BT = null; showFinal(d.standings); });
     s.on('match:abort', d => { if (!P || P.mode !== 'together') return; hideModal(); toast(d.msg, 'bad'); P = null; showStart(); });
     return true;
   }
+  // ---------- 연결이 잠깐 끊겼을 때: 다시 붙기 (90초까지) ----------
+  let reconnTimer = 0, reconnAt = 0;
+  function showReconnecting() {
+    if (modalKind === 'reconnect') return;
+    reconnAt = performance.now();
+    showModal(`<div class="waiting"><div class="hourglass" aria-hidden="true">📶</div><h2>연결이 잠깐 끊겼어요</h2>
+      <p>다시 연결하는 중이에요… 그대로 기다려 주세요.</p><p class="hint" id="reconnLeft"></p></div>`, 'reconnect');
+    clearInterval(reconnTimer);
+    reconnTimer = setInterval(() => {
+      if (modalKind !== 'reconnect') return clearInterval(reconnTimer);
+      const sec = Math.round((performance.now() - reconnAt) / 1000), el = $('#reconnLeft');
+      if (el) el.textContent = `${sec}초째 · 그동안 내 곤충은 AI가 대신해요`;
+      if (Net.socket && !Net.socket.connected && sec % 5 === 0) Net.socket.connect();
+      if (sec >= 95) { clearInterval(reconnTimer); showLost(); }
+    }, 1000);
+  }
+  function showLost() {
+    clearInterval(reconnTimer);
+    if (P) P.match = null;
+    BT = null; clearInterval(qTimer); clearInterval(labTimer);
+    showModal(`<h2>연결이 끊겼어요</h2><p>서버와 다시 연결하지 못해 이번 경기를 이어 갈 수 없어요. 처음 화면에서 다시 시작해 주세요.</p><div class="row"><button type="button" class="btn primary" id="lostBack">처음 화면으로</button></div>`, 'lost');
+    $('#lostBack').addEventListener('click', () => { hideModal(); P = null; showStart(); });
+  }
+  // 다시 붙었어요: 서버가 알려 준 지금 상태(퀴즈 · 연구소 · 운동회)로 화면을 맞춰요
+  function onResume(d) {
+    if (!together()) return;
+    clearInterval(reconnTimer);
+    if (modalKind === 'reconnect' || modalKind === 'lost') hideModal();
+    P.match.players = d.players; P.match.you = d.you;
+    const missed = (d.quizCoins || 0) - (P.qcSeen || 0);
+    if (missed > 0) { P.coins += missed; P.qcSeen = d.quizCoins; }
+    toast('다시 연결됐어요! 이어서 해요.', 'good');
+    if (d.battle) {
+      if (!(BT && BT.mode === 'net' && BT.meta.id === d.battle.id && !BT.ended)) { clearInterval(labTimer); beginBattle('net', d.battle, null, true); }
+    } else if (d.lab) {
+      const sameLab = P.stage === 'lab' && P.battleNo === d.lab.battleNo;
+      if (!sameLab) onLab({ ms: d.lab.ms, battleNo: d.lab.battleNo, ev: d.lab.ev });
+      else P.labDeadline = performance.now() + d.lab.ms;
+      P.match.readySet = d.lab.ready; P.labReady = d.lab.labReady;
+      if (labOpen()) renderLab();
+    } else if (d.quiz && !d.quiz.closed) {
+      const sameQ = curQ && P.stage === d.quiz.stage && P.qIndex === d.quiz.i && !$('#scQuiz').hidden;
+      if (!sameQ || !d.quiz.answered) onQuizQ({ stage: d.quiz.stage, i: d.quiz.i, n: d.quiz.n, ms: d.quiz.ms, q: d.quiz.q });
+      if (d.quiz.answered) showWaiting(d.quiz.ms);
+    }
+    updateHud();
+  }
+  // 화면을 다시 켰을 때(휴대폰 잠금 해제 등) 끊겨 있으면 바로 다시 붙어요
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && Net.socket && !Net.socket.connected) Net.socket.connect(); });
+
   // 입장 코드를 넣으면 코드 방, 비워 두면 자동 매칭
   function showJoin() {
     const p = new URLSearchParams(location.search);
@@ -759,9 +812,10 @@
     toast(`퀴즈 ${P.qTotal}문제를 맞혀 곤충을 채집해요!`, 'good');
   }
   function joinLobby(code) {
-    Net.waitChosen = false; Net.lobby = null; Net.aiAt = 0;
+    Net.waitChosen = false; Net.lobby = null; Net.aiAt = 0; Net.mid = null;
+    Net.key = Array.from({ length: 24 }, () => 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)]).join('');
     Net.pendingJoin = {
-      code, nickname: GameKit.state.nickname,
+      code, nickname: GameKit.state.nickname, key: Net.key,
       opts: { timeLimit: settings.timeLimit, collectCount: collectCount(), coinCount: settings.coinCount, labTime: settings.labTime, relabTime: settings.relabTime, battleCount: settings.battleCount },
     };
     if (Net.connected) Net.socket.emit('lobby:join', Net.pendingJoin);
@@ -862,10 +916,10 @@
   let BT = null;  // { mode, meta, me, b(로컬), prev, cur, curAt, ended, lastCount, keys }
   const arenaCanvas = $('#arena'), actx = arenaCanvas.getContext('2d');
   const BTN_LABEL = { sprint: '달려! 👟', sumo: '돌진! 💥', highjump: '점프! ⬆️', dung: '굴려! 🟤', nectar: '슝~ 빨리! 💨', tug: '영차! 💪', climb: '올라가! 🧗', hurdles: '점프! 🦘', rhythm: '반짝! ✨' };
-  function beginBattle(mode, meta, localBattle) {
+  function beginBattle(mode, meta, localBattle, resumed) {
     ART.ensure(meta.ents.map(e => e.type));   // 나온 곤충들의 자세 그림만 받아요
     P.stage = 'battle'; P.lastEvent = meta.ev;
-    if (P.sel) { P.uses[P.sel] = usesOf(P.sel) + 1; if (bug(P.sel) && bug(P.sel).garden) P.oldUses = (P.oldUses || 0) + 1; }   // 지금 고른 곤충 카드가 한 번 출전했어요
+    if (P.sel && !resumed) { P.uses[P.sel] = usesOf(P.sel) + 1; if (bug(P.sel) && bug(P.sel).garden) P.oldUses = (P.oldUses || 0) + 1; }   // 지금 고른 곤충 카드가 한 번 출전했어요
     BT = { mode, meta, me: meta.me, b: localBattle || null, prev: null, cur: null, curAt: 0, ended: false, lastCount: null, lastT: -99, prevMine: null };
     const ev = EV.EVENTS[meta.ev];
     $('#battleHead').innerHTML = `<h2>${ev.icon} ${esc(ev.name)}</h2><p>${esc(ev.desc)}</p>

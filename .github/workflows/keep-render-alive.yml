@@ -46,7 +46,7 @@ jobs:
         run: |
           if [ -n "$RENDER_URL_OVERRIDE" ]; then url="$RENDER_URL_OVERRIDE"; else
             day=$(TZ=Asia/Seoul date +%a | tr 'A-Z' 'a-z')
-            url=$(python3 -c "import json,sys; j=json.load(open('public/servers.json')); print((j.get('$day') or j.get('default') or 'https://bug-ex.fly.dev').rstrip('/'))" 2>/dev/null || echo 'https://bug-ex.fly.dev')
+            url=$(python3 -c "import json,sys; j=json.load(open('public/servers.json')); print((j.get('$day') or j.get('default') or 'https://bug-ex-wjcu.onrender.com').rstrip('/'))" 2>/dev/null || echo 'https://bug-ex-wjcu.onrender.com')
           fi
           echo "오늘($(TZ=Asia/Seoul date '+%a'))의 서버: $url"
           echo "RENDER_URL=$url" >> "$GITHUB_ENV"

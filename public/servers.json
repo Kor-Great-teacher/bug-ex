@@ -1,6 +1,6 @@
 {
   "_안내": "요일별 실시간 대결 서버 (한국 시간 기준). 비워 두면 default 를 써요. 학생 화면(Vercel 등)과 GitHub Actions 서버 깨우기가 함께 이 파일을 읽어요.",
-  "default": "https://bug-ex.fly.dev",
+  "default": "https://bug-ex-wjcu.onrender.com",
   "mon": "",
   "tue": "",
   "wed": "",

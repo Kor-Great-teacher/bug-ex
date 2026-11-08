@@ -129,6 +129,43 @@ async function serverMatch() {
     console.log('✓ 입장 코드 2명: 동시 퀴즈 · 순위 코인 · 작전 시간(종목 1~3라운드 공개) · 운동회 4라운드(곤충마다 2번 · 저장된 곤충 3번까지) · 최종 순위');
   } finally { srv.kill(); }
 }
+// 연결이 잠깐 끊겼다가 다시 붙으면 같은 자리로 돌아와 경기를 끝까지 해요
+async function serverRejoin() {
+  const { srv, url } = startServer({ BUGEX_WAIT: '1' });
+  const { io } = require('socket.io-client');
+  try {
+    await new Promise(r => setTimeout(r, 800));
+    const res = await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('다시 붙기: 경기가 끝나지 않았어요')), 60000);
+      const key = 'testkey123', st = { pid: null, mid: null, resumed: null, dropped: false };
+      const wire = (s) => {
+        s.on('lobby:joined', d => { st.pid = d.pid; st.mid = d.mid; });
+        s.on('match:start', d => { if (d.host) s.emit('match:questions', { collect: sampleQ(3), coin: sampleQ(2) }); });
+        s.on('quiz:q', d => {
+          if (!st.dropped && d.stage === 'collect' && d.i === 1) {
+            // 문제 2번에서 연결이 끊겨요 → 새 연결로 다시 붙기
+            st.dropped = true; s.disconnect();
+            const s2 = io(url, { transports: ['websocket'] }); wire(s2);
+            s2.on('connect', () => s2.emit('match:rejoin', { mid: st.mid, pid: st.pid, key }));
+            s2.on('match:resume', d2 => { st.resumed = d2; if (d2.quiz && !d2.quiz.answered) s2.emit('quiz:a', { i: d2.quiz.i, value: 0 }); });
+            return;
+          }
+          setTimeout(() => s.emit('quiz:a', { i: d.i, value: 0 }), 10);
+        });
+        s.on('lab', () => { s.emit('lab:pick', { type: 'bee', lv: {}, tier: 0 }); s.emit('lab:ready'); });
+        s.on('match:end', d => { clearTimeout(timer); s.close(); resolve({ ...st, end: d }); });
+        s.on('match:abort', d => { clearTimeout(timer); reject(new Error(d.msg)); });
+      };
+      const s1 = io(url, { transports: ['websocket'] }); wire(s1);
+      s1.on('connect', () => s1.emit('lobby:join', { code: '', nickname: '끊김학생', key, opts: { collectCount: 3, coinCount: 2, battleCount: 1, labTime: 20, relabTime: 15 } }));
+    });
+    assert(res.resumed, '다시 붙으면 match:resume 을 받아요');
+    assert.strictEqual(res.resumed.phase, 'quiz');
+    const me = res.end.standings.find(x => x.pid === res.pid);
+    assert(me && !me.bot, '끝까지 같은 자리(사람)로 남아요');
+    console.log('✓ 연결이 끊겼다가 다시 붙기: 같은 자리로 돌아와 끝까지');
+  } finally { srv.kill(); }
+}
 async function serverAuto() {
   const { srv, url } = startServer({ BUGEX_WAIT: '1' });
   try {
@@ -148,4 +185,5 @@ async function serverAuto() {
   skillMatters();
   await serverMatch();
   await serverAuto();
+  await serverRejoin();
 })().catch(e => { console.error('✗', e.message); process.exit(1); });

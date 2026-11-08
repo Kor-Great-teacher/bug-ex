@@ -57,7 +57,7 @@
 | `difficulty` | 난이도 미리 선택 (`easy` / `normal` / `hard`) | `?difficulty=hard` |
 | `sheet` + `gid` | 구글 시트 문제로 출제 (시트 문제만 나와요) | `?sheet=12uL…ew&gid=1499192131` |
 | `rank` | 기록용 웹앱 주소 변경 | `?rank=https://script.google.com/…/exec` |
-| `server` | 다른 곳에 있는 대결 서버에 연결 | `?server=https://bug-ex.fly.dev` |
+| `server` | 다른 곳에 있는 대결 서버에 연결 | `?server=https://bug-ex-wjcu.onrender.com` |
 
 여러 개는 `&` 로 이어요: `?room=1234&sheet=…&gid=…`
 채집 문제 수 우선순위: 주소의 `gamemode`/`goal` → 시트 SETTING `gameModeGoal` → 관리자 설정 → 기본 7
@@ -176,13 +176,13 @@
 Render 무료 요금제는 대역폭이 월 5GB예요. 화면 · 그림(대부분의 용량)은 **Vercel**(또는 Cloudflare Pages · GitHub Pages)에 올리고, Render 는 **실시간 대결 연결만** 맡기면 Render 사용량이 아주 작아져요.
 
 1. [vercel.com](https://vercel.com) → **Add New → Project** → 이 저장소 선택 → 설정은 그대로(`vercel.json` 이 알아서: `public` 폴더 올리기 · `config.json` 복사) → **Deploy**
-2. 학생들에게는 Vercel 주소(`https://bug-ex-xxxx.vercel.app`)를 알려 줘요. 그 페이지가 실시간 서버(기본: Fly.io `https://bug-ex.fly.dev`, 요일별은 servers.json)에 저절로 연결해요.
+2. 학생들에게는 Vercel 주소(`https://bug-ex-xxxx.vercel.app`)를 알려 줘요. 그 페이지가 실시간 서버(기본: Render `https://bug-ex-wjcu.onrender.com`, 요일별은 servers.json)에 저절로 연결해요.
    - 서버 주소가 다르면 `public/index.html` 의 `DEFAULT_SERVER` 를 바꾸거나 주소 끝에 `?server=https://...` 를 붙여요.
    - Render 서버가 잠들어 있으면 [여럿이 하기]에서 "서버를 깨우는 중…" 창이 30초~1분 떠요. 페이지를 열 때 미리 깨우기 시작해요.
 3. Render 주소로 열어도 지금처럼 그대로 돼요 (그림은 jsDelivr CDN에서 받아요).
 4. **요일마다 다른 실시간 서버**: `public/servers.json` 에 요일별 주소를 적어요 (한국 시간 기준, 비우면 `default`).
    ```json
-   { "default": "https://bug-ex.fly.dev", "mon": "", "tue": "https://다른서버.onrender.com", "wed": "", "thu": "", "fri": "", "sat": "", "sun": "" }
+   { "default": "https://bug-ex-wjcu.onrender.com", "mon": "", "tue": "https://다른서버.onrender.com", "wed": "", "thu": "", "fri": "", "sat": "", "sun": "" }
    ```
    - 학생 화면은 그날 요일의 서버에 연결하고, GitHub Actions 서버 깨우기도 그날 서버만 깨워요.
    - 같은 반 학생은 같은 날 같은 서버에 모여야 함께 대결할 수 있어요 (요일은 학생 기기와 상관없이 한국 시간으로 정해요).

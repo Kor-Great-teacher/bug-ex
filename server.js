@@ -109,12 +109,14 @@ function joinLobby(socket, msg) {
     M = null;
   }
   if (!M) M = newMatch(code);
-  const p = { pid: socket.id, sid: socket.id, nick: cleanNick(msg.nickname), bot: false, ready: false, gone: false, pts: 0, quizCoins: 0, places: [0, 0, 0, 0], uses: {} };
+  // key: 이 학생만 아는 비밀 값 — 연결이 잠깐 끊겼다가 다시 붙을 때 같은 자리로 돌아오게 해요
+  const key = String(msg.key || '').replace(/[^0-9A-Za-z]/g, '').slice(0, 40);
+  const p = { pid: socket.id, sid: socket.id, key, nick: cleanNick(msg.nickname), bot: false, ready: false, gone: false, pts: 0, quizCoins: 0, places: [0, 0, 0, 0], uses: {} };
   M.players.push(p);
   socket.join(`m:${M.id}`);
   socket.data.match = M.id;
   socket.data.opts = msg.opts || {};
-  socket.emit('lobby:joined', { pid: p.pid, code: M.code, mode: M.mode });
+  socket.emit('lobby:joined', { pid: p.pid, mid: M.id, code: M.code, mode: M.mode });
   // 자동 매칭: 첫 사람이 들어오면 기다리기 시작, 4명이 모이면 바로 시작
   if (M.mode === 'auto' && !M.aiDeadline) startAiCountdown(M);
   if (M.mode === 'auto' && humans(M).length >= MAX_PLAYERS) return startMatch(M, false);
@@ -173,7 +175,8 @@ function cleanQuestion(q) {
 }
 function receiveQuestions(socket, msg) {
   const M = matches.get(socket.data.match);
-  if (!M || M.phase !== 'prep' || M.host !== socket.id || M.questions) return;
+  const hp = M && M.players.find(x => x.sid === socket.id);
+  if (!M || M.phase !== 'prep' || !hp || M.host !== hp.pid || M.questions) return;
   const collect = (msg.collect || []).map(cleanQuestion).filter(Boolean).slice(0, M.opts.collectCount);
   const coin = (msg.coin || []).map(cleanQuestion).filter(Boolean).slice(0, M.opts.coinCount);
   if (!collect.length || !coin.length) return endMatch(M, true, '문제를 만들지 못해 경기를 끝냈어요.');
@@ -244,6 +247,7 @@ function finishStage(M) {
 function startLab(M) {
   M.phase = 'lab'; M.q = null;
   const sec = M.battleNo === 0 ? M.opts.labTime : M.opts.relabTime;
+  M.labEnd = Date.now() + sec * 1000;
   for (const p of M.players) p.labReady = false;
   // 종목은 연구소가 열릴 때 미리 정해요. 1~3라운드는 공개, 4라운드부터는 비공개
   M.nextEvent = Events.pickEvent(M.cfg.events, M.lastEvent);
@@ -340,6 +344,7 @@ function endMatch(M, aborted, msg) {
     const standings = M.players.map(p => ({ pid: p.pid, nick: p.nick, bot: p.bot, pts: p.pts, places: p.places, quizCoins: p.quizCoins, best: bestBug(p.hist) }))
       .sort((a, b) => b.pts - a.pts || b.places[0] - a.places[0] || b.quizCoins - a.quizCoins);
     emitAll(M, 'match:end', { standings });
+    recentEnds.set(M.id, { standings, at: Date.now() });   // 끝날 때 잠깐 끊겨 있던 학생도 다시 붙으면 결과를 받아요
   } else emitAll(M, 'match:abort', { msg: msg || '경기가 끝났어요.' });
   M.phase = 'end';
   if (M.code && lobbyByCode.get(M.code) === M) lobbyByCode.delete(M.code);
@@ -363,10 +368,53 @@ function leaveMatch(socket) {
   p.gone = true; p.sid = null;
   if (M.bt) Events.takeOver(M.bt.b, i);                    // 대결 중이면 AI가 이어서 해요
   emitAll(M, 'match:left', { pid: p.pid, nick: p.nick });
-  if (!active(M).length) return endMatch(M, true);
+  // 모두 끊겨도 바로 끝내지 않고 잠깐(90초) 기다려요 — 다시 붙을 수 있게
+  if (!active(M).length) {
+    clearTimeout(M.emptyTimer);
+    M.emptyTimer = setTimeout(() => { if (matches.has(M.id) && !active(M).length) endMatch(M, true); }, FAST ? 20000 : REJOIN_MS);
+    return;
+  }
   if (M.host === p.pid && M.phase === 'prep') endMatch(M, true, '방장이 나가서 경기를 끝냈어요.');
   else if (M.phase === 'quiz' && M.q && !M.q.closed && M.players.every(x => (x.gone && !x.bot) || M.q.answers.has(x.pid))) closeQuestion(M);
   else if (M.phase === 'lab' && active(M).every(x => x.labReady)) later(M, 800, () => startBattle(M));
+}
+
+// ---------- 다시 붙기: 잠깐 끊겼던 학생이 같은 자리로 돌아와요 ----------
+const REJOIN_MS = 90 * 1000;
+const recentEnds = new Map();   // 끝난 경기 결과 (10분 동안)
+setInterval(() => { for (const [k, v] of recentEnds) if (Date.now() - v.at > 10 * 60 * 1000) recentEnds.delete(k); }, 60 * 1000).unref();
+function rejoin(socket, msg) {
+  const mid = String(msg.mid || ''), M = matches.get(mid);
+  const key = String(msg.key || '');
+  if (!M) {
+    const done = recentEnds.get(mid);
+    return done ? socket.emit('match:end', { standings: done.standings }) : socket.emit('match:rejoin:fail', {});
+  }
+  const i = M.players.findIndex(x => !x.bot && x.pid === msg.pid && x.key && x.key === key);
+  if (i < 0 || M.phase === 'lobby') return socket.emit('match:rejoin:fail', {});
+  const p = M.players[i];
+  leaveMatch(socket);
+  p.sid = socket.id; p.gone = false;
+  socket.join(`m:${M.id}`);
+  socket.data.match = M.id;
+  clearTimeout(M.emptyTimer);
+  if (M.bt && M.bt.b.ents[i]) M.bt.b.ents[i].bot = false;   // AI가 대신하던 곤충을 다시 직접 조종해요
+  const Q = M.q, list = M.questions && M.stage ? M.questions[M.stage] : null;
+  socket.emit('match:resume', {
+    you: p.pid, host: M.host === p.pid, phase: M.phase, code: M.code, opts: M.opts, battleNo: M.battleNo, quizCoins: p.quizCoins,
+    players: M.players.map(x => ({ pid: x.pid, nick: x.nick, bot: x.bot, gone: x.gone })),
+    quiz: M.phase === 'quiz' && Q && list ? {
+      stage: M.stage, i: M.qi, n: list.length, closed: Q.closed, answered: Q.answers.has(p.pid),
+      ms: Math.max(0, Q.start + M.opts.timeLimit * 1000 - Date.now()),
+      q: { type: Q.q.type, q: Q.q.q, subject: Q.q.subject, options: Q.q.options },
+    } : null,
+    lab: M.phase === 'lab' ? {
+      ms: Math.max(0, (M.labEnd || Date.now()) - Date.now()), battleNo: M.battleNo, battleCount: M.opts.battleCount,
+      ev: M.battleNo < REVEAL_ROUNDS ? M.nextEvent : null, ready: active(M).filter(x => x.labReady).map(x => x.pid), labReady: !!p.labReady,
+    } : null,
+    battle: M.bt ? { ...M.bt.meta, me: i } : null,
+  });
+  emitAll(M, 'match:back', { pid: p.pid, nick: p.nick });
 }
 
 // ---------- 접속 ----------
@@ -377,6 +425,7 @@ io.on('connection', socket => {
   socket.on('lobby:ai', () => { const M = matches.get(socket.data.match); if (M && M.phase === 'lobby') startAiCountdown(M); });
   socket.on('lobby:ready', (msg = {}) => setReady(socket, msg.on !== false));
   socket.on('lobby:leave', () => leaveMatch(socket));
+  socket.on('match:rejoin', (msg = {}) => rejoin(socket, msg));
   socket.on('match:questions', (msg = {}) => receiveQuestions(socket, msg));
   socket.on('quiz:a', (msg = {}) => {
     const M = matches.get(socket.data.match); if (!M || M.phase !== 'quiz' || !M.q || msg.i !== M.qi) return;
