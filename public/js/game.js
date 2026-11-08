@@ -1364,7 +1364,8 @@
     const repo = m ? (location.pathname.split('/').filter(Boolean)[0] || `${owner}.github.io`) : 'bug-ex';
     return { owner, repo };
   }
-  const repoEditUrl = () => { const { owner, repo } = repoInfo(); return `https://github.com/${owner}/${repo}/edit/main/config.json`; };
+  const repoEditUrl = () => { const { owner, repo } = repoInfo(); return `https://github.com/${owner}/${repo}/edit/${GAME_BRANCH}/config.json`; };
+  const GAME_BRANCH = 'ccr-cde7aa6c-pkqlr0';   // 게임이 배포되는 브랜치 (Vercel · Render)
   const configJson = v => JSON.stringify({ '_안내': '꼬마 곤충 대운동회 전역 설정 — 관리자 설정 페이지에서 만들었어요. 모든 학생에게 적용돼요.', settings: v }, null, 2) + '\n';
 
   // ---------- 관리자 설정에서 GitHub의 config.json 을 바로 저장 ----------
@@ -1386,12 +1387,16 @@
     const why = st => st === 401 ? '토큰이 맞지 않거나 기한이 지났어요.'
       : st === 403 || st === 404 ? `토큰에 ${owner}/${repo} 저장소의 Contents 쓰기 권한이 없어요.`
       : st === 409 || st === 422 ? '그사이 다른 곳에서 config.json이 바뀌었어요. 다시 눌러 주세요.' : `GitHub 응답 오류 (${st})`;
-    const cur = await fetch(`${url}?ref=main&t=${Date.now()}`, { headers, cache: 'no-store' });
+    // 저장소의 기본 브랜치(게임이 배포되는 브랜치)에 저장해요
+    const info = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers, cache: 'no-store' });
+    if (!info.ok) throw new Error(why(info.status));
+    const branch = (await info.json()).default_branch || 'main';
+    const cur = await fetch(`${url}?ref=${encodeURIComponent(branch)}&t=${Date.now()}`, { headers, cache: 'no-store' });
     if (!cur.ok && cur.status !== 404) throw new Error(why(cur.status));
     const sha = cur.ok ? (await cur.json()).sha : undefined;
     const res = await fetch(url, {
       method: 'PUT', headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: '관리자 설정에서 전역 설정 변경', content: b64(content), branch: 'main', ...(sha ? { sha } : {}) }),
+      body: JSON.stringify({ message: '관리자 설정에서 전역 설정 변경', content: b64(content), branch, ...(sha ? { sha } : {}) }),
     });
     if (!res.ok) throw new Error(why(res.status));
   }
@@ -1471,7 +1476,7 @@
 
         ${adminUnlocked ? `
         <section class="set-page hcols" data-page="admin" hidden>
-          <p class="hint">게임 관리자·교사용 설정이에요. <b>저장</b>은 이 브라우저에만 적용돼요. 모든 학생에게 적용하려면 맨 아래 <b>전역 설정</b>을 쓰세요. 실시간 대결의 <b>종목·기다리는 시간·AI 세기</b>는 서버가 전역 설정(config.json)을 따라요.</p>
+          <p class="hint">게임 관리자·교사용 설정이에요. 아래 <b>저장</b> 버튼은 <b>이 브라우저에만</b> 적용돼요. 모든 학생에게 적용하려면 맨 아래 <b>전역 설정</b>을 쓰세요. 실시간 대결의 <b>종목·기다리는 시간·AI 세기</b>는 서버가 전역 설정(config.json)을 따라요.</p>
           <p class="ti-status ${globalConfig ? 'ok' : ''}">${globalConfig ? '전역 설정(config.json)을 불러왔어요. 모든 학생에게 같은 값이 적용돼요.' : '전역 설정(config.json)을 읽지 못해 기본값을 쓰고 있어요. 서버(Render) 주소로 열었을 때 읽혀요.'}</p>
           ${local.admin ? '<p class="ti-status bad">이 브라우저에는 관리자 설정이 따로 저장돼 있어서 전역 설정보다 먼저 적용돼요. <button type="button" class="btn" id="admReset">지우고 전역 설정 따르기</button></p>' : ''}
           <fieldset><legend>게임 환경</legend><div class="grid2">
@@ -1505,7 +1510,7 @@
             <p class="hint" id="customCount"></p>
           </fieldset>
           <fieldset><legend>전역 설정 (모든 학생에게 적용)</legend>
-            <p class="hint">위 값으로 전역 설정 파일 내용을 만들어요. 아래 순서대로 GitHub의 <code>config.json</code>에 붙여 넣으면 Render가 다시 배포된 뒤(2~5분) 모든 학생에게 적용돼요.</p>
+            <p class="hint">위 값으로 전역 설정 파일 내용을 만들어요. GitHub의 <code>config.json</code>에 저장하면 Vercel(학생 화면)과 Render(실시간 서버)가 다시 배포된 뒤(2~5분) <b>모든 학생</b>에게 적용돼요. 학생들은 새로 고침하면 바뀐 설정을 받아요.</p>
             <ol class="steps">
               <li><b>전역 설정 파일 만들기</b>를 누르고 <b>복사</b>해요.</li>
               <li><a href="${esc(repoEditUrl())}" target="_blank" rel="noopener">GitHub에서 config.json 편집 열기</a> (로그인 필요) → 내용을 모두 지우고 붙여 넣기</li>
@@ -1793,7 +1798,7 @@
   window.__bugex = { get P() { return P; }, get BT() { return BT; }, get settings() { return settings; }, Net, startLocalBattle, goLab, showFinal, answer, enterGrow, get curQ() { return curQ; } };
   // 그림은 Render 서버 대신 무료 CDN(jsDelivr, GitHub 저장소의 그림)에서 받아 서버 대역폭을 아껴요
   // (?cdn=0 이면 끔 · CDN이 안 되면 그림마다 저절로 이 서버에서 받아요)
-  const CDN = 'https://cdn.jsdelivr.net/gh/Kor-Great-teacher/bug-ex@ccr-cde7aa6c-pkqlr0/public/';
+  const CDN = `https://cdn.jsdelivr.net/gh/Kor-Great-teacher/bug-ex@${GAME_BRANCH}/public/`;
   const useCdn = /\.(onrender\.com|fly\.dev)$/.test(location.hostname) && new URLSearchParams(location.search).get('cdn') !== '0';
   if (useCdn) ART.assetBase = CDN;
   window.__bugexAsset = p => (useCdn ? CDN + p : p);
