@@ -1396,6 +1396,56 @@
     if (!res.ok) throw new Error(why(res.status));
   }
   const DIFF_LABEL = { easy: '쉬움 · AI 곤충이 약해요', normal: '보통 · AI 곤충이 나와 비슷해요', hard: '어려움 · AI 곤충이 강해요' };
+  // ---------- 관리자: 서버 상태 (/stats) ----------
+  let statsTimer = 0;
+  const MB = b => (b / 1048576).toFixed(b >= 1048576 * 100 ? 0 : 1);
+  const SZ = (b, big) => (b < 1048576 ? `${Math.round(b / 1024)}${big ? '<small>KB</small>' : 'KB'}` : `${MB(b)}${big ? '<small>MB</small>' : 'MB'}`);
+  async function serverList() {
+    let j = null;
+    try { j = await (await fetch('servers.json', { cache: 'no-cache' })).json(); } catch (e) { /* 무시 */ }
+    const day = (() => { try { return new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'Asia/Seoul' }).format(new Date()).toLowerCase().slice(0, 3); } catch (e) { return ''; } })();
+    const names = { mon: '월', tue: '화', wed: '수', thu: '목', fri: '금', sat: '토', sun: '일' };
+    const map = new Map();
+    const add = (url, label) => { if (!url) return; url = String(url).replace(/\/+$/, ''); if (!map.has(url)) map.set(url, { url, days: [], today: false }); const o = map.get(url); if (label) o.days.push(label); };
+    if (j) { add(j.default, '기본'); for (const k of Object.keys(names)) if (j[k]) { add(j[k], names[k]); } }
+    add(window.BUGEX_SERVER || location.origin, '');
+    const todayUrl = String((j && (j[day] || j.default)) || window.BUGEX_SERVER || location.origin).replace(/\/+$/, '');
+    if (map.has(todayUrl)) map.get(todayUrl).today = true;
+    return [...map.values()];
+  }
+  async function loadStats() {
+    const box = $('#statsBox'); if (!box) return;
+    const list = await serverList();
+    const rows = await Promise.all(list.map(async sv => {
+      try {
+        const r = await Promise.race([fetch(sv.url + '/stats', { cache: 'no-store' }), new Promise((_, rej) => setTimeout(() => rej(new Error('시간 초과')), 8000))]);
+        if (!r.ok) throw new Error(`응답 ${r.status}`);
+        return { ...sv, st: await r.json() };
+      } catch (e) { return { ...sv, err: e.message || '연결 안 됨' }; }
+    }));
+    if (!$('#statsBox')) return;
+    box.innerHTML = rows.map(sv => {
+      const head = `<h3>${sv.today ? '⭐ ' : ''}${esc(sv.url.replace(/^https?:\/\//, ''))} <small>${sv.days.length ? esc(sv.days.join(' · ')) : '지금 페이지의 서버'}${sv.today ? ' · 오늘 쓰는 서버' : ''}</small></h3>`;
+      if (sv.err) return `<div class="stat-card off">${head}<p class="hint">😴 응답 없음 (${esc(sv.err)}) — 잠들어 있거나 /stats 가 없는 예전 버전이에요. 잠들어 있으면 1분 뒤 다시 보세요.</p></div>`;
+      const st = sv.st, days = st.days.slice().reverse(), today = days[0] || { out: 0, in: 0 };
+      const full = days.filter((d, i) => i > 0);   // 오늘을 뺀 지난 날들
+      const avg = full.length ? full.reduce((n, d) => n + d.out, 0) / full.length : today.out;
+      const busy = st.lagMs > 200 || st.cpu > 80 ? 'bad' : st.lagMs > 60 || st.cpu > 50 ? 'warn' : 'ok';
+      const up = st.uptimeSec >= 3600 ? `${Math.floor(st.uptimeSec / 3600)}시간 ${Math.floor(st.uptimeSec % 3600 / 60)}분` : `${Math.floor(st.uptimeSec / 60)}분`;
+      return `<div class="stat-card">${head}
+        <div class="stat-tiles">
+          <div><b>${SZ(today.out, 1)}</b><span>오늘 보낸 데이터</span></div>
+          <div><b>${SZ(avg * 22, 1)}</b><span>한 달 예상 (하루 평균 × 수업일 22)</span></div>
+          <div><b>${st.sockets}</b><span>지금 접속</span></div>
+          <div><b>${st.matches}</b><span>진행 중 경기${Object.keys(st.phase).length ? ` <small>(${Object.entries(st.phase).map(([k, v]) => `${{ lobby: '대기', prep: '준비', quiz: '퀴즈', lab: '작전', battle: '운동회' }[k] || k} ${v}`).join(' · ')})</small>` : ''}</span></div>
+          <div class="${busy}"><b>${st.cpu}<small>%</small></b><span>CPU · 지연 ${st.lagMs}ms</span></div>
+          <div><b>${st.memMB}<small>MB</small></b><span>메모리 · 켜진 지 ${up}</span></div>
+        </div>
+        <table class="stat-days"><thead><tr><th>날짜</th><th>보낸 데이터</th><th>받은 데이터</th><th>경기</th><th>참가 학생</th><th>운동회 라운드</th><th>최고 동시 경기</th><th>최고 동시 접속</th><th>다시 붙기</th></tr></thead>
+          <tbody>${days.map(d => `<tr><td>${d.day.slice(5)}</td><td>${SZ(d.out)}</td><td>${SZ(d.in)}</td><td>${d.matches}</td><td>${d.players}</td><td>${d.battles}</td><td>${d.peakMatches}</td><td>${d.peakSockets}</td><td>${d.rejoins}</td></tr>`).join('')}</tbody></table>
+      </div>`;
+    }).join('') + '<p class="hint">💡 Render 무료 대역폭은 한 달 5GB(계정 전체)예요. CPU가 계속 80%를 넘거나 지연이 200ms를 넘으면 서버가 버거운 상태라, 그 요일은 서버를 나누는 게 좋아요.</p>';
+  }
   function showSettings(fromStart, page = 'general') {
     const before = { music: A.musicVolume, sfx: A.sfxVolume };
     const opt = (vals, cur, fmt) => vals.map(v => `<option value="${v}" ${String(v) === String(cur) ? 'selected' : ''}>${fmt(v)}</option>`).join('');
@@ -1409,7 +1459,7 @@
           <h2>설정</h2>
           <div class="tabs" role="tablist">
             <button type="button" role="tab" class="tab" data-page="general">일반</button>
-            ${adminUnlocked ? '<button type="button" role="tab" class="tab" data-page="admin">관리자 설정</button>' : ''}
+            ${adminUnlocked ? '<button type="button" role="tab" class="tab" data-page="admin">관리자 설정</button><button type="button" role="tab" class="tab" data-page="stats">서버 상태</button>' : ''}
           </div>
         </div>
 
@@ -1478,6 +1528,12 @@
           </fieldset>
         </section>` : ''}
 
+        ${adminUnlocked ? `<section class="set-page stats-page" data-page="stats" hidden>
+          <div class="stats-head"><p class="hint">실시간 대결 서버가 <b>실제로 보낸 데이터(대역폭)</b>와 지금 상태예요. 15초마다 저절로 새로 고쳐요. 서버가 다시 시작(배포 · 잠들었다 깨기)되면 숫자는 0부터 다시 세요.</p>
+            <button type="button" class="btn" id="statsReload">↻ 지금 새로 고침</button></div>
+          <div id="statsBox"><p class="hint">불러오는 중…</p></div>
+        </section>` : ''}
+
         <p class="hint" id="setMsg" aria-live="polite"></p>
         <div class="row">
           <button type="submit" class="btn primary">저장</button>
@@ -1490,9 +1546,12 @@
       if (name === 'admin' && !adminUnlocked) name = 'general';
       document.querySelectorAll('.set-page').forEach(sec => { sec.hidden = sec.dataset.page !== name; });
       document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.page === name)));
+      clearInterval(statsTimer);
+      if (name === 'stats') { loadStats(); statsTimer = setInterval(() => { if (!$('#statsBox')) return clearInterval(statsTimer); loadStats(); }, 15000); }
     };
     show(page);
     document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => show(t.dataset.page)));
+    const sr = $('#statsReload'); if (sr) sr.addEventListener('click', loadStats);
 
     // 일반·관리자 페이지의 같은 설정은 서로 따라 움직여요
     document.querySelectorAll('[data-sync="diff"]').forEach(el => el.addEventListener('change', () => {

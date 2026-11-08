@@ -57,6 +57,57 @@ app.use(express.static(path.join(__dirname, 'public'), {
 }));
 
 const server = http.createServer(app);
+
+// ============================================================
+//  서버 상태 (/stats) — 관리자 설정의 '서버 상태' 탭에서 봐요
+//  · 보낸/받은 데이터: 이 서버 프로그램이 실제로 보낸 바이트 (압축 뒤) — Render 대역폭과 거의 같아요
+//  · 날짜는 한국 시간, 서버가 다시 시작(배포 · 잠들었다 깨기)되면 0부터 다시 세요
+// ============================================================
+const kstDay = (t = Date.now()) => new Date(t + 9 * 3600 * 1000).toISOString().slice(0, 10);
+const ST = { started: Date.now(), closedOut: 0, closedIn: 0, live: new Set(), days: new Map(), lag: 0, cpu: 0 };
+function dayStat(d = kstDay()) {
+  if (!ST.days.has(d)) {
+    ST.days.set(d, { out: 0, in: 0, matches: 0, players: 0, battles: 0, rejoins: 0, peakMatches: 0, peakSockets: 0 });
+    while (ST.days.size > 14) ST.days.delete(ST.days.keys().next().value);
+  }
+  return ST.days.get(d);
+}
+let lastOut = 0, lastIn = 0;
+function totalBytes() {
+  let o = ST.closedOut, i = ST.closedIn;
+  for (const c of ST.live) { o += c.bytesWritten; i += c.bytesRead; }
+  return { o, i };
+}
+// 1초마다: 늘어난 바이트를 오늘 칸에 더하고, 이벤트 지연(서버가 얼마나 바쁜지) · CPU 사용률을 재요
+let cpuPrev = process.cpuUsage(), tPrev = process.hrtime.bigint();
+setInterval(() => {
+  const { o, i } = totalBytes(), d = dayStat();
+  d.out += o - lastOut; d.in += i - lastIn; lastOut = o; lastIn = i;
+  const now = process.hrtime.bigint(), wall = Number(now - tPrev) / 1e6;   // ms
+  ST.lag = Math.max(0, Math.round(wall - 1000));
+  const c = process.cpuUsage(cpuPrev); cpuPrev = process.cpuUsage(); tPrev = now;
+  ST.cpu = Math.round((c.user + c.system) / 1000 / wall * 100);
+  d.peakMatches = Math.max(d.peakMatches, [...matches.values()].filter(M => M.phase !== 'lobby').length);
+  d.peakSockets = Math.max(d.peakSockets, io.engine.clientsCount);
+}, 1000).unref();
+server.on('connection', c => {
+  ST.live.add(c);
+  c.on('close', () => { ST.closedOut += c.bytesWritten; ST.closedIn += c.bytesRead; ST.live.delete(c); });
+});
+app.get('/stats', (req, res) => {
+  res.set({ 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' });
+  const ms = [...matches.values()];
+  const phase = {}; for (const M of ms) phase[M.phase] = (phase[M.phase] || 0) + 1;
+  const mem = process.memoryUsage();
+  res.json({
+    now: Date.now(), started: ST.started, uptimeSec: Math.round((Date.now() - ST.started) / 1000),
+    sockets: io.engine.clientsCount,
+    matches: ms.length, phase,
+    players: ms.reduce((n, M) => n + M.players.filter(p => !p.bot && !p.gone).length, 0),
+    cpu: ST.cpu, lagMs: ST.lag, memMB: Math.round(mem.rss / 1048576),
+    days: [...ST.days.entries()].map(([day, v]) => ({ day, ...v })),
+  });
+});
 // perMessageDeflate: 실시간 대결 상태를 압축해서 보내요 (보통 4~6배 작아져요)
 const io = new Server(server, { cors: { origin: '*' }, pingInterval: 25000, pingTimeout: 20000, perMessageDeflate: { threshold: 256 } });
 
@@ -111,6 +162,7 @@ function joinLobby(socket, msg) {
   if (!M) M = newMatch(code);
   // key: 이 학생만 아는 비밀 값 — 연결이 잠깐 끊겼다가 다시 붙을 때 같은 자리로 돌아오게 해요
   const key = String(msg.key || '').replace(/[^0-9A-Za-z]/g, '').slice(0, 40);
+  dayStat().players++;
   const p = { pid: socket.id, sid: socket.id, key, nick: cleanNick(msg.nickname), bot: false, ready: false, gone: false, pts: 0, quizCoins: 0, places: [0, 0, 0, 0], uses: {} };
   M.players.push(p);
   socket.join(`m:${M.id}`);
@@ -149,6 +201,7 @@ function startMatch(M, fillAi) {
     bots.forEach((b, k) => M.players.push({ pid: `bot${k + 1}`, sid: null, nick: b.name, bot: true, skill: b.skill, gone: false, pts: 0, quizCoins: 0, places: [0, 0, 0, 0] }));
   }
   M.phase = 'prep';
+  dayStat().matches++;
   const host = active(M)[0];
   if (!host) return endMatch(M, true);
   const o = (sockOf(host) && sockOf(host).data.opts) || {};
@@ -299,6 +352,7 @@ function startBattle(M) {
   const b = Events.createBattle(eventId, entrants, { countdown: COUNTDOWN });
   const meta = { id: `${M.id}-${M.battleNo}`, ev: eventId, battleNo: M.battleNo, battleCount: M.opts.battleCount, ents: entrants.map((en, i) => ({ name: en.name, type: en.type, tier: Data.tierOf(en.type, en.tier), bot: M.players[i].bot, lv: en.lv })) };
   M.bt = { b, meta, loop: null };
+  dayStat().battles++;
   M.players.forEach((p, i) => { const s = !p.bot && !p.gone && sockOf(p); if (s) s.emit('battle:start', { ...meta, me: i }); });
   M.bt.loop = setInterval(() => {
     Events.step(b, TICK);
@@ -395,6 +449,7 @@ function rejoin(socket, msg) {
   const p = M.players[i];
   leaveMatch(socket);
   p.sid = socket.id; p.gone = false;
+  dayStat().rejoins++;
   socket.join(`m:${M.id}`);
   socket.data.match = M.id;
   clearTimeout(M.emptyTimer);
