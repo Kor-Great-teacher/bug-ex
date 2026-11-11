@@ -195,21 +195,16 @@ Render 무료 요금제는 대역폭이 월 5GB예요. 화면 · 그림(대부�
 - 등급업(같은 곤충 모으기 + 업그레이드), 채집 등급 확률, 코인 순위, 종목별 조작 방법은 그림으로 보여 줘요.
 - 스크린샷은 `public/img/help/*.webp` (640×360). 화면이 바뀌면 다시 찍어 바꿔 주세요.
 
-## Cloudflare Pages 로 화면 올리기 (자동 배포)
+## Cloudflare 로 화면 올리기 (자동 배포)
 
-Vercel 대신(또는 함께) Cloudflare Pages 에 화면 · 그림을 올릴 수 있어요. 무료이고 대역폭 제한이 없어요. 실시간 대결은 지금처럼 Render(`servers.json`)에 연결돼요.
+화면 · 그림을 Cloudflare 에 올릴 수 있어요 (무료). 실시간 대결은 지금처럼 Render(`servers.json`)에 연결돼요. 설정은 저장소의 `wrangler.toml` 이 맡아요 (배포 전에 `config.json` 복사 · `public` 폴더 올리기).
 
-1. [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages → Create → Pages → Connect to Git** → GitHub 연결 → `bug-ex` 저장소 선택
-2. 빌드 설정
-   - Production branch: `ccr-cde7aa6c-pkqlr0`
-   - Framework preset: **None**
-   - Build command: `cp config.json public/config.json`
-   - Build output directory: `public`
-3. **Save and Deploy** → 주소 `https://bug-ex.pages.dev` (이름이 겹치면 뒤에 글자가 붙어요)
+1. [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages → Create** → **Import a repository** → GitHub 연결 → `bug-ex` 선택
+2. 설정: 브랜치 `ccr-cde7aa6c-pkqlr0`, Build command 는 **비워 두기**, Deploy command `npx wrangler deploy` (기본값 그대로)
+3. **Deploy** → 주소 `https://bug-ex.<계정이름>.workers.dev`
 4. 이제 GitHub 에 커밋하면(관리자 설정 [저장]으로 config.json 이 바뀔 때도) **저절로 다시 배포**돼요.
 
 - 그림 1년 캐시 · 설정 파일 새로 읽기는 `public/_headers` 가 맡아요.
-- Build command 를 빼먹으면 전역 설정(config.json)이 화면에 안 들어가 기본값으로 나와요.
 
 ## 서버 상태 보기 (관리자)
 
