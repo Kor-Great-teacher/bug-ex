@@ -1,0 +1,5 @@
+# Cloudflare Pages 설정 (화면 · 그림만 올려요. 실시간 대결 서버는 Render)
+# 대시보드의 빌드 설정: Build command = cp config.json public/config.json · Build output = public
+name = "bug-ex"
+pages_build_output_dir = "public"
+compatibility_date = "2026-11-01"
