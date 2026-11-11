@@ -214,6 +214,23 @@ Render 무료 요금제는 대역폭이 월 5GB예요. 화면 · 그림(대부�
 - 서버 주소 뒤에 `/stats` 를 붙여 열면 같은 내용을 JSON 으로 봐요. 학생 이름 같은 개인 정보는 없어요.
 - 서버가 다시 시작(배포 · 잠들었다 깨기)되면 숫자는 0부터 다시 세요.
 
+### 참여 기록 저장 (GitHub Gist, 선택)
+
+서버가 잠들거나 다시 시작하면 서버 상태 숫자가 0이 돼요. Gist 에 날짜별 기록을 저장해 두면 **매일 · 7일 · 30일 참여 학생 수**를 서버별 · 합계로 볼 수 있어요.
+
+1. [gist.github.com](https://gist.github.com) 에서 새 Gist 만들기 (파일 이름 `readme.md`, 내용 아무거나) → **Create secret gist** → 주소 끝의 긴 id 를 복사 (예: `gist.github.com/아이디/` **`8f3a…`**)
+2. GitHub 토큰 만들기: Settings → Developer settings → Personal access tokens → **Tokens (classic)** → Generate → 권한은 **gist** 하나만
+3. Render 의 실시간 서버마다 **Environment** 에 추가 → 저장하면 다시 시작돼요
+   - `STATS_GIST_ID` = 1번의 id
+   - `STATS_GITHUB_TOKEN` = 2번의 토큰
+   - `STATS_NAME` = 서버 이름 (예: `bug-ex-wjcu`, 서버마다 다르게)
+4. `public/servers.json` 의 `"statsGist"` 에 1번의 id 를 적고 커밋
+5. 관리자 설정 → 서버 상태 맨 위 **📊 누적 참여 기록** 에 표가 나와요
+
+- 참여 학생은 브라우저마다 만든 무작위 번호로 세요 (같은 브라우저는 한 명, 이름 · 개인 정보 없음). 다른 기기로 들어오면 따로 세요.
+- 서버는 바뀐 게 있을 때 10분마다, 그리고 잠들기 · 배포로 꺼질 때 저장해요 (한 번에 몇 KB). 45일 지난 기록은 저절로 지워요.
+- 관리자 화면은 GitHub 를 탭을 열 때와 [지금 새로 고침] 때만 읽어요.
+
 ## 서브 실시간 서버: Fly.io (선택)
 
 저장소의 `Dockerfile` · `fly.toml` 로 실시간 대결 서버를 Fly.io 에도 올릴 수 있어요. 화면은 Vercel, 실시간은 요일마다 Render / Fly.io 로 나눌 때 써요.

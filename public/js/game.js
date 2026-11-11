@@ -811,11 +811,19 @@
     startQuizStage('collect');
     toast(`퀴즈 ${P.qTotal}문제를 맞혀 곤충을 채집해요!`, 'good');
   }
+  // 참여 학생 수를 세기 위한 이 브라우저의 무작위 번호 (이름 · 개인 정보와 상관없어요)
+  function browserUid() {
+    try {
+      let u = localStorage.getItem('bugex-uid');
+      if (!u) { u = Array.from({ length: 12 }, () => 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)]).join(''); localStorage.setItem('bugex-uid', u); }
+      return u;
+    } catch (e) { return ''; }
+  }
   function joinLobby(code) {
     Net.waitChosen = false; Net.lobby = null; Net.aiAt = 0; Net.mid = null;
     Net.key = Array.from({ length: 24 }, () => 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)]).join('');
     Net.pendingJoin = {
-      code, nickname: GameKit.state.nickname, key: Net.key,
+      code, nickname: GameKit.state.nickname, key: Net.key, uid: browserUid(),
       opts: { timeLimit: settings.timeLimit, collectCount: collectCount(), coinCount: settings.coinCount, labTime: settings.labTime, relabTime: settings.relabTime, battleCount: settings.battleCount },
     };
     if (Net.connected) Net.socket.emit('lobby:join', Net.pendingJoin);
@@ -1416,11 +1424,49 @@
     add(window.BUGEX_SERVER || location.origin, '');
     const todayUrl = String((j && (j[day] || j.default)) || window.BUGEX_SERVER || location.origin).replace(/\/+$/, '');
     if (map.has(todayUrl)) map.get(todayUrl).today = true;
-    return [...map.values()];
+    const out = [...map.values()]; out.gist = j && j.statsGist ? String(j.statsGist).replace(/[^0-9a-f]/gi, '') : '';
+    return out;
   }
-  async function loadStats() {
+  // ---------- 누적 참여 기록 (GitHub Gist): 서버가 잠들어도 이어지는 날짜별 기록 ----------
+  let historyHTML = '';
+  async function loadHistory(gist) {
+    if (!gist) return '<div class="stat-card off"><h3>📊 누적 참여 기록</h3><p class="hint">아직 설정하지 않았어요. 서버가 잠들어도 매일 · 7일 · 30일 참여 학생 수를 보려면 README의 <b>참여 기록 저장 (GitHub Gist)</b> 순서대로 설정해 주세요.</p></div>';
+    try {
+      const r = await fetch(`https://api.github.com/gists/${gist}`, { cache: 'no-store' });
+      if (!r.ok) throw new Error(`응답 ${r.status}`);
+      const g = await r.json();
+      const recs = [];
+      for (const [name, f] of Object.entries(g.files || {})) {
+        if (!/__\d{4}-\d{2}-\d{2}\.json$/.test(name)) continue;
+        let c = f.content;
+        if (f.truncated && f.raw_url) c = await (await fetch(f.raw_url)).text();
+        try { recs.push(JSON.parse(c)); } catch (e) { /* 건너뛰기 */ }
+      }
+      if (!recs.length) return '<div class="stat-card"><h3>📊 누적 참여 기록</h3><p class="hint">설정은 됐고, 아직 저장된 기록이 없어요. 학생들이 운동회에 참여하면 10분 안에 쌓이기 시작해요.</p></div>';
+      const kst = t => new Date(t + 9 * 3600 * 1000).toISOString().slice(0, 10);
+      const today = kst(Date.now()), d7 = kst(Date.now() - 6 * 86400000), d30 = kst(Date.now() - 29 * 86400000);
+      const servers = [...new Set(recs.map(x => x.server))].sort();
+      const sum = (list, from) => {
+        const ids = new Set(); let joins = 0, matches = 0, battles = 0, out = 0;
+        for (const x of list) if (x.day >= from) { (x.ids || []).forEach(i => ids.add(i)); joins += x.players || 0; matches += x.matches || 0; battles += x.battles || 0; out += x.out || 0; }
+        return { uniq: ids.size, joins, matches, battles, out };
+      };
+      const row = (label, list) => { const a = sum(list, today), b = sum(list, d7), c = sum(list, d30);
+        return `<tr><td>${esc(label)}</td><td><b>${a.uniq}</b></td><td><b>${b.uniq}</b></td><td><b>${c.uniq}</b></td><td>${c.joins}</td><td>${c.matches}</td><td>${c.battles}</td><td>${SZ(c.out)}</td></tr>`; };
+      const days = [...new Set(recs.map(x => x.day))].sort().reverse().slice(0, 14);
+      const byDay = days.map(d => { const l = recs.filter(x => x.day === d), a = sum(l, d);
+        return `<tr><td>${d.slice(5)}</td><td><b>${a.uniq}</b></td>${servers.map(sv => { const one = l.find(x => x.server === sv); return `<td>${one ? one.uniq || (one.ids || []).length : '-'}</td>`; }).join('')}<td>${a.joins}</td><td>${a.matches}</td><td>${a.battles}</td><td>${SZ(a.out)}</td></tr>`; }).join('');
+      return `<div class="stat-card"><h3>📊 누적 참여 기록 <small>서버가 잠들어도 이어져요 · 참여 학생 = 브라우저 기준(중복 빼고)</small></h3>
+        <table class="stat-days"><thead><tr><th>서버</th><th>오늘 학생</th><th>7일 학생</th><th>30일 학생</th><th>30일 입장</th><th>30일 경기</th><th>30일 라운드</th><th>30일 데이터</th></tr></thead>
+          <tbody>${servers.map(sv => row(sv, recs.filter(x => x.server === sv))).join('')}${servers.length > 1 ? row('모든 서버 합계', recs) : ''}</tbody></table>
+        <table class="stat-days" style="margin-top:6px"><thead><tr><th>날짜</th><th>학생(합계)</th>${servers.map(sv => `<th>${esc(sv)}</th>`).join('')}<th>입장</th><th>경기</th><th>라운드</th><th>데이터</th></tr></thead><tbody>${byDay}</tbody></table>
+      </div>`;
+    } catch (e) { return `<div class="stat-card off"><h3>📊 누적 참여 기록</h3><p class="hint">기록을 불러오지 못했어요 (${esc(e.message)}). 잠시 뒤 [지금 새로 고침]을 눌러 주세요.</p></div>`; }
+  }
+  async function loadStats(withHistory) {
     const box = $('#statsBox'); if (!box) return;
     const list = await serverList();
+    if (withHistory || !historyHTML) historyHTML = await loadHistory(list.gist);   // GitHub 은 열 때와 [새로 고침] 때만 읽어요
     const rows = await Promise.all(list.map(async sv => {
       try {
         const r = await Promise.race([fetch(sv.url + '/stats', { cache: 'no-store' }), new Promise((_, rej) => setTimeout(() => rej(new Error('시간 초과')), 8000))]);
@@ -1429,8 +1475,10 @@
       } catch (e) { return { ...sv, err: e.message || '연결 안 됨' }; }
     }));
     if (!$('#statsBox')) return;
-    box.innerHTML = rows.map(sv => {
-      const head = `<h3>${sv.today ? '⭐ ' : ''}${esc(sv.url.replace(/^https?:\/\//, ''))} <small>${sv.days.length ? esc(sv.days.join(' · ')) : '지금 페이지의 서버'}${sv.today ? ' · 오늘 쓰는 서버' : ''}</small></h3>`;
+    box.innerHTML = historyHTML + rows.map(sv => {
+      const ps = sv.st && sv.st.persist;
+      const pTxt = !ps ? '' : !ps.on ? ' · 기록 저장 꺼짐' : ps.error ? ` · ⚠ 기록 저장 오류: ${esc(ps.error)}` : ps.savedAt ? ` · 기록 저장됨(${esc(ps.name)}, ${new Date(ps.savedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })})` : ` · 기록 저장 켜짐(${esc(ps.name)})`;
+      const head = `<h3>${sv.today ? '⭐ ' : ''}${esc(sv.url.replace(/^https?:\/\//, ''))} <small>${sv.days.length ? esc(sv.days.join(' · ')) : '지금 페이지의 서버'}${sv.today ? ' · 오늘 쓰는 서버' : ''}${pTxt}</small></h3>`;
       if (sv.err) return `<div class="stat-card off">${head}<p class="hint">😴 응답 없음 (${esc(sv.err)}) — 잠들어 있거나 /stats 가 없는 예전 버전이에요. 잠들어 있으면 1분 뒤 다시 보세요.</p></div>`;
       const st = sv.st, days = st.days.slice().reverse(), today = days[0] || { out: 0, in: 0 };
       const full = days.filter((d, i) => i > 0);   // 오늘을 뺀 지난 날들
@@ -1446,8 +1494,8 @@
           <div class="${busy}"><b>${st.cpu}<small>%</small></b><span>CPU · 지연 ${st.lagMs}ms</span></div>
           <div><b>${st.memMB}<small>MB</small></b><span>메모리 · 켜진 지 ${up}</span></div>
         </div>
-        <table class="stat-days"><thead><tr><th>날짜</th><th>보낸 데이터</th><th>받은 데이터</th><th>경기</th><th>참가 학생</th><th>운동회 라운드</th><th>최고 동시 경기</th><th>최고 동시 접속</th><th>다시 붙기</th></tr></thead>
-          <tbody>${days.map(d => `<tr><td>${d.day.slice(5)}</td><td>${SZ(d.out)}</td><td>${SZ(d.in)}</td><td>${d.matches}</td><td>${d.players}</td><td>${d.battles}</td><td>${d.peakMatches}</td><td>${d.peakSockets}</td><td>${d.rejoins}</td></tr>`).join('')}</tbody></table>
+        <table class="stat-days"><thead><tr><th>날짜</th><th>보낸 데이터</th><th>받은 데이터</th><th>경기</th><th>참여 학생</th><th>입장</th><th>운동회 라운드</th><th>최고 동시 경기</th><th>최고 동시 접속</th><th>다시 붙기</th></tr></thead>
+          <tbody>${days.map(d => `<tr><td>${d.day.slice(5)}</td><td>${SZ(d.out)}</td><td>${SZ(d.in)}</td><td>${d.matches}</td><td>${d.uniq != null ? d.uniq : '-'}</td><td>${d.players}</td><td>${d.battles}</td><td>${d.peakMatches}</td><td>${d.peakSockets}</td><td>${d.rejoins}</td></tr>`).join('')}</tbody></table>
       </div>`;
     }).join('') + '<p class="hint">💡 Render 무료 대역폭은 한 달 5GB(계정 전체)예요. CPU가 계속 80%를 넘거나 지연이 200ms를 넘으면 서버가 버거운 상태라, 그 요일은 서버를 나누는 게 좋아요.</p>';
   }
@@ -1534,7 +1582,7 @@
         </section>` : ''}
 
         ${adminUnlocked ? `<section class="set-page stats-page" data-page="stats" hidden>
-          <div class="stats-head"><p class="hint">실시간 대결 서버가 <b>실제로 보낸 데이터(대역폭)</b>와 지금 상태예요. 15초마다 저절로 새로 고쳐요. 서버가 다시 시작(배포 · 잠들었다 깨기)되면 숫자는 0부터 다시 세요.</p>
+          <div class="stats-head"><p class="hint">실시간 대결 서버가 <b>실제로 보낸 데이터(대역폭)</b>와 지금 상태예요. 15초마다 저절로 새로 고쳐요. 참여 기록 저장(Gist)을 켜면 서버가 잠들거나 다시 시작해도 숫자가 이어져요.</p>
             <button type="button" class="btn" id="statsReload">↻ 지금 새로 고침</button></div>
           <div id="statsBox"><p class="hint">불러오는 중…</p></div>
         </section>` : ''}
@@ -1552,11 +1600,11 @@
       document.querySelectorAll('.set-page').forEach(sec => { sec.hidden = sec.dataset.page !== name; });
       document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.page === name)));
       clearInterval(statsTimer);
-      if (name === 'stats') { loadStats(); statsTimer = setInterval(() => { if (!$('#statsBox')) return clearInterval(statsTimer); loadStats(); }, 15000); }
+      if (name === 'stats') { loadStats(true); statsTimer = setInterval(() => { if (!$('#statsBox')) return clearInterval(statsTimer); loadStats(); }, 15000); }
     };
     show(page);
     document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => show(t.dataset.page)));
-    const sr = $('#statsReload'); if (sr) sr.addEventListener('click', loadStats);
+    const sr = $('#statsReload'); if (sr) sr.addEventListener('click', () => loadStats(true));
 
     // 일반·관리자 페이지의 같은 설정은 서로 따라 움직여요
     document.querySelectorAll('[data-sync="diff"]').forEach(el => el.addEventListener('change', () => {

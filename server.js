@@ -67,7 +67,7 @@ const kstDay = (t = Date.now()) => new Date(t + 9 * 3600 * 1000).toISOString().s
 const ST = { started: Date.now(), closedOut: 0, closedIn: 0, live: new Set(), days: new Map(), lag: 0, cpu: 0 };
 function dayStat(d = kstDay()) {
   if (!ST.days.has(d)) {
-    ST.days.set(d, { out: 0, in: 0, matches: 0, players: 0, battles: 0, rejoins: 0, peakMatches: 0, peakSockets: 0 });
+    ST.days.set(d, { out: 0, in: 0, matches: 0, players: 0, battles: 0, rejoins: 0, peakMatches: 0, peakSockets: 0, ids: new Set() });
     while (ST.days.size > 14) ST.days.delete(ST.days.keys().next().value);
   }
   return ST.days.get(d);
@@ -94,6 +94,68 @@ server.on('connection', c => {
   ST.live.add(c);
   c.on('close', () => { ST.closedOut += c.bytesWritten; ST.closedIn += c.bytesRead; ST.live.delete(c); });
 });
+// ============================================================
+//  참여 기록 저장 (선택): GitHub Gist 에 날짜별로 저장해서, 서버가 잠들거나 다시 시작해도 숫자가 이어져요
+//  Render 환경 변수: STATS_GIST_ID (Gist 주소 끝의 id) · STATS_GITHUB_TOKEN (gist 권한 토큰) · STATS_NAME (서버 이름, 선택)
+//  파일 이름: <서버 이름>__<날짜>.json  ·  학생은 브라우저마다 만든 무작위 번호(uid)로만 세요 (이름 · 개인 정보 없음)
+// ============================================================
+const GIST_ID = (process.env.STATS_GIST_ID || '').trim();
+const GIST_TOKEN = (process.env.STATS_GITHUB_TOKEN || '').trim();
+const STATS_NAME = (process.env.STATS_NAME || process.env.RENDER_SERVICE_NAME || process.env.FLY_APP_NAME || 'server').replace(/[^0-9A-Za-z_-]/g, '-').slice(0, 40);
+const PS = { savedAt: 0, error: '', dirty: new Set(), loaded: false };
+const GIST_API = process.env.STATS_GIST_API || 'https://api.github.com';   // 테스트용으로만 바꿔요
+const gistApi = (method, body) => fetch(`${GIST_API}/gists/${GIST_ID}`, {
+  method, headers: { Authorization: `Bearer ${GIST_TOKEN}`, Accept: 'application/vnd.github+json', 'User-Agent': 'bug-ex-server', ...(body ? { 'Content-Type': 'application/json' } : {}) },
+  body: body ? JSON.stringify(body) : undefined,
+});
+const dayFile = d => `${STATS_NAME}__${d}.json`;
+function dayJson(d) {
+  const v = ST.days.get(d); if (!v) return null;
+  const { ids, ...rest } = v;
+  return JSON.stringify({ server: STATS_NAME, day: d, ...rest, uniq: ids.size, ids: [...ids] });
+}
+async function loadPersisted() {
+  if (!GIST_ID || !GIST_TOKEN) return;
+  try {
+    const r = await gistApi('GET'); if (!r.ok) throw new Error(`Gist 읽기 ${r.status}`);
+    const files = (await r.json()).files || {};
+    const old = [], cut = kstDay(Date.now() - 45 * 86400000);
+    for (const [name, f] of Object.entries(files)) {
+      const m = name.match(/^(.+)__(\d{4}-\d{2}-\d{2})\.json$/); if (!m || m[1] !== STATS_NAME) continue;
+      if (m[2] < cut) { old.push(name); continue; }
+      if (m[2] < kstDay(Date.now() - 13 * 86400000)) continue;
+      try {
+        const j = JSON.parse(f.content), d = dayStat(m[2]);
+        for (const k of ['out', 'in', 'matches', 'players', 'battles', 'rejoins']) d[k] += j[k] || 0;
+        for (const k of ['peakMatches', 'peakSockets']) d[k] = Math.max(d[k], j[k] || 0);
+        for (const id of j.ids || []) d.ids.add(id);
+      } catch (e) { /* 망가진 파일은 건너뛰어요 */ }
+    }
+    if (old.length) await gistApi('PATCH', { files: Object.fromEntries(old.map(n => [n, null])) });   // 45일 지난 기록은 지워요
+    PS.loaded = true; PS.error = '';
+  } catch (e) { PS.error = e.message; }
+}
+async function savePersisted() {
+  if (!GIST_ID || !GIST_TOKEN || !PS.dirty.size) return;
+  const days = [...PS.dirty]; PS.dirty.clear();
+  try {
+    const files = {};
+    for (const d of days) { const c = dayJson(d); if (c) files[dayFile(d)] = { content: c }; }
+    const r = await gistApi('PATCH', { files });
+    if (!r.ok) throw new Error(`Gist 저장 ${r.status}`);
+    PS.savedAt = Date.now(); PS.error = '';
+  } catch (e) { PS.error = e.message; for (const d of days) PS.dirty.add(d); }
+}
+const markDirty = () => PS.dirty.add(kstDay());
+// 바뀐 게 있으면 10분마다 저장 (데이터 몇 KB) · 서버가 꺼질 때(잠들기 · 배포) 마지막으로 저장
+setInterval(savePersisted, 10 * 60 * 1000).unref();
+let quitting = false;
+for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => {
+  if (quitting) return; quitting = true;
+  Promise.race([savePersisted(), new Promise(r => setTimeout(r, 4000))]).finally(() => process.exit(0));
+});
+loadPersisted();
+
 app.get('/stats', (req, res) => {
   res.set({ 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' });
   const ms = [...matches.values()];
@@ -105,7 +167,8 @@ app.get('/stats', (req, res) => {
     matches: ms.length, phase,
     players: ms.reduce((n, M) => n + M.players.filter(p => !p.bot && !p.gone).length, 0),
     cpu: ST.cpu, lagMs: ST.lag, memMB: Math.round(mem.rss / 1048576),
-    days: [...ST.days.entries()].map(([day, v]) => ({ day, ...v })),
+    days: [...ST.days.entries()].map(([day, v]) => { const { ids, ...rest } = v; return { day, ...rest, uniq: ids.size }; }),
+    persist: { on: !!(GIST_ID && GIST_TOKEN), name: STATS_NAME, savedAt: PS.savedAt, error: PS.error },
   });
 });
 // perMessageDeflate: 실시간 대결 상태를 압축해서 보내요 (보통 4~6배 작아져요)
@@ -162,7 +225,7 @@ function joinLobby(socket, msg) {
   if (!M) M = newMatch(code);
   // key: 이 학생만 아는 비밀 값 — 연결이 잠깐 끊겼다가 다시 붙을 때 같은 자리로 돌아오게 해요
   const key = String(msg.key || '').replace(/[^0-9A-Za-z]/g, '').slice(0, 40);
-  dayStat().players++;
+  { const d = dayStat(); d.players++; const uid = String(msg.uid || '').replace(/[^0-9A-Za-z]/g, '').slice(0, 16); if (uid) d.ids.add(uid); markDirty(); }
   const p = { pid: socket.id, sid: socket.id, key, nick: cleanNick(msg.nickname), bot: false, ready: false, gone: false, pts: 0, quizCoins: 0, places: [0, 0, 0, 0], uses: {} };
   M.players.push(p);
   socket.join(`m:${M.id}`);
@@ -201,7 +264,7 @@ function startMatch(M, fillAi) {
     bots.forEach((b, k) => M.players.push({ pid: `bot${k + 1}`, sid: null, nick: b.name, bot: true, skill: b.skill, gone: false, pts: 0, quizCoins: 0, places: [0, 0, 0, 0] }));
   }
   M.phase = 'prep';
-  dayStat().matches++;
+  dayStat().matches++; markDirty();
   const host = active(M)[0];
   if (!host) return endMatch(M, true);
   const o = (sockOf(host) && sockOf(host).data.opts) || {};
@@ -352,7 +415,7 @@ function startBattle(M) {
   const b = Events.createBattle(eventId, entrants, { countdown: COUNTDOWN });
   const meta = { id: `${M.id}-${M.battleNo}`, ev: eventId, battleNo: M.battleNo, battleCount: M.opts.battleCount, ents: entrants.map((en, i) => ({ name: en.name, type: en.type, tier: Data.tierOf(en.type, en.tier), bot: M.players[i].bot, lv: en.lv })) };
   M.bt = { b, meta, loop: null };
-  dayStat().battles++;
+  dayStat().battles++; markDirty();
   M.players.forEach((p, i) => { const s = !p.bot && !p.gone && sockOf(p); if (s) s.emit('battle:start', { ...meta, me: i }); });
   M.bt.loop = setInterval(() => {
     Events.step(b, TICK);
@@ -449,7 +512,7 @@ function rejoin(socket, msg) {
   const p = M.players[i];
   leaveMatch(socket);
   p.sid = socket.id; p.gone = false;
-  dayStat().rejoins++;
+  dayStat().rejoins++; markDirty();
   socket.join(`m:${M.id}`);
   socket.data.match = M.id;
   clearTimeout(M.emptyTimer);
